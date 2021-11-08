@@ -88,7 +88,28 @@ const base = {
             })
         ]
     },
-    plugins: []
+    plugins: [
+        new CopyWebpackPlugin([{
+            from: 'node_modules/scratch-storage/dist/web',
+            to: 'modules/scratch/scratch-storage'
+        }]),
+        new CopyWebpackPlugin([{
+            from: 'node_modules/scratch-render/dist/web',
+            to: 'modules/scratch/scratch-render'
+        }]),
+        new CopyWebpackPlugin([{
+            from: 'node_modules/scratch-svg-renderer/dist/web',
+            to: 'modules/scratch/scratch-svg-renderer'
+        }]),
+        new CopyWebpackPlugin([{
+            from: 'node_modules/scratch-vm/dist/web',
+            to: 'modules/scratch/scratch-vm'
+        }]),
+        new CopyWebpackPlugin([{
+            from: 'node_modules/@ftrprf/judge-core/dist',
+            to: 'modules/judge-core'
+        }])
+    ]
 };
 
 if (!process.env.CI) {

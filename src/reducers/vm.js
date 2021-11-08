@@ -15,6 +15,7 @@ const reducer = function (state, action) {
         return state;
     }
 };
+
 const setVM = function (vm) {
     return {
         type: SET_VM,

@@ -6,10 +6,14 @@
     box-sizing: border-box;
 }
 
+.stage-menu-wrapper {}
+
 .stage-canvas-wrapper {
     /* Hides negative space between edge of rounded corners + container, when selected */
     user-select: none;
 }
+
+.stage-slider-wrapper {}
 
 .stage-wrapper.full-screen {
     position: fixed;
