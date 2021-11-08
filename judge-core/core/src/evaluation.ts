@@ -17,9 +17,8 @@ import {
   TabLevel,
 } from './testplan';
 import { ResultManager } from './output';
-// import { distSq } from './lines.js';
 
-import type VirtualMachine from '@ftrprf/judge-scratch-vm-types';
+import VirtualMachine from '@ftrprf/judge-scratch-vm-types';
 import { angle, distSq, mergeLines } from './lines';
 
 declare global {
@@ -43,7 +42,6 @@ declare global {
     afterExecution?: AfterExecution;
 
     run: typeof run;
-    runDebugger: typeof runDebugger;
 
     judge: Evaluation;
     trailSkinId: number;
@@ -281,67 +279,14 @@ interface AfterExecution {
 }
 
 /**
- * Run the judge.
- *
- * @param config - The config with the inputs for the judge.
+ * Create a new context and initialize its virtual machine.
  */
-export async function run(config: EvalConfig): Promise<void> {
-  // Seed random data.
-  seed('itch-judge', { global: true });
+export function initializeContext() {
+    const context = new Context();
+    context.vm = new VirtualMachine();
 
-  const context = new Context();
-  const templateJson = await context.getProjectJson(config);
-  const submissionJson = await context.prepareVm(config);
-
-  const beforeExecution = window.beforeExecution || (() => {});
-  const duringExecution = window.duringExecution || ((e: Evaluation) => e.scheduler.end());
-  const afterExecution = window.afterExecution || (() => {});
-
-  context.output.startJudgement();
-
-  const judge = new Evaluation(context);
-  judge.stage = EvaluationStage.before;
-
-  try {
-    expose();
-
-    // Run the tests before the execution.
-    beforeExecution(new Project(templateJson), new Project(submissionJson), judge);
-
-    await context.vmLoaded.promise;
-    judge.stage = EvaluationStage.scheduling;
-
-    // Schedule the commands for the duration.
-    duringExecution(judge);
-
-    judge.stage = EvaluationStage.executing;
-    // Prepare the context for execution.
-    context.prepareAndRunVm();
-
-    // Run the events.
-    await context.event.run(context);
-    await context.simulationEnd.promise;
-
-    judge.stage = EvaluationStage.after;
-
-    // Do post-mortem tests.
-    afterExecution(judge);
-  } catch (e) {
-    if (!(e instanceof FatalErrorException)) {
-      throw e;
-    } else {
-      console.warn('Stopping tests due to fatal test not passing.');
-      console.warn(e);
-    }
-  }
-
-  context.output.closeJudgement();
-  seed.resetGlobal();
-  console.log('--- END OF EVALUATION ---');
+    return context;
 }
-
-// Main function in the judge.
-object.run = run;
 
 function updateEvaluationTable(text: string) {
   const tableRef = document.getElementById('log-table') as HTMLTableElement;
@@ -362,7 +307,7 @@ function initializeBlockToTargetMap() {
   window.blockToTargetMap = blockToTargetMap;
 }
 
-export async function runDebugger(config: EvalConfig, codeString: string) {
+export async function run(config: EvalConfig, codeString: string) {
   seed('itch-judge', { global: true });
 
   const context = new Context();
@@ -391,7 +336,6 @@ export async function runDebugger(config: EvalConfig, codeString: string) {
   judge.vm.renderer.updateDrawableSkinId(judge.vm.renderer.createDrawable("pen"), window.animationSkinId);
 
   initializeBlockToTargetMap();
-  console.log(window.blockToTargetMap);
 
   try {
     expose();
@@ -430,4 +374,4 @@ export async function runDebugger(config: EvalConfig, codeString: string) {
   console.log('--- END OF EVALUATION ---');
 }
 
-object.runDebugger = runDebugger;
+object.run = run;

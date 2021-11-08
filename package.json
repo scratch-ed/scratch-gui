@@ -4,8 +4,7 @@
     "description": "GraphicaL User Interface for creating and running Scratch 3.0 projects",
     "main": "./dist/scratch-gui.js",
     "workspaces": [
-        "types/**",
-        "packages/**"
+        "judge-core/**"
     ],
     "scripts": {
         "build": "npm run clean && npm run build --workspaces --if-present && webpack --colors --bail",

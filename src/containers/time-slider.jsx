@@ -10,7 +10,7 @@ class TimeSlider extends React.Component {
     }
 
     handleOnInput () {
-        console.log(runDebugger);
+
     }
 
     handleOnMouseUp () {
