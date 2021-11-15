@@ -39,6 +39,8 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
+import debuggerIcon from './icon--debugger.svg';
+import DebuggerTab from '../../containers/debugger-tab.jsx';
 
 const messages = defineMessages({
     addExtension: {
@@ -79,6 +81,7 @@ const GUIComponent = props => {
         connectionModalVisible,
         costumeLibraryVisible,
         costumesTabVisible,
+        debuggerTabVisible,
         enableCommunity,
         intl,
         isCreating,
@@ -97,6 +100,7 @@ const GUIComponent = props => {
         onOpenRegistration,
         onToggleLoginOpen,
         onActivateCostumesTab,
+        onActivateDebuggerTab,
         onActivateSoundsTab,
         onActivateTab,
         onClickLogo,
@@ -296,6 +300,20 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
+                                    <Tab
+                                        className={tabClassNames.tab}
+                                        onClick={onActivateDebuggerTab}
+                                    >
+                                        <img
+                                            draggable={false}
+                                            src={debuggerIcon}
+                                        />
+                                        <FormattedMessage
+                                            defaultMessage="Debugger"
+                                            description="Button to get to the debugger panel"
+                                            id="gui.gui.debuggerTab"
+                                        />
+                                    </Tab>
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
@@ -332,6 +350,9 @@ const GUIComponent = props => {
                                 </TabPanel>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
+                                </TabPanel>
+                                <TabPanel className={tabClassNames.tabPanel}>
+                                    {debuggerTabVisible ? <DebuggerTab vm={vm} /> : null}
                                 </TabPanel>
                             </Tabs>
                             {backpackVisible ? (
@@ -424,6 +445,7 @@ GUIComponent.propTypes = {
     tipsLibraryVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };
+
 GUIComponent.defaultProps = {
     backpackHost: null,
     backpackVisible: false,

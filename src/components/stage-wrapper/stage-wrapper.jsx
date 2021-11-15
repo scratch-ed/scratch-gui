@@ -10,7 +10,6 @@ import Stage from '../../containers/stage.jsx';
 import Loader from '../loader/loader.jsx';
 
 import styles from './stage-wrapper.css';
-import TimeSlider from '../../containers/time-slider.jsx';
 
 const StageWrapperComponent = function (props) {
     const {
@@ -45,9 +44,6 @@ const StageWrapperComponent = function (props) {
                         /> :
                         null
                 }
-            </Box>
-            <Box className={styles.stageSliderWrapper}>
-                <TimeSlider />
             </Box>
             {loading ? (
                 <Loader isFullScreen={isFullScreen} />

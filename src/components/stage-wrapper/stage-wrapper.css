@@ -13,8 +13,6 @@
     user-select: none;
 }
 
-.stage-slider-wrapper {}
-
 .stage-wrapper.full-screen {
     position: fixed;
     top: $stage-menu-height;

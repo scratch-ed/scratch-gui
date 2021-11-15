@@ -1,14 +1,9 @@
 import React from 'react';
 import TimeSliderComponent from '../components/time-slider/time-slider.jsx';
-import {runDebugger} from '@ftrprf/judge-core';
+import PropTypes from 'prop-types';
+import VM from 'scratch-vm';
 
-// eslint-disable-next-line react/prefer-stateless-function
 class TimeSlider extends React.Component {
-    // eslint-disable-next-line no-useless-constructor
-    constructor (props) {
-        super(props);
-    }
-
     handleOnInput () {
 
     }
@@ -23,6 +18,7 @@ class TimeSlider extends React.Component {
 
     render () {
         const {
+            vm, // eslint-disable-line no-unused-vars
             ...props
         } = this.props;
         return (
@@ -35,5 +31,9 @@ class TimeSlider extends React.Component {
         );
     }
 }
+
+TimeSlider.propTypes = {
+    vm: PropTypes.instanceOf(VM).isRequired
+};
 
 export default TimeSlider;
