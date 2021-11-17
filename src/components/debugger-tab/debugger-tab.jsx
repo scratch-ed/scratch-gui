@@ -89,10 +89,10 @@ DebuggerTabComponent.propTypes = {
     onTrailInput: PropTypes.func.isRequired,
     onTrailMouseDown: PropTypes.func.isRequired,
     onTrailMouseUp: PropTypes.func.isRequired,
-    timeFrame: PropTypes.string.isRequired,
+    timeFrame: PropTypes.number.isRequired,
     timeSliderDisabled: PropTypes.bool.isRequired,
     timeSliderKey: PropTypes.bool.isRequired,
-    trailLength: PropTypes.string.isRequired
+    trailLength: PropTypes.number.isRequired
 };
 
 export default DebuggerTabComponent;

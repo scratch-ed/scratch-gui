@@ -37,7 +37,7 @@ TrailSliderComponent.propTypes = {
     onInput: PropTypes.func.isRequired,
     onMouseDown: PropTypes.func.isRequired,
     onMouseUp: PropTypes.func.isRequired,
-    trailLength: PropTypes.string.isRequired
+    trailLength: PropTypes.number.isRequired
 };
 
 export default TrailSliderComponent;

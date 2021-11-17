@@ -35,7 +35,7 @@ TimeSliderComponent.propTypes = {
     onMouseDown: PropTypes.func.isRequired,
     onMouseUp: PropTypes.func.isRequired,
     numberOfFrames: PropTypes.number.isRequired,
-    timeFrame: PropTypes.string.isRequired,
+    timeFrame: PropTypes.number.isRequired,
     timeSliderDisabled: PropTypes.bool.isRequired
 };
 
