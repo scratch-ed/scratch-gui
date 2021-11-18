@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 
 const FileInputComponent = function (props) {
     const {
+        accept,
         labelString,
         onChange,
         ...componentProps
@@ -12,6 +13,7 @@ const FileInputComponent = function (props) {
     return (
         <span>{labelString}<input
             {...componentProps}
+            accept={accept}
             type={'file'}
             id={styles.fileInput}
             onChange={onChange}
@@ -20,6 +22,7 @@ const FileInputComponent = function (props) {
 };
 
 FileInputComponent.propTypes = {
+    accept: PropTypes.string,
     labelString: PropTypes.string,
     onChange: PropTypes.func.isRequired
 };

@@ -4,9 +4,12 @@ import Box from '../box/box.jsx';
 import TimeSliderComponent from '../time-slider/time-slider.jsx';
 import TrailSliderComponent from '../trail-slider/trail-slider.jsx';
 import PropTypes from 'prop-types';
-import StartDebuggerButtonComponent from '../start-debugger-button/start-debugger-button.jsx';
-import StopDebuggerButtonComponent from '../stop-debugger-button/stop-debugger-button.jsx';
+import DebuggerButtonComponent from '../debugger-button/debugger-button.jsx';
 import FileInputComponent from '../file-input/file-input.jsx';
+
+import startButtonIcon from './start-button.svg';
+import stopButtonIcon from './stop-button.svg';
+import stepButtonIcon from './step-button.svg';
 
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-javascript.js';
@@ -18,6 +21,7 @@ const DebuggerTabComponent = function (props) {
         numberOfFrames,
         onClickStart,
         onClickStop,
+        onClickStep,
         onEditorChange,
         onTemplateChange,
         onTimeInput,
@@ -36,13 +40,27 @@ const DebuggerTabComponent = function (props) {
         <Box>
             <Box>
                 <FileInputComponent
+                    accept={'.sb2, .sb3'}
                     labelString={'Template: '}
                     onChange={onTemplateChange}
                 />
             </Box>
             <Box>
-                <StartDebuggerButtonComponent onClick={onClickStart} />
-                <StopDebuggerButtonComponent onClick={onClickStop} />
+                <DebuggerButtonComponent
+                    alt={'START'}
+                    src={startButtonIcon}
+                    onClick={onClickStart}
+                />
+                <DebuggerButtonComponent
+                    alt={'STOP'}
+                    src={stopButtonIcon}
+                    onClick={onClickStop}
+                />
+                <DebuggerButtonComponent
+                    alt={'STEP'}
+                    src={stepButtonIcon}
+                    onClick={onClickStep}
+                />
             </Box>
             <AceEditor
                 mode={'javascript'}
@@ -75,6 +93,7 @@ DebuggerTabComponent.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
     onClickStart: PropTypes.func.isRequired,
     onClickStop: PropTypes.func.isRequired,
+    onClickStep: PropTypes.func.isRequired,
     onEditorChange: PropTypes.func.isRequired,
     onTemplateChange: PropTypes.func.isRequired,
     onTimeInput: PropTypes.func.isRequired,

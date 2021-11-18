@@ -33,6 +33,7 @@ class DebuggerTab extends React.Component {
         bindAll(this, [
             'handleClickStart',
             'handleClickStop',
+            'handleClickStep',
             'handleEditorChange',
             'handleTemplateChange',
             'handleTimeInput',
@@ -127,6 +128,10 @@ class DebuggerTab extends React.Component {
             this.props.judge.output.closeJudgement();
             this.props.judge.vm.stopAll();
         }
+    }
+
+    handleClickStep () {
+        
     }
 
     handleEditorChange (newValue) {
@@ -303,6 +308,7 @@ class DebuggerTab extends React.Component {
                 {...this.props}
                 onClickStart={this.handleClickStart}
                 onClickStop={this.handleClickStop}
+                onClickStep={this.handleClickStep}
                 onEditorChange={this.handleEditorChange}
                 onTemplateChange={this.handleTemplateChange}
                 onTimeInput={this.handleTimeInput}
