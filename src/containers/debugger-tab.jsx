@@ -34,7 +34,6 @@ class DebuggerTab extends React.Component {
             'handleClickStart',
             'handleClickStop',
             'handleEditorChange',
-            'handleSubmissionChange',
             'handleTemplateChange',
             'handleTimeInput',
             'handleTimeMouseDown',
@@ -72,7 +71,7 @@ class DebuggerTab extends React.Component {
         this.props.resetTimeSlider();
 
         const config = {
-            submission: await this.props.submissionUpload.prom,
+            submission: await this.props.vm.saveProjectSb3().then(r => r.arrayBuffer()),
             template: await this.props.templateUpload.prom,
             canvas: this.props.vm.renderer.canvas,
             testPlan: this.props.codeString
@@ -106,9 +105,9 @@ class DebuggerTab extends React.Component {
         this.props.setAnimationSkinId(animationSkinId);
 
         const evalInput = {
-            templateJson,
-            submissionJson,
-            testPlan
+            templateJson: templateJson,
+            submissionJson: submissionJson,
+            testPlan: testPlan
         };
 
         await run(evalInput, context, judge);
@@ -132,15 +131,6 @@ class DebuggerTab extends React.Component {
 
     handleEditorChange (newValue) {
         this.props.setCodeString(newValue);
-    }
-
-    handleSubmissionChange (proxy) {
-        const reader = new FileReader();
-        const thisFileInput = proxy.target;
-        reader.onload = () => {
-            this.props.submissionUpload.res(reader.result);
-        };
-        reader.readAsArrayBuffer(thisFileInput.files[0]);
     }
 
     handleTemplateChange (proxy) {
@@ -314,7 +304,6 @@ class DebuggerTab extends React.Component {
                 onClickStart={this.handleClickStart}
                 onClickStop={this.handleClickStop}
                 onEditorChange={this.handleEditorChange}
-                onSubmissionChange={this.handleSubmissionChange}
                 onTemplateChange={this.handleTemplateChange}
                 onTimeInput={this.handleTimeInput}
                 onTimeMouseDown={this.handleTimeMouseDown}
@@ -375,7 +364,6 @@ DebuggerTab.propTypes = {
     trailSkinId: PropTypes.number,
     animationSkinId: PropTypes.number,
     templateUpload: PropTypes.instanceOf(Waiter).isRequired,
-    submissionUpload: PropTypes.instanceOf(Waiter).isRequired,
     judge: PropTypes.instanceOf(Evaluation),
     codeString: PropTypes.string.isRequired,
     timeFrame: PropTypes.number.isRequired,

@@ -19,7 +19,6 @@ const DebuggerTabComponent = function (props) {
         onClickStart,
         onClickStop,
         onEditorChange,
-        onSubmissionChange,
         onTemplateChange,
         onTimeInput,
         onTimeMouseDown,
@@ -36,10 +35,6 @@ const DebuggerTabComponent = function (props) {
     return (
         <Box>
             <Box>
-                <FileInputComponent
-                    labelString={'Submission: '}
-                    onChange={onSubmissionChange}
-                />
                 <FileInputComponent
                     labelString={'Template: '}
                     onChange={onTemplateChange}
@@ -81,7 +76,6 @@ DebuggerTabComponent.propTypes = {
     onClickStart: PropTypes.func.isRequired,
     onClickStop: PropTypes.func.isRequired,
     onEditorChange: PropTypes.func.isRequired,
-    onSubmissionChange: PropTypes.func.isRequired,
     onTemplateChange: PropTypes.func.isRequired,
     onTimeInput: PropTypes.func.isRequired,
     onTimeMouseDown: PropTypes.func.isRequired,

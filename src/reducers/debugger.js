@@ -149,7 +149,6 @@ const initialState = {
     animationSkinId: null,
     // State related to the debugger GUI.
     templateUpload: new Waiter(),
-    submissionUpload: new Waiter(),
     judge: null,
     codeString: testPlan,
     timeFrame: 0,
