@@ -113,7 +113,7 @@ class DebuggerTab extends React.Component {
             testPlan: testPlan
         };
 
-        await run(evalInput, context, judge);
+        // await run(evalInput, context, judge);
     }
 
     handleClickStop () {

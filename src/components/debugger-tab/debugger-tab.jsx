@@ -15,7 +15,8 @@ import stepButtonIcon from './step-button.svg';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-javascript.js';
 import 'ace-builds/src-noconflict/theme-chrome.js';
-import { connect } from 'react-redux';
+
+import {connect} from 'react-redux';
 
 const DebuggerTabComponent = function (props) {
     const {
