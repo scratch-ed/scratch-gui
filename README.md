@@ -1,27 +1,18 @@
 # scratch-debugger-gui
 
 ## Benodigdheden
-- Node.js (Ik gebruik versie 16.13.0, aangezien versie 17.0.0 te recent was voor de GUI.)
+- Node.js (Ik gebruik versie 16.13.0, aangezien alle versies vanaf 17.0.0 te recent zijn)
 - npm
 - Git
 
 ## Installatie & build
 
 ### judge-core
-De `scratch-debugger-gui` maakt gebruik van de [`judge-core`-package](https://github.ugent.be/scratch4d/judge-core) als
-lokale npm package. Installeer deze dus allereerst, als volgt.
+De `scratch-debugger-gui` maakt gebruik van de [`judge-core`](https://github.ugent.be/scratch4d/judge-core) als lokale npm-package. Installeer deze dus allereerst:
 
-Clone de `judge-core`-repository in dezelfde folder waar je ook de `scratch-debugger-gui` repository zal clonen.
-Voeg best het `--depth=1` argument to aan het `git clone` commando aangezien de repository enkel grote bestanden bevat.
-
-**HTTPS**
+Clone de `judge-core`-repository in dezelfde folder waar je ook de `scratch-debugger-gui`-repository zal clonen.
 ```bash
-https://github.ugent.be/scratch4d/judge-core.git
-```
-
-**SSH**
-```bash
-git@github.ugent.be:scratch4d/judge-core.git
+git clone git@github.ugent.be:scratch4d/judge-core.git
 ```
 
 Installeer en build vervolgens de `judge-core` package.
@@ -31,22 +22,16 @@ npm install
 npm run build
 ```
 
-Bij elke wijzing van code in deze repository, zal telkens opnieuw het `npm run build` commando uitgevoerd moeten worden.
+Bij elke wijziging die je maakt in de code van de `judge-core` moet telkens opnieuw het commando `npm run build` uitgevoerd worden alvorens deze wijziging ook zichtbaar zal worden voor de `scratch-debugger-gui`.
 
 ### scratch-debugger-gui
-Clone dan de `scratch-debugger-gui`-repository in dezelfde folder waar je de `judge-core`-repository hebt gecloned.
+Clone vervolgens de `scratch-debugger-gui`-repository in dezelfde folder waar je de `judge-core`-repository hebt gecloned. Voeg best het argument `--depth=1` toe aan het commando `git clone` aangezien deze repository enkele grote bestanden bevat.
 
-**HTTPS**
 ```bash
-https://github.ugent.be/scratch4d/scratch-debugger-gui.git
+git clone --depth=1 git@github.ugent.be:scratch4d/scratch-debugger-gui.git
 ```
 
-**SSH**
-```bash
-git@github.ugent.be:scratch4d/scratch-debugger-gui.git
-```
-
-Installeer en build vervolgens de `scratch-gui` package.
+Installeer en build vervolgens de `scratch-debugger-gui` package.
 ```bash
 cd scratch-debugger-gui
 npm install
@@ -54,16 +39,15 @@ npm run build
 ```
 
 ## Uitvoeren
-De GUI uitvoeren kan door het volgende commando uitvoeren in de `scratch-debugger-gui` directory. Wijzigingen die gemaakt
-worden aan de code in `scratch-debugger-gui` zullen automatisch zichtbaar zijn in de GUI wanneer de webserver draait.
+De `scratch-debugger-gui` kan uitgevoerd worden door onderstaand commando uit te voeren in de root van de `scratch-debugger-gui`-directory. Wijzigingen aan de code in `scratch-debugger-gui` zullen meteen zichtbaar zijn op de webpagina wanneer de webserver draait.
 
 ```bash
 npm start
 ```
 
-De GUI zal draaien op http://localhost:8601/
+Het project zal standaard draaien op http://localhost:8601/
 
-## Troubleshooting
+## Troubleshooting (gekopieerd uit README_ORIGINAL.md)
 
 ### Ignoring optional dependencies
 
