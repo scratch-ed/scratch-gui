@@ -26,6 +26,7 @@ import {closeExtensionLibrary, openSoundRecorder, openConnectionModal} from '../
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
+import {updateBreakpoints} from '../reducers/debugger';
 
 import {
     activateTab,
@@ -73,6 +74,7 @@ class Blocks extends React.Component {
             'onWorkspaceUpdate',
             'onWorkspaceMetricsChange',
             'setBlocks',
+            'setDoBlockClick',
             'setLocale'
         ]);
         this.ScratchBlocks.prompt = this.handlePromptStart;
@@ -86,6 +88,10 @@ class Blocks extends React.Component {
         this.toolboxUpdateQueue = [];
     }
     componentDidMount () {
+        // Store regular doBlockClick and possibly overwrite function.
+        this.oldBlockClick = this.ScratchBlocks.Gesture.prototype.doBlockClick_;
+        this.setDoBlockClick();
+
         this.ScratchBlocks.FieldColourSlider.activateEyedropper_ = this.props.onActivateColorPicker;
         this.ScratchBlocks.Procedures.externalProcedureDefCallback = this.props.onActivateCustomProcedures;
         this.ScratchBlocks.ScratchMsgs.setLocale(this.props.locale);
@@ -145,10 +151,15 @@ class Blocks extends React.Component {
             this.props.customProceduresVisible !== nextProps.customProceduresVisible ||
             this.props.locale !== nextProps.locale ||
             this.props.anyModalVisible !== nextProps.anyModalVisible ||
-            this.props.stageSize !== nextProps.stageSize
+            this.props.stageSize !== nextProps.stageSize ||
+            this.props.inDebugMode !== nextProps.inDebugMode
         );
     }
     componentDidUpdate (prevProps) {
+        if (prevProps.inDebugMode !== this.props.inDebugMode) {
+            this.setDoBlockClick();
+        }
+
         // If any modals are open, call hideChaff to close z-indexed field editors
         if (this.props.anyModalVisible && !prevProps.anyModalVisible) {
             this.ScratchBlocks.hideChaff();
@@ -187,9 +198,24 @@ class Blocks extends React.Component {
         }
     }
     componentWillUnmount () {
+        // Restore regular doBlockClick.
+        this.ScratchBlocks.Gesture.prototype.doBlockClick_ = this.oldBlockClick;
+
         this.detachVM();
         this.workspace.dispose();
         clearTimeout(this.toolboxUpdateTimeout);
+    }
+    setDoBlockClick () {
+        if (this.props.inDebugMode) {
+            const updateBreakpointsCallback = this.props.updateBreakpoints;
+            this.ScratchBlocks.Gesture.prototype.doBlockClick_ = function () {
+                if (!this.targetBlock_.isInFlyout) {
+                    updateBreakpointsCallback(this.targetBlock_.id);
+                }
+            };
+        } else {
+            this.ScratchBlocks.Gesture.prototype.doBlockClick_ = this.oldBlockClick;
+        }
     }
     requestToolboxUpdate () {
         clearTimeout(this.toolboxUpdateTimeout);
@@ -209,7 +235,6 @@ class Blocks extends React.Component {
                 });
             });
     }
-
     updateToolbox () {
         this.toolboxUpdateTimeout = false;
 
@@ -235,7 +260,6 @@ class Blocks extends React.Component {
         this.toolboxUpdateQueue = [];
         queue.forEach(fn => fn());
     }
-
     withToolboxUpdates (fn) {
         // if there is a queued toolbox update, we need to wait
         if (this.toolboxUpdateTimeout) {
@@ -244,7 +268,6 @@ class Blocks extends React.Component {
             fn();
         }
     }
-
     attachVM () {
         this.workspace.addChangeListener(this.props.vm.blockListener);
         this.flyoutWorkspace = this.workspace
@@ -277,7 +300,6 @@ class Blocks extends React.Component {
         this.props.vm.removeListener('PERIPHERAL_CONNECTED', this.handleStatusButtonUpdate);
         this.props.vm.removeListener('PERIPHERAL_DISCONNECTED', this.handleStatusButtonUpdate);
     }
-
     updateToolboxBlockValue (id, value) {
         this.withToolboxUpdates(() => {
             const block = this.workspace
@@ -289,7 +311,6 @@ class Blocks extends React.Component {
             }
         });
     }
-
     onTargetsUpdate () {
         if (this.props.vm.editingTarget && this.workspace.getFlyout()) {
             ['glide', 'move', 'set'].forEach(prefix => {
@@ -530,6 +551,8 @@ class Blocks extends React.Component {
             toolboxXML,
             updateMetrics: updateMetricsProp,
             workspaceMetrics,
+            inDebugMode,
+            updateBreakpoints: updateBreakpointsProp,
             ...props
         } = this.props;
         /* eslint-enable no-unused-vars */
@@ -617,7 +640,9 @@ Blocks.propTypes = {
     vm: PropTypes.instanceOf(VM).isRequired,
     workspaceMetrics: PropTypes.shape({
         targets: PropTypes.objectOf(PropTypes.object)
-    })
+    }),
+    inDebugMode: PropTypes.bool.isRequired,
+    updateBreakpoints: PropTypes.func.isRequired
 };
 
 Blocks.defaultOptions = {
@@ -664,7 +689,8 @@ const mapStateToProps = state => ({
     messages: state.locales.messages,
     toolboxXML: state.scratchGui.toolbox.toolboxXML,
     customProceduresVisible: state.scratchGui.customProcedures.active,
-    workspaceMetrics: state.scratchGui.workspaceMetrics
+    workspaceMetrics: state.scratchGui.workspaceMetrics,
+    inDebugMode: state.scratchGui.debugger.inDebugMode
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -689,6 +715,9 @@ const mapDispatchToProps = dispatch => ({
     },
     updateMetrics: metrics => {
         dispatch(updateMetrics(metrics));
+    },
+    updateBreakpoints: blockId => {
+        dispatch(updateBreakpoints(blockId));
     }
 });
 

@@ -23,6 +23,7 @@ import {
     setTrailSkinId,
     startDebugger,
     stopDebugger,
+    toggleDebugMode,
     Waiter
 } from '../reducers/debugger.js';
 
@@ -34,6 +35,7 @@ class DebuggerTab extends React.Component {
             'handleClickStart',
             'handleClickStop',
             'handleClickStep',
+            'handleToggle',
             'handleEditorChange',
             'handleTemplateChange',
             'handleTimeInput',
@@ -131,7 +133,11 @@ class DebuggerTab extends React.Component {
     }
 
     handleClickStep () {
-        
+
+    }
+
+    handleToggle () {
+        this.props.toggleDebugMode();
     }
 
     handleEditorChange (newValue) {
@@ -309,6 +315,7 @@ class DebuggerTab extends React.Component {
                 onClickStart={this.handleClickStart}
                 onClickStop={this.handleClickStop}
                 onClickStep={this.handleClickStep}
+                onToggle={this.handleToggle}
                 onEditorChange={this.handleEditorChange}
                 onTemplateChange={this.handleTemplateChange}
                 onTimeInput={this.handleTimeInput}
@@ -338,10 +345,11 @@ const mapStateToProps = state => ({
     numberOfFrames: state.scratchGui.debugger.numberOfFrames,
     timeSliderDisabled: state.scratchGui.debugger.timeSliderDisabled,
     trailLength: state.scratchGui.debugger.trailLength,
-    timeSliderKey: state.scratchGui.debugger.timeSliderKey
+    timeSliderKey: state.scratchGui.debugger.timeSliderKey,
 });
 
 const mapDispatchToProps = dispatch => ({
+    toggleDebugMode: () => dispatch(toggleDebugMode()),
     startDebugger: () => dispatch(startDebugger()),
     stopDebugger: () => dispatch(stopDebugger()),
     setTrail: trail => dispatch(setTrail(trail)),
@@ -378,6 +386,7 @@ DebuggerTab.propTypes = {
     trailLength: PropTypes.number.isRequired,
     timeSliderKey: PropTypes.bool.isRequired,
     // Dispatch
+    toggleDebugMode: PropTypes.func.isRequired,
     startDebugger: PropTypes.func.isRequired,
     stopDebugger: PropTypes.func.isRequired,
     setTrail: PropTypes.func.isRequired,

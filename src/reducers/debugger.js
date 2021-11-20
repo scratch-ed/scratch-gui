@@ -111,6 +111,8 @@ const testPlan =
     }
 })`;
 
+const TOGGLE_DEBUG_MODE = 'scratch-gui/debugger/TOGGLE_DEBUG_MODE';
+const UPDATE_BREAKPOINTS = 'scratch-gui/debugger/UPDATE_BREAKPOINTS';
 const START_DEBUGGER = 'scratch-gui/debugger/START_DEBUGGER';
 const STOP_DEBUGGER = 'scratch-gui/debugger/STOP_DEBUGGER';
 const SET_TRAIL = 'scratch-gui/debugger/SET_TRAIL';
@@ -155,12 +157,26 @@ const initialState = {
     numberOfFrames: 0,
     timeSliderDisabled: true,
     trailLength: 0,
-    timeSliderKey: true
+    timeSliderKey: true,
+
+    inDebugMode: false,
+    breakpoints: new Set()
 };
 
 const reducer = function (state, action) {
     if (typeof state === 'undefined') state = initialState;
     switch (action.type) {
+    case TOGGLE_DEBUG_MODE:
+        return Object.assign({}, state, {
+            inDebugMode: !state.inDebugMode
+        });
+    case UPDATE_BREAKPOINTS:
+        if (!state.breakpoints.delete(action.blockId)) {
+            state.breakpoints.add(action.blockId);
+        }
+        return Object.assign({}, state, {
+            breakpoints: state.breakpoints
+        });
     case START_DEBUGGER:
         return Object.assign({}, state, {
             isRunning: true
@@ -235,6 +251,17 @@ const reducer = function (state, action) {
     default:
         return state;
     }
+};
+
+const toggleDebugMode = function () {
+    return {type: TOGGLE_DEBUG_MODE};
+};
+
+const updateBreakpoints = function (blockId) {
+    return {
+        type: UPDATE_BREAKPOINTS,
+        blockId: blockId
+    };
 };
 
 const startDebugger = function () {
@@ -338,6 +365,8 @@ const setTrailLength = function (trailLength) {
 export {
     reducer as default,
     initialState as debuggerInitialState,
+    toggleDebugMode,
+    updateBreakpoints,
     startDebugger,
     stopDebugger,
     setTrail,
