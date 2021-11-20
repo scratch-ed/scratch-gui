@@ -150,7 +150,6 @@ const initialState = {
     trailSkinId: null,
     animationSkinId: null,
     // State related to the debugger GUI.
-    templateUpload: new Waiter(),
     judge: null,
     codeString: testPlan,
     timeFrame: 0,
