@@ -7,25 +7,24 @@ import VM from 'scratch-vm';
 import {run, setupJudge, Evaluation} from '@ftrprf/judge-core';
 import {connect} from 'react-redux';
 import {
-    disableAnimation,
-    enableAnimation,
-    enableTimeSlider,
-    resetTimeSlider,
-    setAnimateIndex,
-    setAnimationSkinId,
-    setCodeString,
-    setIntervalIndex,
-    setJudge,
-    setNumberOfFrames,
-    setTimeFrame,
-    setTrail,
-    setTrailLength,
-    setTrailSkinId,
     startDebugger,
     stopDebugger,
-    toggleDebugMode,
-    Waiter
+    setTrail,
+    enableAnimation,
+    disableAnimation,
+    setAnimateIndex,
+    setIntervalIndex,
+    setTrailSkinId,
+    setAnimationSkinId,
+    setJudge,
+    setCodeString,
+    setTimeFrame,
+    setNumberOfFrames,
+    enableTimeSlider,
+    resetTimeSlider,
+    setTrailLength
 } from '../reducers/debugger.js';
+import {positionsAreEqual, updateSprite} from '../util.js';
 
 class DebuggerTab extends React.Component {
     constructor (props) {
@@ -35,18 +34,14 @@ class DebuggerTab extends React.Component {
             'handleClickStart',
             'handleClickStop',
             'handleClickStep',
-            'handleToggle',
             'handleEditorChange',
-            'handleTemplateChange',
             'handleTimeInput',
             'handleTimeMouseDown',
             'handleTimeMouseUp',
             'handleTrailInput',
             'handleTrailMouseDown',
             'handleTrailMouseUp',
-            'positionsAreEqual',
-            'updateAnimation',
-            'updateSprite'
+            'updateAnimation'
         ]);
 
         // The time interval after which the animation must be updated (in ms).
@@ -73,9 +68,11 @@ class DebuggerTab extends React.Component {
 
         this.props.resetTimeSlider();
 
+        const currentProject = await this.props.vm.saveProjectSb3().then(r => r.arrayBuffer());
+
         const config = {
-            submission: await this.props.vm.saveProjectSb3().then(r => r.arrayBuffer()),
-            template: await this.props.templateUpload.prom,
+            submission: currentProject,
+            template: currentProject,
             canvas: this.props.vm.renderer.canvas,
             testPlan: this.props.codeString
         };
@@ -113,7 +110,7 @@ class DebuggerTab extends React.Component {
             testPlan: testPlan
         };
 
-        // await run(evalInput, context, judge);
+        await run(evalInput, context, judge);
     }
 
     handleClickStop () {
@@ -136,21 +133,8 @@ class DebuggerTab extends React.Component {
 
     }
 
-    handleToggle () {
-        this.props.toggleDebugMode();
-    }
-
     handleEditorChange (newValue) {
         this.props.setCodeString(newValue);
-    }
-
-    handleTemplateChange (proxy) {
-        const reader = new FileReader();
-        const thisFileInput = proxy.target;
-        reader.onload = () => {
-            this.props.templateUpload.res(reader.result);
-        };
-        reader.readAsArrayBuffer(thisFileInput.files[0]);
     }
 
     handleTimeInput (event) {
@@ -189,24 +173,6 @@ class DebuggerTab extends React.Component {
         }
     }
 
-    /**
-     * Helper function to check if 2 positions are equal.
-     *
-     * @param {[number, number]} position1 - Base position.
-     * @param {[number, number]} position2 - Position to compare with.
-     * @returns {bool} - True if positions are equal, else false
-     */
-    positionsAreEqual (position1, position2) {
-        if (!position1 || !position2 || position1.length !== 2 || position2.length !== 2) {
-            return false;
-        }
-
-        const [x1, y1] = position1;
-        const [x2, y2] = position2;
-
-        return x1 === x2 && y1 === y2;
-    }
-
     resetTrail () {
         if (!this.props.judge) {
             return;
@@ -235,12 +201,12 @@ class DebuggerTab extends React.Component {
                     const currentPosition = [spriteLog.x, spriteLog.y];
 
                     if (currentIndex !== this.props.timeFrame &&
-                        !this.positionsAreEqual(previousPosition, currentPosition)
+                        !positionsAreEqual(previousPosition, currentPosition)
                     ) {
                         this.props.judge.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 90);
                         previousPositions.set(spriteLog.name, currentPosition);
 
-                        this.updateSprite(sprite, spriteLog);
+                        updateSprite(sprite, spriteLog);
                         this.props.judge.vm.renderer.penStamp(this.props.trailSkinId, sprite.drawableID);
                         newTrail.unshift(currentIndex);
                         renderedAmount++;
@@ -259,7 +225,7 @@ class DebuggerTab extends React.Component {
             const sprite = this.props.judge.vm.runtime.getSpriteTargetByName(spriteLog.name);
             if (sprite) {
                 this.props.judge.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 0);
-                this.updateSprite(sprite, spriteLog);
+                updateSprite(sprite, spriteLog);
             }
         }
     }
@@ -276,7 +242,7 @@ class DebuggerTab extends React.Component {
                 const sprite = this.props.judge.vm.runtime.getSpriteTargetByName(spriteLog.name);
                 if (sprite) {
                     this.props.judge.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 50);
-                    this.updateSprite(sprite, spriteLog);
+                    updateSprite(sprite, spriteLog);
                     this.props.judge.vm.renderer.penStamp(this.props.animationSkinId, sprite.drawableID);
                 }
             }
@@ -287,25 +253,12 @@ class DebuggerTab extends React.Component {
                 const sprite = this.props.judge.vm.runtime.getSpriteTargetByName(spriteLog.name);
                 if (sprite) {
                     this.props.judge.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 0);
-                    this.updateSprite(sprite, spriteLog);
+                    updateSprite(sprite, spriteLog);
                 }
             }
 
             this.props.setAnimateIndex((this.props.animateIndex + 1) % this.props.trail.length);
         }
-    }
-
-    /**
-     * Update the sprite's position, direction and costume based on the information
-     * stored in the logged sprite.
-     *
-     * @param {RenderedTarget} sprite - Sprite that needs to be updated.
-     * @param {LoggedSprite} spriteLog - Logged sprite containing the new values.
-     */
-    updateSprite (sprite, spriteLog) {
-        sprite.setXY(spriteLog.x, spriteLog.y);
-        sprite.setDirection(spriteLog.direction);
-        sprite.setCostume(sprite.getCostumeIndexByName(spriteLog.costume));
     }
 
     render () {
@@ -315,9 +268,7 @@ class DebuggerTab extends React.Component {
                 onClickStart={this.handleClickStart}
                 onClickStop={this.handleClickStop}
                 onClickStep={this.handleClickStep}
-                onToggle={this.handleToggle}
                 onEditorChange={this.handleEditorChange}
-                onTemplateChange={this.handleTemplateChange}
                 onTimeInput={this.handleTimeInput}
                 onTimeMouseDown={this.handleTimeMouseDown}
                 onTimeMouseUp={this.handleTimeMouseUp}
@@ -337,7 +288,6 @@ const mapStateToProps = state => ({
     intervalIndex: state.scratchGui.debugger.intervalIndex,
     trailSkinId: state.scratchGui.debugger.trailSkinId,
     animationSkinId: state.scratchGui.debugger.animationSkinId,
-    templateUpload: state.scratchGui.debugger.templateUpload,
     submissionUpload: state.scratchGui.debugger.submissionUpload,
     judge: state.scratchGui.debugger.judge,
     codeString: state.scratchGui.debugger.codeString,
@@ -345,11 +295,10 @@ const mapStateToProps = state => ({
     numberOfFrames: state.scratchGui.debugger.numberOfFrames,
     timeSliderDisabled: state.scratchGui.debugger.timeSliderDisabled,
     trailLength: state.scratchGui.debugger.trailLength,
-    timeSliderKey: state.scratchGui.debugger.timeSliderKey,
+    timeSliderKey: state.scratchGui.debugger.timeSliderKey
 });
 
 const mapDispatchToProps = dispatch => ({
-    toggleDebugMode: () => dispatch(toggleDebugMode()),
     startDebugger: () => dispatch(startDebugger()),
     stopDebugger: () => dispatch(stopDebugger()),
     setTrail: trail => dispatch(setTrail(trail)),
@@ -377,7 +326,6 @@ DebuggerTab.propTypes = {
     intervalIndex: PropTypes.number,
     trailSkinId: PropTypes.number,
     animationSkinId: PropTypes.number,
-    templateUpload: PropTypes.instanceOf(Waiter).isRequired,
     judge: PropTypes.instanceOf(Evaluation),
     codeString: PropTypes.string.isRequired,
     timeFrame: PropTypes.number.isRequired,
@@ -386,7 +334,6 @@ DebuggerTab.propTypes = {
     trailLength: PropTypes.number.isRequired,
     timeSliderKey: PropTypes.bool.isRequired,
     // Dispatch
-    toggleDebugMode: PropTypes.func.isRequired,
     startDebugger: PropTypes.func.isRequired,
     stopDebugger: PropTypes.func.isRequired,
     setTrail: PropTypes.func.isRequired,
