@@ -70,6 +70,7 @@
         "react-redux": "5.0.7",
         "react-responsive": "5.0.0",
         "react-style-proptype": "3.2.2",
+        "react-switch": "^6.0.0",
         "react-tabs": "2.3.0",
         "react-toggle-button": "^2.2.0",
         "react-tooltip": "3.8.0",

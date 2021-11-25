@@ -1,118 +1,4 @@
-const testPlan =
-`({
-    beforeExecution: function(template, submission, output) {
-        output.describe('Testen voor Papegaai', (l) => {
-            l.test('Papegaai bestaat', (l) => {
-                l.expect(submission.containsSprite('Papegaai'))
-                    .withError('Er moet een sprite met de naam Papegaai bestaan in het project!')
-                    .toBe(true);
-            });
-        });
-    },
-
-    /** @param {Evaluation} e */
-    duringExecution: function(e) {
-        e.actionTimeout = 8000;
-        // e.acceleration = 10;
-
-        e.scheduler
-            .wait(1000)
-            .log(() => {
-                e.test('Papegaai beweegt niet', (l) => {
-                    l.expect(e.log.hasSpriteMoved('Papegaai'))
-                        .withError('De papegaai mag niet bewegen voor er op geklikt wordt')
-                        .toBe(false);
-                });
-            })
-            .clickSprite('Papegaai', false)
-            .wait(3000)
-            .end();
-    },
-
-    /** @param {Evaluation} e */
-    afterExecution: function(e) {
-        e.describe('Testen voor papegaai', (l) => {
-            // We beschouwen enkel de frames na de klik
-            const klikEvent = e.log.events.filter({ type: 'click' })[0];
-            const frames = searchFrames(e.log.frames, { after: klikEvent.time });
-            const directions = []; // We slaan de richting van de papegaai op bij elke verandering van richting.
-            let previousFrame = frames[0];
-            let oldDirection = previousFrame.getSprite('Papegaai').direction;
-
-            l.test('Papegaai vliegt enkel horizontaal', (l) => {
-                l.expect(numericEquals(e.log.getMaxY('Papegaai'), e.log.getMinY('Papegaai')))
-                    .withError('De y-coördinaat van de Papegaai blijft niet constant')
-                    .toBe(true);
-            });
-
-            // De papegaai moet (horizontaal) van richting veranderen, maar enkel als de papegaai zich bij rand van het speelveld bevindt.
-            for (const frame of frames) {
-                const sprite = frame.getSprite('Papegaai');
-                if (oldDirection !== sprite.direction) {
-                    // De richting van de sprite is veranderd
-                    directions.push(sprite.direction);
-                    oldDirection = sprite.direction;
-                    // Test of de papegaai de rand raakt
-                    const papegaai = previousFrame.getSprite('Papegaai');
-                    const raaktRand = papegaai.bounds.right > 220 || papegaai.bounds.left < -220;
-                    l.test('De papegaai raakt de rand bij het veranderen van richting', (l) => {
-                        l.expect(raaktRand)
-                            .withError(
-                                'De papegaai is veranderd van richting zonder de rand te raken van het speelveld',
-                            )
-                            .toBe(true);
-                    });
-                    l.test('De papegaai vliegt horizontaal', (l) => {
-                        // Test of de papegaai altijd van links naar rechts en omgekeerd beweegt
-                        l.expect(sprite.direction === 90 || sprite.direction === -90)
-                            .withError(
-                                'De richting van de papegaai is niet 90 of -90, de papegaai vliegt niet horizontaal.',
-                            )
-                            .toBe(true);
-                    });
-                }
-                previousFrame = frame;
-            }
-
-            l.test('De papegaai veranderde minimum 2 keer van richting', (l) => {
-                l.expect(directions.length > 2)
-                    .withError(
-                        \`De papegaai moet minstens twee veranderen van richting, maar is maar \${directions.length} keer veranderd\`,
-                    )
-                    .toBe(true);
-            });
-
-            // De papegaai verandert van kostuum tijdens het vliegen
-            l.test('Papegaai klappert met vleugels', (l) => {
-                // De papegaai verandert van kostuum tijdens het vliegen
-                const costumeChanges = e.log.getCostumeChanges('Papegaai');
-                l.expect(costumeChanges.length > 4)
-                    .withError(
-                        \`De Papegaai moet constant wisselen tussen de kostuums 'VleugelsOmhoog' en 'VleugelsOmlaag'\`,
-                    )
-                    .toBe(true);
-            });
-        });
-
-        e.describe('Blokjes', (l) => {
-            l.test('Gebruik van een lus', (l) => {
-                // Gebruik best een lus de papegaai te bewegen en van kostuum te veranderen.
-                l.expect(e.log.blocks.containsLoop())
-                    .withError('Er werd geen herhalingslus gebruikt')
-                    .toBe(true);
-            });
-            // De code in de lus wordt minstens 2 keer herhaald
-            l.test('Correcte gebruik van de lus', (l) => {
-                l.expect(e.log.blocks.numberOfExecutions('control_forever') > 2)
-                    .withError('De code in de lus werd minder dan 2 keer herhaald')
-                    .toBe(true);
-            });
-        });
-    }
-})`;
-
 const TOGGLE_DEBUG_MODE = 'scratch-gui/debugger/TOGGLE_DEBUG_MODE';
-const UPDATE_BREAKPOINTS = 'scratch-gui/debugger/UPDATE_BREAKPOINTS';
 const START_DEBUGGER = 'scratch-gui/debugger/START_DEBUGGER';
 const STOP_DEBUGGER = 'scratch-gui/debugger/STOP_DEBUGGER';
 const SET_TRAIL = 'scratch-gui/debugger/SET_TRAIL';
@@ -122,8 +8,7 @@ const SET_ANIMATE_INDEX = 'scratch-gui/debugger/SET_ANIMATE_INDEX';
 const SET_INTERVAL_INDEX = 'scratch-gui/debugger/SET_INTERVAL_INDEX';
 const SET_TRAIL_SKIN_ID = 'scratch-gui/debugger/SET_TRAIL_SKIN_ID';
 const SET_ANIMATION_SKIN_ID = 'scratch-gui/debugger/SET_ANIMATION_SKIN_ID';
-const SET_JUDGE = 'scratch-gui/debugger/SET_JUDGE';
-const SET_CODE_STRING = 'scratch-gui/debugger/SET_CODE_STRING';
+const SET_CONTEXT = 'scratch-gui/debugger/SET_CONTEXT';
 const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
 const ENABLE_TIME_SLIDER = 'scratch-gui/debugger/ENABLE_TIME_SLIDER';
@@ -141,6 +26,7 @@ export class Waiter {
 }
 
 const initialState = {
+    debugMode: false,
     isRunning: false,
     // State related to the trail animation.
     trail: [],
@@ -150,16 +36,12 @@ const initialState = {
     trailSkinId: null,
     animationSkinId: null,
     // State related to the debugger GUI.
-    judge: null,
-    codeString: testPlan,
+    context: null,
     timeFrame: 0,
     numberOfFrames: 0,
     timeSliderDisabled: true,
     trailLength: 0,
-    timeSliderKey: true,
-
-    inDebugMode: false,
-    breakpoints: new Set()
+    timeSliderKey: true
 };
 
 const reducer = function (state, action) {
@@ -167,14 +49,7 @@ const reducer = function (state, action) {
     switch (action.type) {
     case TOGGLE_DEBUG_MODE:
         return Object.assign({}, state, {
-            inDebugMode: !state.inDebugMode
-        });
-    case UPDATE_BREAKPOINTS:
-        if (!state.breakpoints.delete(action.blockId)) {
-            state.breakpoints.add(action.blockId);
-        }
-        return Object.assign({}, state, {
-            breakpoints: state.breakpoints
+            debugMode: !state.debugMode
         });
     case START_DEBUGGER:
         return Object.assign({}, state, {
@@ -212,13 +87,9 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             animationSkinId: action.animationSkinId
         });
-    case SET_JUDGE:
+    case SET_CONTEXT:
         return Object.assign({}, state, {
-            judge: action.judge
-        });
-    case SET_CODE_STRING:
-        return Object.assign({}, state, {
-            codeString: action.codeString
+            context: action.context
         });
     case SET_TIME_FRAME:
         return Object.assign({}, state, {
@@ -254,13 +125,6 @@ const reducer = function (state, action) {
 
 const toggleDebugMode = function () {
     return {type: TOGGLE_DEBUG_MODE};
-};
-
-const updateBreakpoints = function (blockId) {
-    return {
-        type: UPDATE_BREAKPOINTS,
-        blockId: blockId
-    };
 };
 
 const startDebugger = function () {
@@ -314,17 +178,10 @@ const setAnimationSkinId = function (animationSkinId) {
     };
 };
 
-const setJudge = function (judge) {
+const setContext = function (context) {
     return {
-        type: SET_JUDGE,
-        judge: judge
-    };
-};
-
-const setCodeString = function (codeString) {
-    return {
-        type: SET_CODE_STRING,
-        codeString: codeString
+        type: SET_CONTEXT,
+        context: context
     };
 };
 
@@ -365,7 +222,6 @@ export {
     reducer as default,
     initialState as debuggerInitialState,
     toggleDebugMode,
-    updateBreakpoints,
     startDebugger,
     stopDebugger,
     setTrail,
@@ -375,8 +231,7 @@ export {
     setIntervalIndex,
     setTrailSkinId,
     setAnimationSkinId,
-    setJudge,
-    setCodeString,
+    setContext,
     setTimeFrame,
     setNumberOfFrames,
     enableTimeSlider,
