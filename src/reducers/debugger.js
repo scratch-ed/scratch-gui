@@ -1,6 +1,4 @@
 const TOGGLE_DEBUG_MODE = 'scratch-gui/debugger/TOGGLE_DEBUG_MODE';
-const START_DEBUGGER = 'scratch-gui/debugger/START_DEBUGGER';
-const STOP_DEBUGGER = 'scratch-gui/debugger/STOP_DEBUGGER';
 const SET_TRAIL = 'scratch-gui/debugger/SET_TRAIL';
 const ENABLE_ANIMATION = 'scratch-gui/debugger/ENABLE_ANIMATION';
 const DISABLE_ANIMATION = 'scratch-gui/debugger/DISABLE_ANIMATION';
@@ -11,8 +9,6 @@ const SET_ANIMATION_SKIN_ID = 'scratch-gui/debugger/SET_ANIMATION_SKIN_ID';
 const SET_CONTEXT = 'scratch-gui/debugger/SET_CONTEXT';
 const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
-const ENABLE_TIME_SLIDER = 'scratch-gui/debugger/ENABLE_TIME_SLIDER';
-const DISABLE_TIME_SLIDER = 'scratch-gui/debugger/DISABLE_TIME_SLIDER';
 const RESET_TIME_SLIDER = 'scratch-gui/debugger/RESET_TIME_SLIDER';
 const SET_TRAIL_LENGTH = 'scratch-gui/debugger/SET_TRAIL_LENGTH';
 
@@ -27,7 +23,6 @@ export class Waiter {
 
 const initialState = {
     debugMode: false,
-    isRunning: false,
     // State related to the trail animation.
     trail: [],
     animate: false,
@@ -39,7 +34,6 @@ const initialState = {
     context: null,
     timeFrame: 0,
     numberOfFrames: 0,
-    timeSliderDisabled: true,
     trailLength: 0,
     timeSliderKey: true
 };
@@ -50,14 +44,6 @@ const reducer = function (state, action) {
     case TOGGLE_DEBUG_MODE:
         return Object.assign({}, state, {
             debugMode: !state.debugMode
-        });
-    case START_DEBUGGER:
-        return Object.assign({}, state, {
-            isRunning: true
-        });
-    case STOP_DEBUGGER:
-        return Object.assign({}, state, {
-            isRunning: false
         });
     case SET_TRAIL:
         return Object.assign({}, state, {
@@ -99,14 +85,6 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             numberOfFrames: action.numberOfFrames
         });
-    case ENABLE_TIME_SLIDER:
-        return Object.assign({}, state, {
-            timeSliderDisabled: false
-        });
-    case DISABLE_TIME_SLIDER:
-        return Object.assign({}, state, {
-            timeSliderDisabled: true
-        });
     case RESET_TIME_SLIDER:
         return Object.assign({}, state, {
             timeFrame: 0,
@@ -125,14 +103,6 @@ const reducer = function (state, action) {
 
 const toggleDebugMode = function () {
     return {type: TOGGLE_DEBUG_MODE};
-};
-
-const startDebugger = function () {
-    return {type: START_DEBUGGER};
-};
-
-const stopDebugger = function () {
-    return {type: STOP_DEBUGGER};
 };
 
 const setTrail = function (trail) {
@@ -199,14 +169,6 @@ const setNumberOfFrames = function (numberOfFrames) {
     };
 };
 
-const enableTimeSlider = function () {
-    return {type: ENABLE_TIME_SLIDER};
-};
-
-const disableTimeSlider = function () {
-    return {type: ENABLE_TIME_SLIDER};
-};
-
 const resetTimeSlider = function () {
     return {type: RESET_TIME_SLIDER};
 };
@@ -222,8 +184,6 @@ export {
     reducer as default,
     initialState as debuggerInitialState,
     toggleDebugMode,
-    startDebugger,
-    stopDebugger,
     setTrail,
     enableAnimation,
     disableAnimation,
@@ -234,8 +194,6 @@ export {
     setContext,
     setTimeFrame,
     setNumberOfFrames,
-    enableTimeSlider,
-    disableTimeSlider,
     resetTimeSlider,
     setTrailLength
 };

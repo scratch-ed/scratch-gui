@@ -10,33 +10,33 @@ const TimeSliderComponent = function (props) {
         onMouseUp,
         numberOfFrames,
         timeFrame,
-        timeSliderDisabled,
+        disabled,
         ...componentProps
     } = props;
 
     return (
         <input
             {...componentProps}
-            disabled={timeSliderDisabled}
             className={styles.timeSliderInput}
             type={'range'}
-            onInput={onInput}
-            onMouseDown={onMouseDown}
-            onMouseUp={onMouseUp}
             defaultValue={timeFrame}
             min={'0'}
             max={numberOfFrames - 1}
+            disabled={disabled}
+            onInput={onInput}
+            onMouseDown={onMouseDown}
+            onMouseUp={onMouseUp}
         />
     );
 };
 
 TimeSliderComponent.propTypes = {
+    disabled: PropTypes.bool.isRequired,
     onInput: PropTypes.func.isRequired,
     onMouseDown: PropTypes.func.isRequired,
     onMouseUp: PropTypes.func.isRequired,
     numberOfFrames: PropTypes.number.isRequired,
-    timeFrame: PropTypes.number.isRequired,
-    timeSliderDisabled: PropTypes.bool.isRequired
+    timeFrame: PropTypes.number.isRequired
 };
 
 export default TimeSliderComponent;

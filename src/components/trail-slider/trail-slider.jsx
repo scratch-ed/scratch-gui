@@ -16,14 +16,13 @@ const TrailSliderComponent = function (props) {
 
     return (
         <React.Fragment>
-            <label htmlFor={styles.trailSliderInput}>{'Trail length:'}</label>
             <input
                 {...componentProps}
-                id={styles.trailSliderInput}
+                className={styles.trailSliderInput}
                 type={'range'}
+                defaultValue={trailLength}
                 min={'0'}
                 max={MAX_LENGTH}
-                defaultValue={trailLength}
                 onInput={onInput}
                 onMouseDown={onMouseDown}
                 onMouseUp={onMouseUp}

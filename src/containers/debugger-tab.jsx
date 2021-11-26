@@ -3,13 +3,12 @@ import DebuggerTabComponent from '../components/debugger-tab/debugger-tab.jsx';
 import bindAll from 'lodash.bindall';
 import PropTypes, {number} from 'prop-types';
 import VM from 'scratch-vm';
+import Renderer from 'scratch-render';
 
 import {Context} from '@ftrprf/judge-core';
 import {connect} from 'react-redux';
 import {
     toggleDebugMode,
-    startDebugger,
-    stopDebugger,
     setTrail,
     enableAnimation,
     disableAnimation,
@@ -20,7 +19,6 @@ import {
     setContext,
     setTimeFrame,
     setNumberOfFrames,
-    enableTimeSlider,
     resetTimeSlider,
     setTrailLength
 } from '../reducers/debugger.js';
@@ -31,8 +29,6 @@ class DebuggerTab extends React.Component {
         super(props);
 
         bindAll(this, [
-            'handleClickStart',
-            'handleClickStop',
             'handleClickStep',
             'handleTimeInput',
             'handleTimeMouseDown',
@@ -49,42 +45,41 @@ class DebuggerTab extends React.Component {
     }
 
     async componentDidUpdate (prevProps) {
-        if (prevProps.debugMode !== this.props.debugMode) {
-            await this.updateDebugger();
+        if (this.debugMode && prevProps.running !== this.props.running) {
+            this.updateSkins();
             return;
         }
 
-        const {timeFrame: prevTimeFrame, trailLength: prevTrailLength} = prevProps;
-        const {timeFrame, trailLength} = this.props;
+        if (prevProps.debugMode !== this.props.debugMode) {
+            await this.changeDebugMode();
+            return;
+        }
 
-        // If the time or trail slider changed value, reset the current trail.
-        if (!this.props.isRunning && (prevTimeFrame !== timeFrame || prevTrailLength !== trailLength)) {
+        // If the time frame or trail length value changed, reset the current trail.
+        if (!this.props.running &&
+            (prevProps.timeFrame !== this.props.timeFrame || prevProps.trailLength !== this.props.trailLength)) {
             this.resetTrail();
         }
     }
 
-    async updateDebugger () {
+    async changeDebugMode () {
         const currentProject = await this.props.vm.saveProjectSb3().then(r => r.arrayBuffer());
 
         if (this.props.debugMode) {
-            clearInterval(this.props.intervalIndex);
-            this.props.setTrail([]);
-            this.props.setAnimateIndex(0);
-
-            this.props.startDebugger();
-            this.props.disableAnimation();
-
-            this.props.resetTimeSlider();
-
+            // Create a new context and initialize it with the VM.
             const context = new Context();
+            context.vm = this.props.vm;
+
             this.props.setContext(context);
 
-            context.addVm(this.props.vm);
+            // Add a renderer proxy and appropriate event handles to the VM.
             await context.prepareVm({
                 submission: currentProject,
-                canvas: context.vm.renderer.canvas
+                canvas: context.vm.renderer.canvas,
+                template: null
             });
 
+            // Increase the length of the time slider every time a new frame gets added to the log.
             const oldFunction = context.log.addFrame.bind(context.log);
             context.log.addFrame = (_context, _block) => {
                 oldFunction(_context, _block);
@@ -102,28 +97,30 @@ class DebuggerTab extends React.Component {
             context.vm.renderer.updateDrawableSkinId(context.vm.renderer.createDrawable('pen'), animationSkinId);
             this.props.setAnimationSkinId(animationSkinId);
         } else {
-            await this.props.context.restoreInitialVm();
-            await this.props.context.vm.loadProject(currentProject);
+            this.props.resetTimeSlider();
+
+            // New renderer gets attached to the VM.
+            this.props.vm.attachRenderer(new Renderer(this.props.vm.renderer.canvas));
+            // Remove the current profiler.
+            this.props.vm.runtime.disableProfiling();
+            this.props.context.detachEventHandles();
+
+            await this.props.vm.loadProject(currentProject);
         }
     }
 
-    async handleClickStart () {
+    updateSkins () {
+        if (this.props.running) {
+            this.props.context.vm.renderer.penClear(this.props.trailSkinId);
+            this.props.context.vm.renderer.penClear(this.props.animationSkinId);
 
-    }
+            this.props.disableAnimation();
+            clearInterval(this.props.intervalIndex);
+        } else {
+            this.resetTrail();
 
-    handleClickStop () {
-        if (!this.props.animate && this.props.isRunning) {
-            this.props.stopDebugger();
             this.props.enableAnimation();
-
             this.props.setIntervalIndex(setInterval(this.updateAnimation, this.ANIMATION_INTERVAL));
-        }
-
-        if (this.props.context) {
-            this.props.enableTimeSlider();
-
-            this.props.context.output.closeJudgement();
-            this.props.context.vm.stopAll();
         }
     }
 
@@ -134,14 +131,17 @@ class DebuggerTab extends React.Component {
     }
 
     handleTimeMouseDown () {
-        if (!this.props.isRunning) {
+        if (!this.props.running) {
             this.props.disableAnimation();
-            this.props.context.vm.renderer.penClear(this.props.animationSkinId);
+
+            if (this.props.context) {
+                this.props.context.vm.renderer.penClear(this.props.animationSkinId);
+            }
         }
     }
 
     handleTimeMouseUp () {
-        if (!this.props.isRunning) {
+        if (!this.props.running) {
             this.props.enableAnimation();
         }
     }
@@ -155,8 +155,9 @@ class DebuggerTab extends React.Component {
     }
 
     handleTrailMouseDown () {
-        if (!this.props.isRunning) {
+        if (!this.props.running) {
             this.props.disableAnimation();
+
             if (this.props.context) {
                 this.props.context.vm.renderer.penClear(this.props.animationSkinId);
             }
@@ -164,7 +165,7 @@ class DebuggerTab extends React.Component {
     }
 
     handleTrailMouseUp () {
-        if (!this.props.isRunning) {
+        if (!this.props.running) {
             this.props.enableAnimation();
         }
     }
@@ -190,7 +191,6 @@ class DebuggerTab extends React.Component {
             const frame = this.props.context.log.frames[currentIndex];
 
             for (const spriteLog of frame.sprites) {
-                // Request the Target from the runtime by its name.
                 const sprite = this.props.context.vm.runtime.getSpriteTargetByName(spriteLog.name);
                 if (sprite) {
                     const previousPosition = previousPositions.get(spriteLog.name);
@@ -227,14 +227,12 @@ class DebuggerTab extends React.Component {
     }
 
     updateAnimation () {
-        if (this.props.animate && this.props.trail.length > 0 && this.props.context) {
+        if (this.props.context && this.props.animate && this.props.trail.length > 0) {
             this.props.context.vm.renderer.penClear(this.props.animationSkinId);
 
-            const index = this.props.trail[this.props.animateIndex];
-            let frame = this.props.context.log.frames[index];
+            let frame = this.props.context.log.frames[this.props.trail[this.props.animateIndex]];
 
             for (const spriteLog of frame.sprites) {
-                // Request the Target from the runtime by its name
                 const sprite = this.props.context.vm.runtime.getSpriteTargetByName(spriteLog.name);
                 if (sprite) {
                     this.props.context.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 50);
@@ -245,7 +243,6 @@ class DebuggerTab extends React.Component {
 
             frame = this.props.context.log.frames[this.props.timeFrame];
             for (const spriteLog of frame.sprites) {
-                // Request the Target from the runtime by its name
                 const sprite = this.props.context.vm.runtime.getSpriteTargetByName(spriteLog.name);
                 if (sprite) {
                     this.props.context.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 0);
@@ -261,8 +258,6 @@ class DebuggerTab extends React.Component {
         return (
             <DebuggerTabComponent
                 {...this.props}
-                onClickStart={this.handleClickStart}
-                onClickStop={this.handleClickStop}
                 onClickStep={this.handleClickStep}
                 onTimeInput={this.handleTimeInput}
                 onTimeMouseDown={this.handleTimeMouseDown}
@@ -271,14 +266,15 @@ class DebuggerTab extends React.Component {
                 onTrailInput={this.handleTrailInput}
                 onTrailMouseDown={this.handleTrailMouseDown}
                 onTrailMouseUp={this.handleTrailMouseUp}
+                timeSliderDisabled={this.props.running}
             />
         );
     }
 }
 
 const mapStateToProps = state => ({
+    running: state.scratchGui.vmStatus.running,
     debugMode: state.scratchGui.debugger.debugMode,
-    isRunning: state.scratchGui.debugger.isRunning,
     trail: state.scratchGui.debugger.trail,
     animate: state.scratchGui.debugger.animate,
     animateIndex: state.scratchGui.debugger.animateIndex,
@@ -289,15 +285,12 @@ const mapStateToProps = state => ({
     context: state.scratchGui.debugger.context,
     timeFrame: state.scratchGui.debugger.timeFrame,
     numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-    timeSliderDisabled: state.scratchGui.debugger.timeSliderDisabled,
     trailLength: state.scratchGui.debugger.trailLength,
     timeSliderKey: state.scratchGui.debugger.timeSliderKey
 });
 
 const mapDispatchToProps = dispatch => ({
     toggleDebugMode: () => dispatch(toggleDebugMode()),
-    startDebugger: () => dispatch(startDebugger()),
-    stopDebugger: () => dispatch(stopDebugger()),
     setTrail: trail => dispatch(setTrail(trail)),
     enableAnimation: () => dispatch(enableAnimation()),
     disableAnimation: () => dispatch(disableAnimation()),
@@ -308,15 +301,14 @@ const mapDispatchToProps = dispatch => ({
     setContext: context => dispatch(setContext(context)),
     setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
     setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
-    enableTimeSlider: () => dispatch(enableTimeSlider()),
     resetTimeSlider: () => dispatch(resetTimeSlider()),
     setTrailLength: trailLength => dispatch(setTrailLength(trailLength))
 });
 
 DebuggerTab.propTypes = {
     // State
+    running: PropTypes.bool.isRequired,
     debugMode: PropTypes.bool.isRequired,
-    isRunning: PropTypes.bool.isRequired,
     trail: PropTypes.arrayOf(number).isRequired,
     animate: PropTypes.bool.isRequired,
     animateIndex: PropTypes.number.isRequired,
@@ -326,13 +318,10 @@ DebuggerTab.propTypes = {
     context: PropTypes.instanceOf(Context),
     timeFrame: PropTypes.number.isRequired,
     numberOfFrames: PropTypes.number.isRequired,
-    timeSliderDisabled: PropTypes.bool.isRequired,
     trailLength: PropTypes.number.isRequired,
     timeSliderKey: PropTypes.bool.isRequired,
     // Dispatch
     toggleDebugMode: PropTypes.func.isRequired,
-    startDebugger: PropTypes.func.isRequired,
-    stopDebugger: PropTypes.func.isRequired,
     setTrail: PropTypes.func.isRequired,
     enableAnimation: PropTypes.func.isRequired,
     disableAnimation: PropTypes.func.isRequired,
@@ -343,7 +332,6 @@ DebuggerTab.propTypes = {
     setContext: PropTypes.func.isRequired,
     setTimeFrame: PropTypes.func.isRequired,
     setNumberOfFrames: PropTypes.func.isRequired,
-    enableTimeSlider: PropTypes.func.isRequired,
     resetTimeSlider: PropTypes.func.isRequired,
     setTrailLength: PropTypes.func.isRequired,
     // Other props
