@@ -1,3 +1,4 @@
+const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const TOGGLE_DEBUG_MODE = 'scratch-gui/debugger/TOGGLE_DEBUG_MODE';
 const SET_TRAIL = 'scratch-gui/debugger/SET_TRAIL';
 const ENABLE_ANIMATION = 'scratch-gui/debugger/ENABLE_ANIMATION';
@@ -41,6 +42,10 @@ const initialState = {
 const reducer = function (state, action) {
     if (typeof state === 'undefined') state = initialState;
     switch (action.type) {
+    case SET_DEBUG_MODE:
+        return Object.assign({}, state, {
+            debugMode: action.debugMode
+        });
     case TOGGLE_DEBUG_MODE:
         return Object.assign({}, state, {
             debugMode: !state.debugMode
@@ -99,6 +104,13 @@ const reducer = function (state, action) {
     default:
         return state;
     }
+};
+
+const setDebugMode = function (debugMode) {
+    return {
+        type: SET_DEBUG_MODE,
+        debugMode: debugMode
+    };
 };
 
 const toggleDebugMode = function () {
@@ -183,6 +195,7 @@ const setTrailLength = function (trailLength) {
 export {
     reducer as default,
     initialState as debuggerInitialState,
+    setDebugMode,
     toggleDebugMode,
     setTrail,
     enableAnimation,

@@ -6,7 +6,6 @@ import TimeSliderComponent from '../time-slider/time-slider.jsx';
 import TrailSliderComponent from '../trail-slider/trail-slider.jsx';
 import DebuggerButtonComponent from '../debugger-button/debugger-button.jsx';
 
-import stopButtonIcon from './stop-button.svg';
 import stepButtonIcon from './step-button.svg';
 import Switch from 'react-switch';
 

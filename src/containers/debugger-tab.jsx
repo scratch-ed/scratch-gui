@@ -3,7 +3,6 @@ import DebuggerTabComponent from '../components/debugger-tab/debugger-tab.jsx';
 import bindAll from 'lodash.bindall';
 import PropTypes, {number} from 'prop-types';
 import VM from 'scratch-vm';
-import Renderer from 'scratch-render';
 
 import {Context} from '@ftrprf/judge-core';
 import {connect} from 'react-redux';
@@ -45,39 +44,41 @@ class DebuggerTab extends React.Component {
     }
 
     async componentDidUpdate (prevProps) {
-        if (this.debugMode && prevProps.running !== this.props.running) {
+        if (prevProps.debugMode !== this.props.debugMode) {
+            await this.changeDebugMode();
+        }
+
+        if (this.props.debugMode && prevProps.running !== this.props.running) {
             this.updateSkins();
             return;
         }
 
-        if (prevProps.debugMode !== this.props.debugMode) {
-            await this.changeDebugMode();
-            return;
-        }
-
         // If the time frame or trail length value changed, reset the current trail.
-        if (!this.props.running &&
+        if (this.props.debugMode && !this.props.running &&
             (prevProps.timeFrame !== this.props.timeFrame || prevProps.trailLength !== this.props.trailLength)) {
             this.resetTrail();
         }
     }
 
+    /**
+     * This method will be called whenever the `debugMode` state variable changes value.
+     *
+     * `debugMode` === true:
+     * It wil initialise the current VM, such frames and events get added to the log during
+     * execution of a project. Skins for the trail and animation get created by the renderer.
+     *
+     * `debugMode` === false:
+     * The VM gets restored to its state before the initialisation described above. The skins
+     * for the trail and trail animation get removed from the renderer.
+     */
     async changeDebugMode () {
-        const currentProject = await this.props.vm.saveProjectSb3().then(r => r.arrayBuffer());
-
         if (this.props.debugMode) {
             // Create a new context and initialize it with the VM.
             const context = new Context();
-            context.vm = this.props.vm;
-
             this.props.setContext(context);
 
-            // Add a renderer proxy and appropriate event handles to the VM.
-            await context.prepareVm({
-                submission: currentProject,
-                canvas: context.vm.renderer.canvas,
-                template: null
-            });
+            // Set up the current VM as the VM used in the context.
+            await context.initialiseVm(this.props.vm);
 
             // Increase the length of the time slider every time a new frame gets added to the log.
             const oldFunction = context.log.addFrame.bind(context.log);
@@ -99,13 +100,13 @@ class DebuggerTab extends React.Component {
         } else {
             this.props.resetTimeSlider();
 
-            // New renderer gets attached to the VM.
-            this.props.vm.attachRenderer(new Renderer(this.props.vm.renderer.canvas));
-            // Remove the current profiler.
-            this.props.vm.runtime.disableProfiling();
-            this.props.context.detachEventHandles();
+            this.props.vm.renderer.destroySkin(this.props.trailSkinId);
+            this.props.vm.renderer.destroySkin(this.props.animationSkinId);
 
-            await this.props.vm.loadProject(currentProject);
+            // Restore the VM to the state before the creation of the current context.
+            await this.props.context.restoreVm();
+
+            clearInterval(this.props.intervalIndex);
         }
     }
 
@@ -171,7 +172,7 @@ class DebuggerTab extends React.Component {
     }
 
     resetTrail () {
-        if (!this.props.context) {
+        if (!this.props.context || this.props.numberOfFrames < 1) {
             return;
         }
 
