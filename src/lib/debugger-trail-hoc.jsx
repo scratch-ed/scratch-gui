@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import {Context} from '@ftrprf/judge-core';
-import {disableAnimation, enableAnimation} from '../reducers/debugger.js';
+import {disableAnimation, enableAnimation, setNumberOfFrames, setTimeFrame} from '../reducers/debugger.js';
 import {positionsAreEqual, updateSprite} from '../util.js';
 import VM from 'scratch-vm';
 import bindAll from 'lodash.bindall';
@@ -25,6 +25,13 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             ]);
         }
 
+        shouldComponentUpdate (nextProps) {
+            return this.props.debugMode !== nextProps.debugMode ||
+                   this.props.running !== nextProps.running ||
+                   this.props.timeFrame !== nextProps.timeFrame ||
+                   this.props.trailLength !== nextProps.trailLength;
+        }
+
         componentDidUpdate (prevProps) {
             if (this.props.debugMode) {
                 if (prevProps.running !== this.props.running) {
@@ -42,6 +49,12 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 // The clear of the trail and animation skin is not necessarily needed, since the skins
                 // wil be destroyed in the DebuggerHOC.
                 this.clearSkins();
+
+                this.animateIndex = 0;
+                this.trail = [];
+
+                this.props.setNumberOfFrames(0);
+                this.props.setTimeFrame(0);
             }
         }
 
@@ -162,7 +175,9 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 'trailSkinId',
                 'vm',
                 'disableAnimation',
-                'enableAnimation'
+                'enableAnimation',
+                'setNumberOfFrames',
+                'setTimeFrame'
             ]);
 
             return (
@@ -183,7 +198,9 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         trailSkinId: PropTypes.number,
         vm: PropTypes.instanceOf(VM).isRequired,
         disableAnimation: PropTypes.func.isRequired,
-        enableAnimation: PropTypes.func.isRequired
+        enableAnimation: PropTypes.func.isRequired,
+        setNumberOfFrames: PropTypes.func.isRequired,
+        setTimeFrame: PropTypes.func.isRequired
     };
 
     const mapStateToProps = state => ({
@@ -201,7 +218,9 @@ const DebuggerTrailHOC = function (WrappedComponent) {
 
     const mapDispatchToProps = dispatch => ({
         disableAnimation: () => dispatch(disableAnimation()),
-        enableAnimation: () => dispatch(enableAnimation())
+        enableAnimation: () => dispatch(enableAnimation()),
+        setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
+        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
     });
 
     return connect(
