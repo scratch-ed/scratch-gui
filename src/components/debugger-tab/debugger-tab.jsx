@@ -21,9 +21,8 @@ const DebuggerTabComponent = function (props) {
         onTrailInput,
         onTrailMouseDown,
         onTrailMouseUp,
+        running,
         timeFrame,
-        timeSliderDisabled,
-        timeSliderKey,
         trailLength
     } = props;
 
@@ -49,12 +48,11 @@ const DebuggerTabComponent = function (props) {
                     <label>
                         <span>{'Current frame: '}</span>
                         <TimeSliderComponent
-                            key={timeSliderKey}
-                            disabled={timeSliderDisabled}
+                            disabled={running}
+                            numberOfFrames={numberOfFrames}
                             onInput={onTimeInput}
                             onMouseDown={onTimeMouseDown}
                             onMouseUp={onTimeMouseUp}
-                            numberOfFrames={numberOfFrames}
                             timeFrame={timeFrame}
                         />
                     </label>
@@ -84,9 +82,8 @@ DebuggerTabComponent.propTypes = {
     onTrailInput: PropTypes.func.isRequired,
     onTrailMouseDown: PropTypes.func.isRequired,
     onTrailMouseUp: PropTypes.func.isRequired,
+    running: PropTypes.bool.isRequired,
     timeFrame: PropTypes.number.isRequired,
-    timeSliderDisabled: PropTypes.bool.isRequired,
-    timeSliderKey: PropTypes.bool.isRequired,
     trailLength: PropTypes.number.isRequired
 };
 
