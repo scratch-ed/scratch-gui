@@ -43,11 +43,7 @@ class DebuggerTab extends React.Component {
         this.ANIMATION_INTERVAL = 100;
     }
 
-    async componentDidUpdate (prevProps) {
-        if (prevProps.debugMode !== this.props.debugMode) {
-            await this.changeDebugMode();
-        }
-
+    componentDidUpdate (prevProps) {
         if (this.props.debugMode && prevProps.running !== this.props.running) {
             this.updateSkins();
             return;
@@ -60,63 +56,17 @@ class DebuggerTab extends React.Component {
         }
     }
 
-    /**
-     * This method will be called whenever the `debugMode` state variable changes value.
-     *
-     * `debugMode` === true:
-     * It wil initialise the current VM, such frames and events get added to the log during
-     * execution of a project. Skins for the trail and animation get created by the renderer.
-     *
-     * `debugMode` === false:
-     * The VM gets restored to its state before the initialisation described above. The skins
-     * for the trail and trail animation get removed from the renderer.
-     */
-    async changeDebugMode () {
-        if (this.props.debugMode) {
-            // Create a new context and initialize it with the VM.
-            const context = new Context();
-            this.props.setContext(context);
+    removeAnimation () {
+        this.props.context.vm.renderer.penClear(this.props.trailSkinId);
+        this.props.context.vm.renderer.penClear(this.props.animationSkinId);
 
-            // Set up the current VM as the VM used in the context.
-            await context.initialiseVm(this.props.vm);
-
-            // Increase the length of the time slider every time a new frame gets added to the log.
-            const oldFunction = context.log.addFrame.bind(context.log);
-            context.log.addFrame = (_context, _block) => {
-                oldFunction(_context, _block);
-
-                this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
-            };
-
-            // Initialize the pen skin and pen layer to draw the trail on.
-            const trailSkinId = context.vm.renderer.createPenSkin();
-            context.vm.renderer.updateDrawableSkinId(context.vm.renderer.createDrawable('pen'), trailSkinId);
-            this.props.setTrailSkinId(trailSkinId);
-
-            // Initialize the pen skin and pen layer to draw the animations on.
-            const animationSkinId = context.vm.renderer.createPenSkin();
-            context.vm.renderer.updateDrawableSkinId(context.vm.renderer.createDrawable('pen'), animationSkinId);
-            this.props.setAnimationSkinId(animationSkinId);
-        } else {
-            this.props.resetTimeSlider();
-
-            this.props.vm.renderer.destroySkin(this.props.trailSkinId);
-            this.props.vm.renderer.destroySkin(this.props.animationSkinId);
-
-            // Restore the VM to the state before the creation of the current context.
-            await this.props.context.restoreVm();
-
-            clearInterval(this.props.intervalIndex);
-        }
+        this.props.disableAnimation();
+        clearInterval(this.props.intervalIndex);
     }
 
     updateSkins () {
         if (this.props.running) {
-            this.props.context.vm.renderer.penClear(this.props.trailSkinId);
-            this.props.context.vm.renderer.penClear(this.props.animationSkinId);
-
-            this.props.disableAnimation();
-            clearInterval(this.props.intervalIndex);
+            this.removeAnimation();
         } else {
             this.resetTrail();
 

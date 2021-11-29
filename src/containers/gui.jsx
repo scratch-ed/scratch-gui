@@ -40,6 +40,7 @@ import cloudManagerHOC from '../lib/cloud-manager-hoc.jsx';
 
 import GUIComponent from '../components/gui/gui.jsx';
 import {setIsScratchDesktop} from '../lib/isScratchDesktop.js';
+import DebuggerHOC from '../lib/debugger-hoc.jsx';
 
 class GUI extends React.Component {
     componentDidMount () {
@@ -176,6 +177,7 @@ const ConnectedGUI = injectIntl(connect(
 // the hierarchy of HOC constructor calls clearer here; it has nothing to do with redux's
 // ability to compose reducers.
 const WrappedGui = compose(
+    DebuggerHOC,
     LocalizationHOC,
     ErrorBoundaryHOC('Top Level App'),
     FontLoaderHOC,

@@ -12,7 +12,6 @@ import {setProjectChanged, setProjectUnchanged} from '../reducers/project-change
 import {setRunningState, setTurboState, setStartedState} from '../reducers/vm-status';
 import {showExtensionAlert} from '../reducers/alerts';
 import {updateMicIndicator} from '../reducers/mic-indicator';
-import {setDebugMode} from '../reducers/debugger.js';
 
 /*
  * Higher Order Component to manage events emitted by the VM
@@ -47,8 +46,6 @@ const vmListenerHOC = function (WrappedComponent) {
             this.props.vm.on('PROJECT_START', this.props.onGreenFlag);
             this.props.vm.on('PERIPHERAL_CONNECTION_LOST_ERROR', this.props.onShowExtensionAlert);
             this.props.vm.on('MIC_LISTENING', this.props.onMicListeningUpdate);
-
-            this.props.vm.on('PROJECT_LOADED', this.props.onProjectLoaded);
         }
         componentDidMount () {
             if (this.props.attachKeyboardEvents) {
@@ -152,7 +149,6 @@ const vmListenerHOC = function (WrappedComponent) {
         onMicListeningUpdate: PropTypes.func.isRequired,
         onMonitorsUpdate: PropTypes.func.isRequired,
         onProjectChanged: PropTypes.func.isRequired,
-        onProjectLoaded: PropTypes.func.isRequired,
         onProjectRunStart: PropTypes.func.isRequired,
         onProjectRunStop: PropTypes.func.isRequired,
         onProjectSaved: PropTypes.func.isRequired,
@@ -196,7 +192,6 @@ const vmListenerHOC = function (WrappedComponent) {
         onProjectRunStart: () => dispatch(setRunningState(true)),
         onProjectRunStop: () => dispatch(setRunningState(false)),
         onProjectChanged: () => dispatch(setProjectChanged()),
-        onProjectLoaded: () => dispatch(setDebugMode(false)),
         onProjectSaved: () => dispatch(setProjectUnchanged()),
         onRuntimeStarted: () => dispatch(setStartedState(true)),
         onTurboModeOn: () => dispatch(setTurboState(true)),
