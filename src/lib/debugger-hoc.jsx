@@ -8,6 +8,7 @@ import {
     setContext,
     setDebugMode,
     setNumberOfFrames,
+    setTimeFrame,
     setTrailSkinId
 } from '../reducers/debugger.js';
 import {Context} from '@ftrprf/judge-core';
@@ -47,6 +48,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 context.log.addFrame = (_context, _block) => {
                     oldFunction(_context, _block);
 
+                    this.props.setTimeFrame(this.props.numberOfFrames);
                     this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
                 };
 
@@ -60,14 +62,14 @@ const DebuggerHOC = function (WrappedComponent) {
                 context.vm.renderer.updateDrawableSkinId(context.vm.renderer.createDrawable('pen'), animationSkinId);
                 this.props.setAnimationSkinId(animationSkinId);
             } else {
-                this.props.setNumberOfFrames(0);
-
                 // Destroy the skins for trail and animation.
                 this.props.vm.renderer.destroySkin(this.props.trailSkinId);
                 this.props.vm.renderer.destroySkin(this.props.animationSkinId);
 
                 // Restore the VM to the state before the creation of the current context.
                 await this.props.context.restoreVm();
+
+                this.props.setContext(null);
             }
         }
 
@@ -85,6 +87,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'setAnimationSkinId',
                 'setContext',
                 'setNumberOfFrames',
+                'setTimeFrame',
                 'setTrailSkinId'
             ]);
 
@@ -95,18 +98,19 @@ const DebuggerHOC = function (WrappedComponent) {
     }
 
     DebuggerWrapper.propTypes = {
-        animationSkinId: PropTypes.number,
+        animationSkinId: PropTypes.number.isRequired,
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         intervalIndex: PropTypes.number,
         numberOfFrames: PropTypes.number.isRequired,
         running: PropTypes.bool.isRequired,
-        trailSkinId: PropTypes.number,
+        trailSkinId: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         onProjectLoaded: PropTypes.func.isRequired,
         setAnimationSkinId: PropTypes.func.isRequired,
         setContext: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
+        setTimeFrame: PropTypes.func.isRequired,
         setTrailSkinId: PropTypes.func.isRequired
     };
 
@@ -126,6 +130,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setAnimationSkinId: animationSkinId => dispatch(setAnimationSkinId(animationSkinId)),
         setContext: context => dispatch(setContext(context)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
+        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
         setTrailSkinId: trailSkinId => dispatch(setTrailSkinId(trailSkinId))
     });
 

@@ -21,13 +21,13 @@ export class Waiter {
 const initialState = {
     // State related to the trail animation.
     animate: false,
-    animationSkinId: null,
-    trailSkinId: null,
+    animationSkinId: -1,
+    trailSkinId: -1,
     // State related to the debugger GUI.
     context: null,
     debugMode: false,
     numberOfFrames: 0,
-    timeFrame: 0,
+    timeFrame: -1,
     trailLength: 0
 };
 

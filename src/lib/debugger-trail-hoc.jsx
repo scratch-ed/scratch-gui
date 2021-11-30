@@ -54,7 +54,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 this.trail = [];
 
                 this.props.setNumberOfFrames(0);
-                this.props.setTimeFrame(0);
+                this.props.setTimeFrame(-1);
             }
         }
 
@@ -123,7 +123,6 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             }
 
             const frame = this.props.context.log.frames[this.props.timeFrame];
-
             for (const spriteLog of frame.sprites) {
                 const sprite = this.props.context.vm.runtime.getSpriteTargetByName(spriteLog.name);
 
@@ -139,7 +138,6 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 this.props.context.vm.renderer.penClear(this.props.animationSkinId);
 
                 let frame = this.props.context.log.frames[this.trail[this.animateIndex]];
-
                 for (const spriteLog of frame.sprites) {
                     const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
                     if (sprite) {
@@ -188,14 +186,14 @@ const DebuggerTrailHOC = function (WrappedComponent) {
 
     DebuggerTrailWrapper.propTypes = {
         animate: PropTypes.bool.isRequired,
-        animationSkinId: PropTypes.number,
+        animationSkinId: PropTypes.number.isRequired,
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         numberOfFrames: PropTypes.number.isRequired,
         running: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
         trailLength: PropTypes.number.isRequired,
-        trailSkinId: PropTypes.number,
+        trailSkinId: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         disableAnimation: PropTypes.func.isRequired,
         enableAnimation: PropTypes.func.isRequired,
