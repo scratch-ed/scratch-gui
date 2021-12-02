@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {connect} from 'react-redux';
 
 import Box from '../box/box.jsx';
 import TimeSliderComponent from '../time-slider/time-slider.jsx';
@@ -12,6 +13,7 @@ import stepButtonIcon from './step-button.svg';
 
 const DebuggerTabComponent = function (props) {
     const {
+        breakpoints,
         debugMode,
         numberOfFrames,
         onClickStep,
@@ -69,6 +71,13 @@ const DebuggerTabComponent = function (props) {
                             value={trailLength}
                         />
                     </label>
+                    <h2>{'Breakpoints: '}</h2>
+                    <ul>
+                        {breakpoints.size > 0 ?
+                            [...breakpoints].map((blockId, i) => <li key={i}>{blockId}</li>) :
+                            <p>{'No breakpoints placed.'}</p>
+                        }
+                    </ul>
                 </Box> :
                 null}
         </Box>
@@ -76,6 +85,7 @@ const DebuggerTabComponent = function (props) {
 };
 
 DebuggerTabComponent.propTypes = {
+    breakpoints: PropTypes.instanceOf(Set).isRequired,
     debugMode: PropTypes.bool.isRequired,
     numberOfFrames: PropTypes.number.isRequired,
     onClickStep: PropTypes.func.isRequired,
@@ -91,4 +101,11 @@ DebuggerTabComponent.propTypes = {
     trailLength: PropTypes.number.isRequired
 };
 
-export default DebuggerTabComponent;
+const mapStateToProps = state => ({
+    breakpoints: state.scratchGui.debugger.breakpoints,
+    debugMode: state.scratchGui.debugger.debugMode
+});
+
+export default connect(
+    mapStateToProps
+)(DebuggerTabComponent);
