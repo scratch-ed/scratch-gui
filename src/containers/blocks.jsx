@@ -50,6 +50,7 @@ class Blocks extends React.Component {
     constructor (props) {
         super(props);
         this.ScratchBlocks = VMScratchBlocks(props.vm);
+
         bindAll(this, [
             'attachVM',
             'detachVM',
@@ -74,7 +75,6 @@ class Blocks extends React.Component {
             'onWorkspaceUpdate',
             'onWorkspaceMetricsChange',
             'setBlocks',
-            'setDoBlockClick',
             'setLocale'
         ]);
         this.ScratchBlocks.prompt = this.handlePromptStart;
@@ -86,12 +86,21 @@ class Blocks extends React.Component {
         };
         this.onTargetsUpdate = debounce(this.onTargetsUpdate, 100);
         this.toolboxUpdateQueue = [];
+
+        // Override `doBlockClick_`
+        const self = this;
+        const oldDoBlockClick = this.ScratchBlocks.Gesture.prototype.doBlockClick_;
+        this.ScratchBlocks.Gesture.prototype.doBlockClick_ = function () {
+            if (self.props.debugMode) {
+                if (!this.targetBlock_.isInFlyout) {
+                    self.props.updateBreakpoints(this.targetBlock_.id);
+                }
+            } else {
+                oldDoBlockClick.bind(this)();
+            }
+        };
     }
     componentDidMount () {
-        // Store regular doBlockClick and possibly overwrite function.
-        this.oldBlockClick = this.ScratchBlocks.Gesture.prototype.doBlockClick_;
-        this.setDoBlockClick();
-
         this.ScratchBlocks.FieldColourSlider.activateEyedropper_ = this.props.onActivateColorPicker;
         this.ScratchBlocks.Procedures.externalProcedureDefCallback = this.props.onActivateCustomProcedures;
         this.ScratchBlocks.ScratchMsgs.setLocale(this.props.locale);
@@ -151,15 +160,10 @@ class Blocks extends React.Component {
             this.props.customProceduresVisible !== nextProps.customProceduresVisible ||
             this.props.locale !== nextProps.locale ||
             this.props.anyModalVisible !== nextProps.anyModalVisible ||
-            this.props.stageSize !== nextProps.stageSize ||
-            this.props.inDebugMode !== nextProps.inDebugMode
+            this.props.stageSize !== nextProps.stageSize
         );
     }
     componentDidUpdate (prevProps) {
-        if (prevProps.inDebugMode !== this.props.inDebugMode) {
-            this.setDoBlockClick();
-        }
-
         // If any modals are open, call hideChaff to close z-indexed field editors
         if (this.props.anyModalVisible && !prevProps.anyModalVisible) {
             this.ScratchBlocks.hideChaff();
@@ -198,24 +202,9 @@ class Blocks extends React.Component {
         }
     }
     componentWillUnmount () {
-        // Restore regular doBlockClick.
-        this.ScratchBlocks.Gesture.prototype.doBlockClick_ = this.oldBlockClick;
-
         this.detachVM();
         this.workspace.dispose();
         clearTimeout(this.toolboxUpdateTimeout);
-    }
-    setDoBlockClick () {
-        if (this.props.inDebugMode) {
-            const updateBreakpointsCallback = this.props.updateBreakpoints;
-            this.ScratchBlocks.Gesture.prototype.doBlockClick_ = function () {
-                if (!this.targetBlock_.isInFlyout) {
-                    updateBreakpointsCallback(this.targetBlock_.id);
-                }
-            };
-        } else {
-            this.ScratchBlocks.Gesture.prototype.doBlockClick_ = this.oldBlockClick;
-        }
     }
     requestToolboxUpdate () {
         clearTimeout(this.toolboxUpdateTimeout);
@@ -551,7 +540,7 @@ class Blocks extends React.Component {
             toolboxXML,
             updateMetrics: updateMetricsProp,
             workspaceMetrics,
-            inDebugMode,
+            debugMode,
             updateBreakpoints: updateBreakpointsProp,
             ...props
         } = this.props;
@@ -641,7 +630,7 @@ Blocks.propTypes = {
     workspaceMetrics: PropTypes.shape({
         targets: PropTypes.objectOf(PropTypes.object)
     }),
-    inDebugMode: PropTypes.bool.isRequired,
+    debugMode: PropTypes.bool.isRequired,
     updateBreakpoints: PropTypes.func.isRequired
 };
 
@@ -690,7 +679,7 @@ const mapStateToProps = state => ({
     toolboxXML: state.scratchGui.toolbox.toolboxXML,
     customProceduresVisible: state.scratchGui.customProcedures.active,
     workspaceMetrics: state.scratchGui.workspaceMetrics,
-    inDebugMode: state.scratchGui.debugger.inDebugMode
+    debugMode: state.scratchGui.debugger.debugMode
 });
 
 const mapDispatchToProps = dispatch => ({

@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 
 import VM from 'scratch-vm';
 import {
+    removeAllBreakpoints,
     setAnimationSkinId,
     setContext,
     setDebugMode,
@@ -13,21 +14,31 @@ import {
 } from '../reducers/debugger.js';
 import {Context} from '@ftrprf/judge-core';
 import omit from 'lodash.omit';
+import bindAll from 'lodash.bindall';
 
 const DebuggerHOC = function (WrappedComponent) {
     class DebuggerWrapper extends React.Component {
         constructor (props) {
             super(props);
 
+            bindAll(this, [
+                'handleProjectLoaded'
+            ]);
+
             // Change the `debugMode` to false every time a new project
             // gets loaded in the VM runtime.
-            this.props.vm.runtime.on('PROJECT_LOADED', this.props.onProjectLoaded);
+            this.props.vm.runtime.on('PROJECT_LOADED', this.handleProjectLoaded);
         }
 
         async componentDidUpdate (prevProps) {
             if (prevProps.debugMode !== this.props.debugMode) {
                 await this.changeDebugMode();
             }
+        }
+
+        handleProjectLoaded () {
+            this.props.disableDebugMode();
+            this.props.removeAllBreakpoints();
         }
 
         /**
@@ -83,7 +94,8 @@ const DebuggerHOC = function (WrappedComponent) {
                 'running',
                 'trailSkinId',
                 'vm',
-                'onProjectLoaded',
+                'disableDebugMode',
+                'removeAllBreakpoints',
                 'setAnimationSkinId',
                 'setContext',
                 'setNumberOfFrames',
@@ -106,7 +118,8 @@ const DebuggerHOC = function (WrappedComponent) {
         running: PropTypes.bool.isRequired,
         trailSkinId: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
-        onProjectLoaded: PropTypes.func.isRequired,
+        disableDebugMode: PropTypes.func.isRequired,
+        removeAllBreakpoints: PropTypes.func.isRequired,
         setAnimationSkinId: PropTypes.func.isRequired,
         setContext: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
@@ -126,7 +139,8 @@ const DebuggerHOC = function (WrappedComponent) {
     });
 
     const mapDispatchToProps = dispatch => ({
-        onProjectLoaded: () => dispatch(setDebugMode(false)),
+        disableDebugMode: () => dispatch(setDebugMode(false)),
+        removeAllBreakpoints: () => dispatch(removeAllBreakpoints()),
         setAnimationSkinId: animationSkinId => dispatch(setAnimationSkinId(animationSkinId)),
         setContext: context => dispatch(setContext(context)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),

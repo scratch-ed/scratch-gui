@@ -1,5 +1,7 @@
 const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const TOGGLE_DEBUG_MODE = 'scratch-gui/debugger/TOGGLE_DEBUG_MODE';
+const UPDATE_BREAKPOINTS = 'scratch-gui/debugger/UPDATE_BREAKPOINTS';
+const REMOVE_ALL_BREAKPOINTS = 'scratch-gui/debugger/REMOVE_ALL_BREAKPOINTS';
 const ENABLE_ANIMATION = 'scratch-gui/debugger/ENABLE_ANIMATION';
 const DISABLE_ANIMATION = 'scratch-gui/debugger/DISABLE_ANIMATION';
 const SET_TRAIL_SKIN_ID = 'scratch-gui/debugger/SET_TRAIL_SKIN_ID';
@@ -15,6 +17,7 @@ const initialState = {
     animationSkinId: -1,
     trailSkinId: -1,
     // State related to the debugger GUI.
+    breakpoints: new Set(),
     context: null,
     debugMode: false,
     numberOfFrames: 0,
@@ -32,6 +35,17 @@ const reducer = function (state, action) {
     case TOGGLE_DEBUG_MODE:
         return Object.assign({}, state, {
             debugMode: !state.debugMode
+        });
+    case UPDATE_BREAKPOINTS:
+        if (!state.breakpoints.delete(action.blockId)) {
+            state.breakpoints.add(action.blockId);
+        }
+        return Object.assign({}, state, {
+            breakpoints: state.breakpoints
+        });
+    case REMOVE_ALL_BREAKPOINTS:
+        return Object.assign({}, state, {
+            breakpoints: new Set()
         });
     case ENABLE_ANIMATION:
         return Object.assign({}, state, {
@@ -79,6 +93,18 @@ const setDebugMode = function (debugMode) {
 
 const toggleDebugMode = function () {
     return {type: TOGGLE_DEBUG_MODE};
+};
+
+
+const updateBreakpoints = function (blockId) {
+    return {
+        type: UPDATE_BREAKPOINTS,
+        blockId: blockId
+    };
+};
+
+const removeAllBreakpoints = function () {
+    return {type: REMOVE_ALL_BREAKPOINTS};
 };
 
 const enableAnimation = function () {
@@ -136,6 +162,8 @@ export {
     initialState as debuggerInitialState,
     setDebugMode,
     toggleDebugMode,
+    updateBreakpoints,
+    removeAllBreakpoints,
     enableAnimation,
     disableAnimation,
     setTrailSkinId,
