@@ -54,7 +54,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 this.trail = [];
 
                 this.props.setNumberOfFrames(0);
-                this.props.setTimeFrame(-1);
+                this.props.setTimeFrame(0);
             }
         }
 

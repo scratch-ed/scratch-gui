@@ -9,15 +9,6 @@ const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
 const SET_TRAIL_LENGTH = 'scratch-gui/debugger/SET_TRAIL_LENGTH';
 
-export class Waiter {
-    constructor () {
-        // eslint-disable-next-line no-unused-vars
-        this.prom = new Promise((resolve, _) => {
-            this.res = resolve;
-        });
-    }
-}
-
 const initialState = {
     // State related to the trail animation.
     animate: false,
@@ -27,7 +18,7 @@ const initialState = {
     context: null,
     debugMode: false,
     numberOfFrames: 0,
-    timeFrame: -1,
+    timeFrame: 0,
     trailLength: 0
 };
 

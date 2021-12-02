@@ -3,22 +3,23 @@ import PropTypes from 'prop-types';
 
 import Box from '../box/box.jsx';
 import TimeSliderComponent from '../time-slider/time-slider.jsx';
-import TrailSliderComponent from '../trail-slider/trail-slider.jsx';
 import DebuggerButtonComponent from '../debugger-button/debugger-button.jsx';
-
-import stepButtonIcon from './step-button.svg';
+import SliderComponent from '../slider/slider.jsx';
 import Switch from 'react-switch';
+
+import styles from './debugger-tab.css';
+import stepButtonIcon from './step-button.svg';
 
 const DebuggerTabComponent = function (props) {
     const {
         debugMode,
         numberOfFrames,
         onClickStep,
-        onTimeInput,
+        onTimeChange,
         onTimeMouseDown,
         onTimeMouseUp,
         onToggle,
-        onTrailInput,
+        onTrailChange,
         onTrailMouseDown,
         onTrailMouseUp,
         running,
@@ -26,8 +27,10 @@ const DebuggerTabComponent = function (props) {
         trailLength
     } = props;
 
+    const MAX_TRAIL_LENGTH = 50;
+
     return (
-        <Box>
+        <Box className={styles.debuggerTab}>
             <label>
                 <span>{'Debug mode: '}</span>
                 <Switch
@@ -50,19 +53,20 @@ const DebuggerTabComponent = function (props) {
                         <TimeSliderComponent
                             disabled={running}
                             numberOfFrames={numberOfFrames}
-                            onInput={onTimeInput}
+                            onChange={onTimeChange}
                             onMouseDown={onTimeMouseDown}
                             onMouseUp={onTimeMouseUp}
-                            timeFrame={timeFrame}
+                            value={timeFrame}
                         />
                     </label>
                     <label>
                         <span>{'Trail length: '}</span>
-                        <TrailSliderComponent
-                            onInput={onTrailInput}
+                        <SliderComponent
+                            max={MAX_TRAIL_LENGTH}
+                            onChange={onTrailChange}
                             onMouseDown={onTrailMouseDown}
                             onMouseUp={onTrailMouseUp}
-                            trailLength={trailLength}
+                            value={trailLength}
                         />
                     </label>
                 </Box> :
@@ -75,11 +79,11 @@ DebuggerTabComponent.propTypes = {
     debugMode: PropTypes.bool.isRequired,
     numberOfFrames: PropTypes.number.isRequired,
     onClickStep: PropTypes.func.isRequired,
-    onTimeInput: PropTypes.func.isRequired,
+    onTimeChange: PropTypes.func.isRequired,
     onTimeMouseDown: PropTypes.func.isRequired,
     onTimeMouseUp: PropTypes.func.isRequired,
     onToggle: PropTypes.func.isRequired,
-    onTrailInput: PropTypes.func.isRequired,
+    onTrailChange: PropTypes.func.isRequired,
     onTrailMouseDown: PropTypes.func.isRequired,
     onTrailMouseUp: PropTypes.func.isRequired,
     running: PropTypes.bool.isRequired,

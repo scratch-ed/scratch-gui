@@ -84,11 +84,11 @@ class DebuggerTab extends React.Component {
             <DebuggerTabComponent
                 {...componentProps}
                 onClickStep={this.handleClickStep}
-                onTimeInput={this.handleTimeInput}
+                onTimeChange={this.handleTimeInput}
                 onTimeMouseDown={this.handleTimeMouseDown}
                 onTimeMouseUp={this.handleTimeMouseUp}
                 onToggle={this.handleToggle}
-                onTrailInput={this.handleTrailInput}
+                onTrailChange={this.handleTrailInput}
                 onTrailMouseDown={this.handleTrailMouseDown}
                 onTrailMouseUp={this.handleTrailMouseUp}
             />
