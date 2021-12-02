@@ -19,11 +19,11 @@ const TimeSliderComponent = function (props) {
             {...componentProps}
             className={styles.timeSliderInput}
             type={'range'}
-            defaultValue={timeFrame}
+            value={timeFrame}
             min={'0'}
             max={numberOfFrames - 1}
             disabled={disabled}
-            onInput={onInput}
+            onChange={onInput}
             onMouseDown={onMouseDown}
             onMouseUp={onMouseUp}
         />
