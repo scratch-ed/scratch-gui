@@ -28,3 +28,32 @@ export const updateSprite = function (sprite, spriteLog) {
     sprite.setDirection(spriteLog.direction);
     sprite.setCostume(sprite.getCostumeIndexByName(spriteLog.costume));
 };
+
+/**
+ * Initialize the interval that will call _step periodically.
+ * @param {Runtime} runtime - Runtime whose step interval to set.
+ */
+export const setStepInterval = function (runtime) {
+    if (runtime._steppingInterval === -1) {
+        // Interval values copied from the Scratch Runtime:
+        // https://github.com/LLK/scratch-vm/blob/develop/src/engine/runtime.js#L709
+        const interval = runtime.compatibilityMode ?
+            1000 / 30 :
+            1000 / 60;
+
+        runtime._steppingInterval = setInterval(() => {
+            runtime._step();
+        }, interval);
+    }
+};
+
+/**
+ * Clear the interval that calls _step periodically.
+ * @param {Runtime} runtime - Runtime whose step interval to clear.
+ */
+export const clearStepInterval = function (runtime) {
+    if (runtime._steppingInterval !== -1) {
+        clearInterval(runtime._steppingInterval);
+        runtime._steppingInterval = -1;
+    }
+};
