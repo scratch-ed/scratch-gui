@@ -2,10 +2,10 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import greenFlagIcon from './icon--green-flag.svg';
-import styles from './green-flag.css';
+import debugModeIcon from './icon--debug-mode.svg';
+import styles from './debug-mode.css';
 
-const GreenFlagComponent = function (props) {
+const DebugModeComponent = function (props) {
     const {
         active,
         className,
@@ -13,17 +13,18 @@ const GreenFlagComponent = function (props) {
         title,
         ...componentProps
     } = props;
+
     return (
         <img
             className={classNames(
                 className,
-                styles.greenFlag,
+                styles.debugMode,
                 {
                     [styles.isActive]: active
                 }
             )}
             draggable={false}
-            src={greenFlagIcon}
+            src={debugModeIcon}
             title={title}
             onClick={onClick}
             {...componentProps}
@@ -31,16 +32,16 @@ const GreenFlagComponent = function (props) {
     );
 };
 
-GreenFlagComponent.propTypes = {
+DebugModeComponent.propTypes = {
     active: PropTypes.bool,
     className: PropTypes.string,
     onClick: PropTypes.func.isRequired,
     title: PropTypes.string
 };
 
-GreenFlagComponent.defaultProps = {
+DebugModeComponent.defaultProps = {
     active: false,
-    title: 'Go'
+    title: 'Debug'
 };
 
-export default GreenFlagComponent;
+export default DebugModeComponent;

@@ -5,15 +5,23 @@ import VM from 'scratch-vm';
 import {connect} from 'react-redux';
 
 import ControlsComponent from '../components/controls/controls.jsx';
+import {toggleDebugMode} from '../reducers/debugger.js';
 
 class Controls extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
+            'handleDebugModeClick',
             'handleGreenFlagClick',
             'handleStopAllClick'
         ]);
     }
+
+    handleDebugModeClick (e) {
+        e.preventDefault();
+        this.props.toggleDebugMode();
+    }
+
     handleGreenFlagClick (e) {
         e.preventDefault();
         if (e.shiftKey) {
@@ -25,23 +33,28 @@ class Controls extends React.Component {
             this.props.vm.greenFlag();
         }
     }
+
     handleStopAllClick (e) {
         e.preventDefault();
         this.props.vm.stopAll();
     }
+
     render () {
         const {
             vm, // eslint-disable-line no-unused-vars
             isStarted, // eslint-disable-line no-unused-vars
             projectRunning,
+            toggleDebugMode: toggleDebugModeProp, // eslint-disable-line no-unused-vars
             turbo,
             ...props
         } = this.props;
+
         return (
             <ControlsComponent
                 {...props}
                 active={projectRunning}
                 turbo={turbo}
+                onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onStopAllClick={this.handleStopAllClick}
             />
@@ -52,6 +65,7 @@ class Controls extends React.Component {
 Controls.propTypes = {
     isStarted: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
+    toggleDebugMode: PropTypes.func.isRequired,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM)
 };
@@ -61,7 +75,9 @@ const mapStateToProps = state => ({
     projectRunning: state.scratchGui.vmStatus.running,
     turbo: state.scratchGui.vmStatus.turbo
 });
-// no-op function to prevent dispatch prop being passed to component
-const mapDispatchToProps = () => ({});
+
+const mapDispatchToProps = dispatch => ({
+    toggleDebugMode: () => dispatch(toggleDebugMode())
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Controls);

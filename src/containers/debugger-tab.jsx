@@ -8,8 +8,7 @@ import {
     disableAnimation,
     enableAnimation,
     setTimeFrame,
-    setTrailLength,
-    toggleDebugMode
+    setTrailLength
 } from '../reducers/debugger.js';
 import omit from 'lodash.omit';
 
@@ -23,7 +22,6 @@ class DebuggerTab extends React.Component {
             'handleTimeInput',
             'handleTimeMouseDown',
             'handleTimeMouseUp',
-            'handleToggle',
             'handleTrailInput',
             'handleTrailMouseDown',
             'handleTrailMouseUp'
@@ -53,10 +51,6 @@ class DebuggerTab extends React.Component {
         if (!this.props.running) {
             this.props.enableAnimation();
         }
-    }
-
-    handleToggle () {
-        this.props.toggleDebugMode();
     }
 
     handleTrailInput (event) {
@@ -95,7 +89,6 @@ class DebuggerTab extends React.Component {
                 onTimeChange={this.handleTimeInput}
                 onTimeMouseDown={this.handleTimeMouseDown}
                 onTimeMouseUp={this.handleTimeMouseUp}
-                onToggle={this.handleToggle}
                 onTrailChange={this.handleTrailInput}
                 onTrailMouseDown={this.handleTrailMouseDown}
                 onTrailMouseUp={this.handleTrailMouseUp}
@@ -117,8 +110,7 @@ const mapDispatchToProps = dispatch => ({
     disableAnimation: () => dispatch(disableAnimation()),
     enableAnimation: () => dispatch(enableAnimation()),
     setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
-    setTrailLength: trailLength => dispatch(setTrailLength(trailLength)),
-    toggleDebugMode: () => dispatch(toggleDebugMode())
+    setTrailLength: trailLength => dispatch(setTrailLength(trailLength))
 });
 
 DebuggerTab.propTypes = {
@@ -132,8 +124,7 @@ DebuggerTab.propTypes = {
     disableAnimation: PropTypes.func.isRequired,
     enableAnimation: PropTypes.func.isRequired,
     setTimeFrame: PropTypes.func.isRequired,
-    setTrailLength: PropTypes.func.isRequired,
-    toggleDebugMode: PropTypes.func.isRequired
+    setTrailLength: PropTypes.func.isRequired
 };
 
 export default connect(

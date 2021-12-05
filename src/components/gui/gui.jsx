@@ -82,6 +82,7 @@ const GUIComponent = props => {
         costumeLibraryVisible,
         costumesTabVisible,
         debuggerTabVisible,
+        debugMode,
         enableCommunity,
         intl,
         isCreating,
@@ -300,20 +301,21 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
-                                    <Tab
-                                        className={tabClassNames.tab}
-                                        onClick={onActivateDebuggerTab}
-                                    >
-                                        <img
-                                            draggable={false}
-                                            src={debuggerIcon}
-                                        />
-                                        <FormattedMessage
-                                            defaultMessage="Debugger"
-                                            description="Button to get to the debugger panel"
-                                            id="gui.gui.debuggerTab"
-                                        />
-                                    </Tab>
+                                    {debugMode ?
+                                        <Tab
+                                            className={tabClassNames.tab}
+                                            onClick={onActivateDebuggerTab}
+                                        >
+                                            <img
+                                                draggable={false}
+                                                src={debuggerIcon}
+                                            />
+                                            <FormattedMessage
+                                                defaultMessage="Debugger"
+                                                description="Button to get to the debugger panel"
+                                                id="gui.gui.debuggerTab"
+                                            />
+                                        </Tab> : null }
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
@@ -351,9 +353,10 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
-                                <TabPanel className={tabClassNames.tabPanel}>
-                                    {debuggerTabVisible ? <DebuggerTab vm={vm} /> : null}
-                                </TabPanel>
+                                {debugMode ?
+                                    <TabPanel className={tabClassNames.tabPanel}>
+                                        {debuggerTabVisible ? <DebuggerTab vm={vm} /> : null}
+                                    </TabPanel> : null}
                             </Tabs>
                             {backpackVisible ? (
                                 <Backpack host={backpackHost} />
@@ -406,6 +409,8 @@ GUIComponent.propTypes = {
     children: PropTypes.node,
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
+    debuggerTabVisible: PropTypes.bool,
+    debugMode: PropTypes.bool,
     enableCommunity: PropTypes.bool,
     intl: intlShape.isRequired,
     isCreating: PropTypes.bool,
@@ -416,6 +421,7 @@ GUIComponent.propTypes = {
     loading: PropTypes.bool,
     logo: PropTypes.string,
     onActivateCostumesTab: PropTypes.func,
+    onActivateDebuggerTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
     onActivateTab: PropTypes.func,
     onClickAccountNav: PropTypes.func,
@@ -468,6 +474,7 @@ GUIComponent.defaultProps = {
 };
 
 const mapStateToProps = state => ({
+    debugMode: state.scratchGui.debugger.debugMode,
     // This is the button's mode, as opposed to the actual current state
     stageSizeMode: state.scratchGui.stageSize.stageSize
 });

@@ -93,6 +93,7 @@ const StageHeaderComponent = function (props) {
                 />
             </Button>
         );
+
         header = (
             <Box className={styles.stageHeaderWrapperOverlay}>
                 <Box
@@ -146,6 +147,7 @@ const StageHeaderComponent = function (props) {
                     </div>
                 </div>
             );
+
         header = (
             <Box className={styles.stageHeaderWrapper}>
                 <Box className={styles.stageMenuWrapper}>
