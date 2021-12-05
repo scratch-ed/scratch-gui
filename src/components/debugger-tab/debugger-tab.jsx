@@ -9,6 +9,7 @@ import SliderComponent from '../slider/slider.jsx';
 import Switch from 'react-switch';
 
 import styles from './debugger-tab.css';
+import runButtonIcon from './run-button.svg';
 import stepButtonIcon from './step-button.svg';
 
 const DebuggerTabComponent = function (props) {
@@ -16,6 +17,7 @@ const DebuggerTabComponent = function (props) {
         breakpoints,
         debugMode,
         numberOfFrames,
+        onClickRun,
         onClickStep,
         onTimeChange,
         onTimeMouseDown,
@@ -45,9 +47,14 @@ const DebuggerTabComponent = function (props) {
                 <Box>
                     <Box>
                         <DebuggerButtonComponent
+                            alt={'RUN'}
+                            onClick={onClickRun}
+                            src={runButtonIcon}
+                        />
+                        <DebuggerButtonComponent
                             alt={'STEP'}
-                            src={stepButtonIcon}
                             onClick={onClickStep}
+                            src={stepButtonIcon}
                         />
                     </Box>
                     <label>
@@ -88,6 +95,7 @@ DebuggerTabComponent.propTypes = {
     breakpoints: PropTypes.instanceOf(Set).isRequired,
     debugMode: PropTypes.bool.isRequired,
     numberOfFrames: PropTypes.number.isRequired,
+    onClickRun: PropTypes.func.isRequired,
     onClickStep: PropTypes.func.isRequired,
     onTimeChange: PropTypes.func.isRequired,
     onTimeMouseDown: PropTypes.func.isRequired,

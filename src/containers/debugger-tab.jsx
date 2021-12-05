@@ -18,6 +18,7 @@ class DebuggerTab extends React.Component {
         super(props);
 
         bindAll(this, [
+            'handleClickRun',
             'handleClickStep',
             'handleTimeInput',
             'handleTimeMouseDown',
@@ -29,7 +30,41 @@ class DebuggerTab extends React.Component {
         ]);
     }
 
-    handleClickStep () {}
+    /**
+     * Initialize the interval that will call _step periodically.
+     */
+    setStepInterval () {
+        if (this.props.vm.runtime._steppingInterval === -1) {
+            // Values copied from Scratch Runtime
+            // https://github.com/LLK/scratch-vm/blob/develop/src/engine/runtime.js#L709
+            const interval = this.props.vm.runtime.compatibilityMode ?
+                1000 / 30 :
+                1000 / 60;
+
+            this.props.vm.runtime._steppingInterval = setInterval(() => {
+                this.props.vm.runtime._step();
+            }, interval);
+        }
+    }
+
+    /**
+     * Clear the interval that calls _step periodically.
+     */
+    clearStepInterval () {
+        if (this.props.vm.runtime._steppingInterval !== -1) {
+            clearInterval(this.props.vm.runtime._steppingInterval);
+            this.props.vm.runtime._steppingInterval = -1;
+        }
+    }
+
+    handleClickRun () {
+        this.setStepInterval();
+    }
+
+    handleClickStep () {
+        this.clearStepInterval();
+        this.props.vm.runtime._step();
+    }
 
     handleTimeInput (event) {
         this.props.setTimeFrame(parseInt(event.target.value, 10));
@@ -83,6 +118,7 @@ class DebuggerTab extends React.Component {
         return (
             <DebuggerTabComponent
                 {...componentProps}
+                onClickRun={this.handleClickRun}
                 onClickStep={this.handleClickStep}
                 onTimeChange={this.handleTimeInput}
                 onTimeMouseDown={this.handleTimeMouseDown}
