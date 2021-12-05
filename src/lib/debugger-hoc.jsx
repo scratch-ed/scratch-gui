@@ -15,6 +15,7 @@ import {
 import {Context} from '@ftrprf/judge-core';
 import omit from 'lodash.omit';
 import bindAll from 'lodash.bindall';
+import {activateTab, BLOCKS_TAB_INDEX, DEBUGGER_TAB_INDEX} from '../reducers/editor-tab.js';
 
 const DebuggerHOC = function (WrappedComponent) {
     class DebuggerWrapper extends React.Component {
@@ -32,6 +33,12 @@ const DebuggerHOC = function (WrappedComponent) {
 
         async componentDidUpdate (prevProps) {
             if (prevProps.debugMode !== this.props.debugMode) {
+                // If debugger tab is selected when debug mode gets disabled, switch active
+                // tab to the blocks tab.
+                if (!this.props.debugMode && this.props.activeTab === DEBUGGER_TAB_INDEX) {
+                    this.props.activateTab(BLOCKS_TAB_INDEX);
+                }
+
                 await this.changeDebugMode();
             }
         }
@@ -86,6 +93,7 @@ const DebuggerHOC = function (WrappedComponent) {
 
         render () {
             const componentProps = omit(this.props, [
+                'activeTab',
                 'animationSkinId',
                 'context',
                 'debugMode',
@@ -94,6 +102,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'running',
                 'trailSkinId',
                 'vm',
+                'activateTab',
                 'disableDebugMode',
                 'removeAllBreakpoints',
                 'setAnimationSkinId',
@@ -110,6 +119,7 @@ const DebuggerHOC = function (WrappedComponent) {
     }
 
     DebuggerWrapper.propTypes = {
+        activeTab: PropTypes.number.isRequired,
         animationSkinId: PropTypes.number.isRequired,
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
@@ -118,6 +128,7 @@ const DebuggerHOC = function (WrappedComponent) {
         running: PropTypes.bool.isRequired,
         trailSkinId: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
+        activateTab: PropTypes.func.isRequired,
         disableDebugMode: PropTypes.func.isRequired,
         removeAllBreakpoints: PropTypes.func.isRequired,
         setAnimationSkinId: PropTypes.func.isRequired,
@@ -128,6 +139,7 @@ const DebuggerHOC = function (WrappedComponent) {
     };
 
     const mapStateToProps = state => ({
+        activeTab: state.scratchGui.editorTab.activeTabIndex,
         animationSkinId: state.scratchGui.debugger.animationSkinId,
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
@@ -139,6 +151,7 @@ const DebuggerHOC = function (WrappedComponent) {
     });
 
     const mapDispatchToProps = dispatch => ({
+        activateTab: tab => dispatch(activateTab(tab)),
         disableDebugMode: () => dispatch(setDebugMode(false)),
         removeAllBreakpoints: () => dispatch(removeAllBreakpoints()),
         setAnimationSkinId: animationSkinId => dispatch(setAnimationSkinId(animationSkinId)),

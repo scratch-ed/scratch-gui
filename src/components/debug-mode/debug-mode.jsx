@@ -7,8 +7,8 @@ import styles from './debug-mode.css';
 
 const DebugModeComponent = function (props) {
     const {
-        active,
         className,
+        debugMode,
         onClick,
         title,
         ...componentProps
@@ -20,7 +20,7 @@ const DebugModeComponent = function (props) {
                 className,
                 styles.debugMode,
                 {
-                    [styles.isActive]: active
+                    [styles.inDebugMode]: debugMode
                 }
             )}
             draggable={false}
@@ -33,14 +33,13 @@ const DebugModeComponent = function (props) {
 };
 
 DebugModeComponent.propTypes = {
-    active: PropTypes.bool,
     className: PropTypes.string,
+    debugMode: PropTypes.bool.isRequired,
     onClick: PropTypes.func.isRequired,
     title: PropTypes.string
 };
 
 DebugModeComponent.defaultProps = {
-    active: false,
     title: 'Debug'
 };
 
