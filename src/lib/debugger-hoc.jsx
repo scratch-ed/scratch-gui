@@ -31,7 +31,20 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.on('PROJECT_LOADED', this.handleProjectLoaded);
         }
 
+        shouldComponentUpdate (nextProps) {
+            return this.props.debugMode !== nextProps.debugMode ||
+                   this.props.running !== nextProps.running;
+        }
+
         async componentDidUpdate (prevProps) {
+            if (this.props.debugMode && this.props.running && prevProps.running !== this.props.running) {
+                for (let i = this.props.context.log.frames.length - 1; i > this.props.timeFrame; i--) {
+                    this.props.context.log.frames.splice(i, 1);
+                }
+
+                this.props.setNumberOfFrames(this.props.context.log.frames.length);
+            }
+
             if (prevProps.debugMode !== this.props.debugMode) {
                 // If debugger tab is selected when debug mode gets disabled, switch active
                 // tab to the blocks tab.
@@ -58,9 +71,6 @@ const DebuggerHOC = function (WrappedComponent) {
                 const context = new Context();
                 this.props.setContext(context);
 
-                // Set up the current VM as the VM used in the context.
-                await context.initialiseVm(this.props.vm);
-
                 // Increase the length of the time slider every time a new frame gets added to the log.
                 const oldFunction = context.log.addFrame.bind(context.log);
                 context.log.addFrame = (_context, _block) => {
@@ -69,6 +79,9 @@ const DebuggerHOC = function (WrappedComponent) {
                     this.props.setTimeFrame(this.props.numberOfFrames);
                     this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
                 };
+
+                // Set up the current VM as the VM used in the context.
+                await context.initialiseVm(this.props.vm);
 
                 // Initialize the pen skin and pen layer to draw the trail on.
                 const trailSkinId = context.vm.renderer.createPenSkin();
@@ -100,6 +113,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'intervalIndex',
                 'numberOfFrames',
                 'running',
+                'timeFrame',
                 'trailSkinId',
                 'vm',
                 'activateTab',
@@ -126,6 +140,7 @@ const DebuggerHOC = function (WrappedComponent) {
         intervalIndex: PropTypes.number,
         numberOfFrames: PropTypes.number.isRequired,
         running: PropTypes.bool.isRequired,
+        timeFrame: PropTypes.number.isRequired,
         trailSkinId: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         activateTab: PropTypes.func.isRequired,
@@ -146,6 +161,7 @@ const DebuggerHOC = function (WrappedComponent) {
         intervalIndex: state.scratchGui.debugger.intervalIndex,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
         running: state.scratchGui.vmStatus.running,
+        timeFrame: state.scratchGui.debugger.timeFrame,
         trailSkinId: state.scratchGui.debugger.trailSkinId,
         vm: state.scratchGui.vm
     });

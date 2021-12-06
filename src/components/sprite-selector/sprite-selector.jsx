@@ -80,7 +80,6 @@ const SpriteSelectorComponent = function (props) {
             className={styles.spriteSelector}
             {...componentProps}
         >
-
             <SpriteInfo
                 direction={selectedSprite.direction}
                 disabled={spriteInfoDisabled}
@@ -99,7 +98,6 @@ const SpriteSelectorComponent = function (props) {
                 onChangeX={onChangeSpriteX}
                 onChangeY={onChangeSpriteY}
             />
-
             <SpriteList
                 editingTarget={editingTarget}
                 hoveredTarget={hoveredTarget}
