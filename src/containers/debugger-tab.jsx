@@ -17,6 +17,7 @@ class DebuggerTab extends React.Component {
         super(props);
 
         bindAll(this, [
+            'handleClickResume',
             'handleClickStep',
             'handleTimeInput',
             'handleTimeMouseDown',
@@ -25,6 +26,10 @@ class DebuggerTab extends React.Component {
             'handleTrailMouseDown',
             'handleTrailMouseUp'
         ]);
+    }
+
+    handleClickResume () {
+        this.props.vm.runtime.sequencer.resume();
     }
 
     handleClickStep () {
@@ -79,6 +84,7 @@ class DebuggerTab extends React.Component {
         return (
             <DebuggerTabComponent
                 {...componentProps}
+                onClickResume={this.handleClickResume}
                 onClickStep={this.handleClickStep}
                 onTimeChange={this.handleTimeInput}
                 onTimeMouseDown={this.handleTimeMouseDown}
