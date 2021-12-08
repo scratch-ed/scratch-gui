@@ -29,10 +29,15 @@ const DebuggerHOC = function (WrappedComponent) {
             // Change the `debugMode` to false every time a new project
             // gets loaded in the VM runtime.
             this.props.vm.runtime.on('PROJECT_LOADED', this.handleProjectLoaded);
+
+            // Set initial debugMode and breakpoints.
+            this.props.vm.runtime.sequencer.debugMode = this.props.debugMode;
+            this.props.vm.runtime.sequencer.breakpoints = this.props.breakpoints;
         }
 
         shouldComponentUpdate (nextProps) {
             return this.props.debugMode !== nextProps.debugMode ||
+                   this.props.breakpoints !== nextProps.breakpoints ||
                    this.props.running !== nextProps.running;
         }
 
@@ -45,7 +50,13 @@ const DebuggerHOC = function (WrappedComponent) {
                 this.props.setNumberOfFrames(this.props.context.log.frames.length);
             }
 
+            if (prevProps.breakpoints !== this.props.breakpoints) {
+                this.props.vm.runtime.sequencer.breakpoints = this.props.breakpoints;
+            }
+
             if (prevProps.debugMode !== this.props.debugMode) {
+                this.props.vm.runtime.sequencer.debugMode = this.props.debugMode;
+
                 // If debugger tab is selected when debug mode gets disabled, switch active
                 // tab to the blocks tab.
                 if (!this.props.debugMode && this.props.activeTab === DEBUGGER_TAB_INDEX) {
@@ -135,6 +146,7 @@ const DebuggerHOC = function (WrappedComponent) {
     DebuggerWrapper.propTypes = {
         activeTab: PropTypes.number.isRequired,
         animationSkinId: PropTypes.number.isRequired,
+        breakpoints: PropTypes.instanceOf(Set),
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         intervalIndex: PropTypes.number,
@@ -156,6 +168,7 @@ const DebuggerHOC = function (WrappedComponent) {
     const mapStateToProps = state => ({
         activeTab: state.scratchGui.editorTab.activeTabIndex,
         animationSkinId: state.scratchGui.debugger.animationSkinId,
+        breakpoints: state.scratchGui.debugger.breakpoints,
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
         intervalIndex: state.scratchGui.debugger.intervalIndex,
