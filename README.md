@@ -25,7 +25,7 @@ npm run build
 Bij elke wijziging die je maakt in de code van de `judge-core` moet telkens opnieuw het commando `npm run build` uitgevoerd worden alvorens deze wijziging ook zichtbaar zal worden voor de `scratch-debugger-gui`.
 
 ### scratch-debugger-vm
-De `scratch-debugger-gui` maakt ook gebruik van een aangepaste versie van de (`scratch-vm`)[https://github.ugent.be/scratch4d/scratch-debugger-vm]. Deze moet dus ook geinstalleerd worden. De directory waarin deze geinstalleerd wordt mag in dit geval vrij gekozen worden:
+De `scratch-debugger-gui` maakt ook gebruik van een aangepaste versie van de [`scratch-vm`](https://github.ugent.be/scratch4d/scratch-debugger-vm). Deze moet dus ook geinstalleerd worden. De directory waarin deze geinstalleerd wordt mag in dit geval vrij gekozen worden:
 
 ```bash
 git clone git@github.ugent.be:scratch4d/scratch-debugger-vm.git
