@@ -1,5 +1,6 @@
 const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const TOGGLE_DEBUG_MODE = 'scratch-gui/debugger/TOGGLE_DEBUG_MODE';
+const REMOVE_BREAKPOINT = 'scratch-gui/debugger/REMOVE_BREAKPOINT';
 const UPDATE_BREAKPOINTS = 'scratch-gui/debugger/UPDATE_BREAKPOINTS';
 const REMOVE_ALL_BREAKPOINTS = 'scratch-gui/debugger/REMOVE_ALL_BREAKPOINTS';
 const ENABLE_ANIMATION = 'scratch-gui/debugger/ENABLE_ANIMATION';
@@ -36,10 +37,17 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             debugMode: !state.debugMode
         });
+    case REMOVE_BREAKPOINT:
+        state.breakpoints.delete(action.blockId);
+
+        return Object.assign({}, state, {
+            breakpoints: state.breakpoints
+        });
     case UPDATE_BREAKPOINTS:
         if (!state.breakpoints.delete(action.blockId)) {
             state.breakpoints.add(action.blockId);
         }
+
         return Object.assign({}, state, {
             breakpoints: state.breakpoints
         });
@@ -95,6 +103,12 @@ const toggleDebugMode = function () {
     return {type: TOGGLE_DEBUG_MODE};
 };
 
+const removeBreakpoint = function (blockId) {
+    return {
+        type: REMOVE_BREAKPOINT,
+        blockId: blockId
+    };
+};
 
 const updateBreakpoints = function (blockId) {
     return {
@@ -162,6 +176,7 @@ export {
     initialState as debuggerInitialState,
     setDebugMode,
     toggleDebugMode,
+    removeBreakpoint,
     updateBreakpoints,
     removeAllBreakpoints,
     enableAnimation,

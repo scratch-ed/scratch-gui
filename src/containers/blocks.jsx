@@ -26,7 +26,7 @@ import {closeExtensionLibrary, openSoundRecorder, openConnectionModal} from '../
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
-import {updateBreakpoints} from '../reducers/debugger';
+import {removeBreakpoint, updateBreakpoints} from '../reducers/debugger';
 
 import {
     activateTab,
@@ -87,8 +87,8 @@ class Blocks extends React.Component {
         this.onTargetsUpdate = debounce(this.onTargetsUpdate, 100);
         this.toolboxUpdateQueue = [];
 
-        // Override `doBlockClick_`
         const self = this;
+        // Override behaviour when a block is clicked.
         const oldDoBlockClick = this.ScratchBlocks.Gesture.prototype.doBlockClick_;
         this.ScratchBlocks.Gesture.prototype.doBlockClick_ = function () {
             if (self.props.debugMode) {
@@ -98,6 +98,16 @@ class Blocks extends React.Component {
             } else {
                 oldDoBlockClick.bind(this)();
             }
+        };
+
+        // Override behaviour when a block is removed.
+        const oldDispose = this.ScratchBlocks.Block.prototype.dispose;
+        this.ScratchBlocks.Block.prototype.dispose = function (healStack) {
+            if (this.workspace && !this.workspace.isClearing && self.ScratchBlocks.Events.isEnabled()) {
+                self.props.removeBreakpoint(this.id);
+            }
+
+            oldDispose.bind(this)(healStack);
         };
     }
     componentDidMount () {
@@ -541,6 +551,7 @@ class Blocks extends React.Component {
             updateMetrics: updateMetricsProp,
             workspaceMetrics,
             debugMode,
+            removeBreakpoint: removeBreakpointProp,
             updateBreakpoints: updateBreakpointsProp,
             ...props
         } = this.props;
@@ -631,6 +642,7 @@ Blocks.propTypes = {
         targets: PropTypes.objectOf(PropTypes.object)
     }),
     debugMode: PropTypes.bool.isRequired,
+    removeBreakpoint: PropTypes.func.isRequired,
     updateBreakpoints: PropTypes.func.isRequired
 };
 
@@ -698,6 +710,9 @@ const mapDispatchToProps = dispatch => ({
     },
     onRequestCloseCustomProcedures: data => {
         dispatch(deactivateCustomProcedures(data));
+    },
+    removeBreakpoint: blockId => {
+        dispatch(removeBreakpoint(blockId));
     },
     updateToolboxState: toolboxXML => {
         dispatch(updateToolbox(toolboxXML));
