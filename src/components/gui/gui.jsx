@@ -67,6 +67,7 @@ const GUIComponent = props => {
         backpackHost,
         backpackVisible,
         blocksTabVisible,
+        breakpoints,
         cardsVisible,
         canChangeLanguage,
         canCreateNew,
@@ -117,12 +118,14 @@ const GUIComponent = props => {
         onTelemetryModalCancel,
         onTelemetryModalOptIn,
         onTelemetryModalOptOut,
+        removeBreakpoint,
         showComingSoon,
         soundsTabVisible,
         stageSizeMode,
         targetIsStage,
         telemetryModalVisible,
         tipsLibraryVisible,
+        updateBreakpoints,
         vm,
         ...componentProps
     } = omit(props, 'dispatch');
@@ -326,7 +329,9 @@ const GUIComponent = props => {
                                             options={{
                                                 media: `${basePath}static/blocks-media/`
                                             }}
+                                            removeBreakpoint={removeBreakpoint}
                                             stageSize={stageSize}
+                                            updateBreakpoints={updateBreakpoints}
                                             vm={vm}
                                         />
                                     </Box>
@@ -355,7 +360,10 @@ const GUIComponent = props => {
                                 </TabPanel>
                                 {debugMode ?
                                     <TabPanel className={tabClassNames.tabPanel}>
-                                        {debuggerTabVisible ? <DebuggerTab vm={vm} /> : null}
+                                        {debuggerTabVisible ? <DebuggerTab
+                                            breakpoints={breakpoints}
+                                            vm={vm}
+                                        /> : null}
                                     </TabPanel> : null}
                             </Tabs>
                             {backpackVisible ? (
@@ -396,6 +404,7 @@ GUIComponent.propTypes = {
     backpackVisible: PropTypes.bool,
     basePath: PropTypes.string,
     blocksTabVisible: PropTypes.bool,
+    breakpoints: PropTypes.instanceOf(Set),
     canChangeLanguage: PropTypes.bool,
     canCreateCopy: PropTypes.bool,
     canCreateNew: PropTypes.bool,
@@ -442,6 +451,7 @@ GUIComponent.propTypes = {
     onTelemetryModalOptIn: PropTypes.func,
     onTelemetryModalOptOut: PropTypes.func,
     onToggleLoginOpen: PropTypes.func,
+    removeBreakpoint: PropTypes.func,
     renderLogin: PropTypes.func,
     showComingSoon: PropTypes.bool,
     soundsTabVisible: PropTypes.bool,
@@ -449,6 +459,7 @@ GUIComponent.propTypes = {
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
     tipsLibraryVisible: PropTypes.bool,
+    updateBreakpoints: PropTypes.func,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 

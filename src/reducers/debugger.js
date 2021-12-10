@@ -18,7 +18,6 @@ const initialState = {
     animationSkinId: -1,
     trailSkinId: -1,
     // State related to the debugger GUI.
-    breakpoints: new Set(),
     context: null,
     debugMode: false,
     numberOfFrames: 0,
@@ -103,24 +102,6 @@ const toggleDebugMode = function () {
     return {type: TOGGLE_DEBUG_MODE};
 };
 
-const removeBreakpoint = function (blockId) {
-    return {
-        type: REMOVE_BREAKPOINT,
-        blockId: blockId
-    };
-};
-
-const updateBreakpoints = function (blockId) {
-    return {
-        type: UPDATE_BREAKPOINTS,
-        blockId: blockId
-    };
-};
-
-const removeAllBreakpoints = function () {
-    return {type: REMOVE_ALL_BREAKPOINTS};
-};
-
 const enableAnimation = function () {
     return {type: ENABLE_ANIMATION};
 };
@@ -176,9 +157,6 @@ export {
     initialState as debuggerInitialState,
     setDebugMode,
     toggleDebugMode,
-    removeBreakpoint,
-    updateBreakpoints,
-    removeAllBreakpoints,
     enableAnimation,
     disableAnimation,
     setTrailSkinId,

@@ -26,7 +26,6 @@ import {closeExtensionLibrary, openSoundRecorder, openConnectionModal} from '../
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
-import {removeBreakpoint, updateBreakpoints} from '../reducers/debugger';
 
 import {
     activateTab,
@@ -87,6 +86,7 @@ class Blocks extends React.Component {
         this.onTargetsUpdate = debounce(this.onTargetsUpdate, 100);
         this.toolboxUpdateQueue = [];
 
+        // OVERRIDE BLOCKLY METHODS IN ORDER TO ADD/REMOVE BREAKPOINTS
         const self = this;
         // Override behaviour when a block is clicked.
         const oldDoBlockClick = this.ScratchBlocks.Gesture.prototype.doBlockClick_;
@@ -497,7 +497,6 @@ class Blocks extends React.Component {
     handleOpenSoundRecorder () {
         this.props.onOpenSoundRecorder();
     }
-
     /*
      * Pass along information about proposed name and variable options (scope and isCloud)
      * and additional potentially conflicting variable names from the VM
@@ -711,17 +710,11 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseCustomProcedures: data => {
         dispatch(deactivateCustomProcedures(data));
     },
-    removeBreakpoint: blockId => {
-        dispatch(removeBreakpoint(blockId));
-    },
     updateToolboxState: toolboxXML => {
         dispatch(updateToolbox(toolboxXML));
     },
     updateMetrics: metrics => {
         dispatch(updateMetrics(metrics));
-    },
-    updateBreakpoints: blockId => {
-        dispatch(updateBreakpoints(blockId));
     }
 });
 

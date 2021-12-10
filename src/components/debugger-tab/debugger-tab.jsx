@@ -94,10 +94,4 @@ DebuggerTabComponent.propTypes = {
     trailLength: PropTypes.number.isRequired
 };
 
-const mapStateToProps = state => ({
-    breakpoints: state.scratchGui.debugger.breakpoints
-});
-
-export default connect(
-    mapStateToProps
-)(DebuggerTabComponent);
+export default DebuggerTabComponent;
