@@ -53,6 +53,7 @@ class Blocks extends React.Component {
         bindAll(this, [
             'attachVM',
             'detachVM',
+            'doWorkspaceUpdate',
             'getToolboxXML',
             'handleCategorySelected',
             'handleConnectionModalStart',
@@ -371,7 +372,7 @@ class Blocks extends React.Component {
             return null;
         }
     }
-    onWorkspaceUpdate (data) {
+    doWorkspaceUpdate (data) {
         // When we change sprites, update the toolbox to have the new sprite's blocks
         const toolboxXML = this.getToolboxXML();
         if (toolboxXML) {
@@ -416,6 +417,15 @@ class Blocks extends React.Component {
         // fresh workspace and we don't want any changes made to another sprites
         // workspace to be 'undone' here.
         this.workspace.clearUndo();
+    }
+    onWorkspaceUpdate (data) {
+        this.doWorkspaceUpdate(data);
+
+        // Color all blocks with breakpoints red.
+        for (const blockId of this.props.breakpoints) {
+            const block = this.workspace.blockDB_[blockId];
+            block.setColour('#FF0000', block.colourSecondary_, block.colourTertiary_);
+        }
     }
     handleExtensionAdded (categoryInfo) {
         const defineBlocks = blockInfoArray => {
@@ -640,6 +650,7 @@ Blocks.propTypes = {
     workspaceMetrics: PropTypes.shape({
         targets: PropTypes.objectOf(PropTypes.object)
     }),
+    breakpoints: PropTypes.instanceOf(Set).isRequired,
     debugMode: PropTypes.bool.isRequired,
     removeBreakpoint: PropTypes.func.isRequired,
     updateBreakpoints: PropTypes.func.isRequired

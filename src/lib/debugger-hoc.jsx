@@ -27,16 +27,13 @@ const DebuggerHOC = function (WrappedComponent) {
                 'updateBreakpoints'
             ]);
 
-            // Change the `debugMode` to false every time a new project
-            // gets loaded in the VM runtime.
-            this.props.vm.runtime.on('PROJECT_LOADED', this.handleProjectLoaded);
-            this.props.vm.runtime.on('workspaceUpdate', this.highlightBreakpoints);
-
             this.breakpoints = new Set();
 
-            // Set initial debugMode and breakpoints.
-            this.props.vm.runtime.sequencer.debugMode = this.props.debugMode;
+            // Set breakpoints and initial debugMode.
             this.props.vm.runtime.sequencer.breakpoints = this.breakpoints;
+            this.props.vm.runtime.sequencer.debugMode = this.props.debugMode;
+
+            this.props.vm.addListener('PROJECT_LOADED', this.handleProjectLoaded);
         }
 
         shouldComponentUpdate (nextProps) {
@@ -65,25 +62,42 @@ const DebuggerHOC = function (WrappedComponent) {
             }
         }
 
+        /**
+         * When a new project gets loaded into the VM,
+         * disable debug mode and clear the current set of breakpoints.
+         */
         handleProjectLoaded () {
             this.props.disableDebugMode();
             this.clearBreakpoints();
         }
 
-        highlightBreakpoints () {}
-
+        /**
+         * Removes all current breakpoints.
+         */
         clearBreakpoints () {
             this.breakpoints.clear();
         }
 
+        /**
+         * Removes the breakpoint for the block corresponding to `blockId`.
+         * If this block didn't contain a breakpoint, nothing happens.
+         * @param {string} blockId - id of block whose breakpoint to remove
+         */
         removeBreakpoint (blockId) {
             this.breakpoints.delete(blockId);
         }
 
+        /**
+         * If a breakpoint corresponding to `blockId` exists, it gets removed.
+         * Else, a breakpoint for `blockId` gets added.
+         * @param {string} blockId - id of block for which a breakpoint must be added/removed
+         */
         updateBreakpoints (blockId) {
             if (!this.breakpoints.delete(blockId)) {
                 this.breakpoints.add(blockId);
             }
+
+            this.props.vm.emitWorkspaceUpdate();
         }
 
         /**
