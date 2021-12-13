@@ -424,7 +424,10 @@ class Blocks extends React.Component {
         // Color all blocks with breakpoints red.
         for (const blockId of this.props.breakpoints) {
             const block = this.workspace.blockDB_[blockId];
-            block.setColour('#FF0000', block.colourSecondary_, block.colourTertiary_);
+
+            if (block) {
+                block.setColour('#FF0000', block.colourSecondary_, block.colourTertiary_);
+            }
         }
     }
     handleExtensionAdded (categoryInfo) {
