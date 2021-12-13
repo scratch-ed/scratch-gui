@@ -4,7 +4,7 @@ import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import {Context} from '@ftrprf/judge-core';
 import {disableAnimation, enableAnimation, setNumberOfFrames, setTimeFrame} from '../reducers/debugger.js';
-import {positionsAreEqual, updateSprite} from '../util.js';
+import {findSpriteLog, positionsAreEqual, updateSprite} from '../util.js';
 import VM from 'scratch-vm';
 import bindAll from 'lodash.bindall';
 
@@ -16,9 +16,9 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             // The time interval after which the animation must be updated (in ms).
             this.ANIMATION_INTERVAL = 100;
 
-            this.animateIndex = 0;
             this.intervalIndex = null;
-            this.trail = [];
+            this.animateIndex = {};
+            this.trail = {};
 
             bindAll(this, [
                 'updateAnimation'
@@ -50,8 +50,8 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 // wil be destroyed in the DebuggerHOC.
                 this.clearSkins();
 
-                this.animateIndex = 0;
-                this.trail = [];
+                this.animateIndex = {};
+                this.trail = {};
 
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
@@ -80,49 +80,53 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         }
 
         resetTrail () {
-            // Log contains no frames.
-            if (this.props.numberOfFrames <= 0) {
+            if (this.props.numberOfFrames === 0) {
                 return;
             }
 
             this.props.vm.renderer.penClear(this.props.trailSkinId);
             this.props.vm.renderer.penClear(this.props.animationSkinId);
 
-            this.animateIndex = 0;
-            this.trail = [];
+            this.animateIndex = {};
+            this.trail = {};
 
-            let renderedAmount = 0;
-            const previousPositions = new Map();
+            let frame = this.props.context.log.frames[this.props.timeFrame];
 
-            let currentIndex = this.props.timeFrame;
-            while (renderedAmount < this.props.trailLength && currentIndex >= 0) {
-                const frame = this.props.context.log.frames[currentIndex];
+            for (const spriteLog of frame.sprites) {
+                const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
 
-                for (const spriteLog of frame.sprites) {
-                    const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
+                if (sprite) {
+                    let currentIndex = this.props.timeFrame;
+                    let previousPosition = [-1, -1];
+                    let renderedAmount = 0;
 
-                    if (sprite) {
-                        const previousPosition = previousPositions.get(spriteLog.name);
-                        const currentPosition = [spriteLog.x, spriteLog.y];
+                    this.trail[sprite.id] = [];
+
+                    while (renderedAmount < this.props.trailLength && currentIndex >= 0) {
+                        const currentFrame = this.props.context.log.frames[currentIndex];
+                        const currentSpriteLog = findSpriteLog(currentFrame, sprite.id);
+
+                        const currentPosition = [currentSpriteLog.x, currentSpriteLog.y];
 
                         if (currentIndex !== this.props.timeFrame &&
                             !positionsAreEqual(previousPosition, currentPosition)
                         ) {
                             this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 90);
-                            updateSprite(sprite, spriteLog);
+                            updateSprite(sprite, currentSpriteLog);
                             this.props.vm.renderer.penStamp(this.props.trailSkinId, sprite.drawableID);
 
-                            previousPositions.set(spriteLog.name, currentPosition);
-                            this.trail.unshift(currentIndex);
+                            previousPosition = currentPosition;
+                            this.trail[sprite.id].unshift(currentIndex);
                             renderedAmount++;
                         }
+
+                        currentIndex--;
                     }
                 }
-
-                currentIndex--;
             }
 
-            const frame = this.props.context.log.frames[this.props.timeFrame];
+            frame = this.props.context.log.frames[this.props.timeFrame];
+
             for (const spriteLog of frame.sprites) {
                 const sprite = this.props.context.vm.runtime.getSpriteTargetByName(spriteLog.name);
 
@@ -134,29 +138,39 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         }
 
         updateAnimation () {
-            if (this.props.animate && this.trail.length > 0) {
-                this.props.context.vm.renderer.penClear(this.props.animationSkinId);
+            if (!this.props.animate || this.props.numberOfFrames === 0) {
+                return;
+            }
 
-                let frame = this.props.context.log.frames[this.trail[this.animateIndex]];
-                for (const spriteLog of frame.sprites) {
-                    const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
+            this.props.context.vm.renderer.penClear(this.props.animationSkinId);
+
+            for (const spriteId in this.trail) {
+                if (this.trail[spriteId].length > 0) {
+                    const animateIndex = this.animateIndex[spriteId] ? this.animateIndex[spriteId] : 0;
+                    const frameIndex = this.trail[spriteId][animateIndex];
+
+                    const currentFrame = this.props.context.log.frames[frameIndex];
+                    const spriteLog = findSpriteLog(currentFrame, spriteId);
+
+                    const sprite = this.props.vm.runtime.getTargetById(spriteId);
                     if (sprite) {
                         this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 50);
                         updateSprite(sprite, spriteLog);
                         this.props.vm.renderer.penStamp(this.props.animationSkinId, sprite.drawableID);
                     }
-                }
 
-                frame = this.props.context.log.frames[this.props.timeFrame];
-                for (const spriteLog of frame.sprites) {
-                    const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
-                    if (sprite) {
-                        this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 0);
-                        updateSprite(sprite, spriteLog);
-                    }
+                    this.animateIndex[spriteId] = (animateIndex + 1) % this.trail[spriteId].length;
                 }
+            }
 
-                this.animateIndex = (this.animateIndex + 1) % this.trail.length;
+            const currentFrame = this.props.context.log.frames[this.props.timeFrame];
+
+            for (const spriteLog of currentFrame.sprites) {
+                const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
+                if (sprite) {
+                    this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 0);
+                    updateSprite(sprite, spriteLog);
+                }
             }
         }
 

@@ -28,3 +28,20 @@ export const updateSprite = function (sprite, spriteLog) {
     sprite.setDirection(spriteLog.direction);
     sprite.setCostume(sprite.getCostumeIndexByName(spriteLog.costume));
 };
+
+/**
+ * Finds the logged sprite in the log frame corresponding to the given sprite id.
+ *
+ * @param {LogFrame} frame - frame in the log
+ * @param {string} spriteId - id of the sprite
+ * @return {LoggedSprite | null} - logged sprite corresponding to given id
+ */
+export const findSpriteLog = function (frame, spriteId) {
+    for (const spriteLog of frame.sprites) {
+        if (spriteLog.id === spriteId) {
+            return spriteLog;
+        }
+    }
+
+    return null;
+};
