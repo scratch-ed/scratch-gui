@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
 
 import Box from '../box/box.jsx';
 import TimeSliderComponent from '../time-slider/time-slider.jsx';
