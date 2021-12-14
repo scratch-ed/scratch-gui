@@ -3,11 +3,13 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import styles from './menu.css';
+import {connect} from 'react-redux';
 
 const MenuComponent = ({
     className = '',
     children,
     componentRef,
+    debugMode,
     place = 'right'
 }) => (
     <ul
@@ -17,6 +19,9 @@ const MenuComponent = ({
             {
                 [styles.left]: place === 'left',
                 [styles.right]: place === 'right'
+            },
+            {
+                [styles.debugMode]: debugMode
             }
         )}
         ref={componentRef}
@@ -29,9 +34,13 @@ MenuComponent.propTypes = {
     children: PropTypes.node,
     className: PropTypes.string,
     componentRef: PropTypes.func,
+    debugMode: PropTypes.bool,
     place: PropTypes.oneOf(['left', 'right'])
 };
 
+const mapStateToProps = state => ({
+    debugMode: state.scratchGui.debugger.debugMode
+});
 
 const MenuItem = ({
     children,
@@ -56,7 +65,6 @@ MenuItem.propTypes = {
     onClick: PropTypes.func
 };
 
-
 const addDividerClassToFirstChild = (child, id) => (
     child && React.cloneElement(child, {
         className: classNames(
@@ -77,8 +85,11 @@ MenuSection.propTypes = {
     children: PropTypes.node
 };
 
+export default connect(
+    mapStateToProps
+)(MenuComponent);
+
 export {
-    MenuComponent as default,
     MenuItem,
     MenuSection
 };

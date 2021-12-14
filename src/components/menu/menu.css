@@ -32,6 +32,10 @@
     font-weight: bold;
 }
 
+.debug-mode {
+    background-color: $ui-debug;
+}
+
 .menu-item.active,
 .menu-item:hover {
     background-color: $ui-black-transparent;

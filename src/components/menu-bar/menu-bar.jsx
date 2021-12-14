@@ -383,7 +383,10 @@ class MenuBar extends React.Component {
             <Box
                 className={classNames(
                     this.props.className,
-                    styles.menuBar
+                    styles.menuBar,
+                    {
+                        [styles.debugMode]: this.props.debugMode
+                    }
                 )}
             >
                 <div className={styles.mainMenu}>
@@ -770,6 +773,7 @@ MenuBar.propTypes = {
     canShare: PropTypes.bool,
     className: PropTypes.string,
     confirmReadyToReplaceProject: PropTypes.func,
+    debugMode: PropTypes.bool,
     editMenuOpen: PropTypes.bool,
     enableCommunity: PropTypes.bool,
     fileMenuOpen: PropTypes.bool,
@@ -837,6 +841,7 @@ const mapStateToProps = (state, ownProps) => {
     return {
         aboutMenuOpen: aboutMenuOpen(state),
         accountMenuOpen: accountMenuOpen(state),
+        debugMode: state.scratchGui.debugger.debugMode,
         fileMenuOpen: fileMenuOpen(state),
         editMenuOpen: editMenuOpen(state),
         isRtl: state.locales.isRtl,
