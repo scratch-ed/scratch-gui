@@ -22,6 +22,7 @@ const DebuggerHOC = function (WrappedComponent) {
             super(props);
 
             bindAll(this, [
+                'clearBreakpoints',
                 'handleProjectLoaded',
                 'removeBreakpoint',
                 'updateBreakpoints'
@@ -33,7 +34,7 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.sequencer.breakpoints = this.breakpoints;
             this.props.vm.runtime.sequencer.debugMode = this.props.debugMode;
 
-            this.props.vm.addListener('PROJECT_LOADED', this.handleProjectLoaded);
+            this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
         }
 
         shouldComponentUpdate (nextProps) {
