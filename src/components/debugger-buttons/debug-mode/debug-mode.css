@@ -1,0 +1,18 @@
+@import "../../../css/colors.css";
+
+.debug-mode {
+    width: 2rem;
+    height: 2rem;
+    padding: 0.375rem;
+    border-radius: 0.25rem;
+    user-select: none;
+    cursor: pointer;
+}
+
+.debug-mode:hover {
+    background-color: $motion-light-transparent;
+}
+
+.debug-mode.in-debug-mode {
+    background-color: $motion-transparent;
+}

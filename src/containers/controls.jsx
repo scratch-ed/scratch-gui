@@ -14,6 +14,9 @@ class Controls extends React.Component {
         bindAll(this, [
             'handleDebugModeClick',
             'handleGreenFlagClick',
+            'handlePauseClick',
+            'handleResumeClick',
+            'handleStepClick',
             'handleStopAllClick'
         ]);
     }
@@ -33,6 +36,21 @@ class Controls extends React.Component {
             }
             this.props.vm.greenFlag();
         }
+    }
+
+    handlePauseClick (e) {
+        e.preventDefault();
+        this.props.vm.runtime.sequencer.pause();
+    }
+
+    handleResumeClick (e) {
+        e.preventDefault();
+        this.props.vm.runtime.sequencer.resume();
+    }
+
+    handleStepClick (e) {
+        e.preventDefault();
+        this.props.vm.runtime.sequencer.step();
     }
 
     handleStopAllClick (e) {
@@ -57,6 +75,9 @@ class Controls extends React.Component {
                 turbo={turbo}
                 onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
+                onPauseClick={this.handlePauseClick}
+                onResumeClick={this.handleResumeClick}
+                onStepClick={this.handleStepClick}
                 onStopAllClick={this.handleStopAllClick}
             />
         );

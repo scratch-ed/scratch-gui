@@ -5,10 +5,14 @@ import {defineMessages, injectIntl, intlShape} from 'react-intl';
 
 import GreenFlag from '../green-flag/green-flag.jsx';
 import StopAll from '../stop-all/stop-all.jsx';
-import DebugMode from '../debug-mode/debug-mode.jsx';
+import DebugMode from '../debugger-buttons/debug-mode/debug-mode.jsx';
+import Resume from '../debugger-buttons/resume/resume.jsx';
+import Pause from '../debugger-buttons/pause/pause.jsx';
+import Step from '../debugger-buttons/step/step.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
 
 import styles from './controls.css';
+
 
 const messages = defineMessages({
     goTitle: {
@@ -23,8 +27,23 @@ const messages = defineMessages({
     },
     debugTitle: {
         id: 'gui.controls.debug',
-        defaultMessage: 'Debug',
-        description: 'Debug mode title'
+        defaultMessage: 'Debug mode',
+        description: 'Debug mode button title'
+    },
+    resumeTitle: {
+        id: 'gui.controls.resume',
+        defaultMessage: 'Resume',
+        description: 'Resume button title'
+    },
+    pauseTitle: {
+        id: 'gui.controls.pause',
+        defaultMessage: 'Pause',
+        description: 'Pause button title'
+    },
+    stepTitle: {
+        id: 'gui.controls.step',
+        defaultMessage: 'Step',
+        description: 'Step button title'
     }
 });
 
@@ -36,6 +55,9 @@ const Controls = function (props) {
         intl,
         onDebugModeClick,
         onGreenFlagClick,
+        onPauseClick,
+        onResumeClick,
+        onStepClick,
         onStopAllClick,
         turbo,
         ...componentProps
@@ -61,6 +83,22 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.debugTitle)}
                 onClick={onDebugModeClick}
             />
+            {debugMode ?
+                <>
+                    <Resume
+                        title={intl.formatMessage(messages.resumeTitle)}
+                        onClick={onResumeClick}
+                    />
+                    <Pause
+                        title={intl.formatMessage(messages.pauseTitle)}
+                        onClick={onPauseClick}
+                    />
+                    <Step
+                        title={intl.formatMessage(messages.stepTitle)}
+                        onClick={onStepClick}
+                    />
+                </> :
+                null}
             {turbo ? (
                 <TurboMode />
             ) : null}
@@ -75,6 +113,9 @@ Controls.propTypes = {
     intl: intlShape.isRequired,
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
+    onPauseClick: PropTypes.func.isRequired,
+    onResumeClick: PropTypes.func.isRequired,
+    onStepClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
     turbo: PropTypes.bool
 };
