@@ -90,5 +90,18 @@ npm run deploy
 
 Het project zal zichtbaar zijn op: https://github.ugent.be/pages/scratch4d/scratch-debugger-gui/
 
+## Iconen
+Alle toegevoegde iconen bevinden zich in `src/debugger-icons`.
+
+### Links
+- [`icon--debug-mode.svg`](https://www.iconfinder.com/icons/3671718/bug_icon)
+- [`icon--debugger.svg`](https://www.iconfinder.com/icons/3671718/bug_icon)
+- [`icon--pause.svg`](https://www.svgrepo.com/svg/176023/music-pause-button-pair-of-lines)
+- [`icon-resume.svg`](https://www.svgrepo.com/svg/204978/play)
+- [`icon-step.svg`](https://www.iconfinder.com/icons/1564530/arrow_next_share_direction_icon)
+
+### Wijzigingen
+- `icon--debugger.svg`: Toevoeging kleur #4C97FF.
+
 ## Overig
 Zie [README_ORIGINAL.md](README_ORIGINAL.md) voor de originele README van het `scratch-gui`-project.
