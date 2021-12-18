@@ -87,6 +87,7 @@ class Controls extends React.Component {
 Controls.propTypes = {
     debugMode: PropTypes.bool.isRequired,
     isStarted: PropTypes.bool.isRequired,
+    paused: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     toggleDebugMode: PropTypes.func.isRequired,
     turbo: PropTypes.bool.isRequired,
@@ -96,6 +97,7 @@ Controls.propTypes = {
 const mapStateToProps = state => ({
     debugMode: state.scratchGui.debugger.debugMode,
     isStarted: state.scratchGui.vmStatus.running,
+    paused: state.scratchGui.debugger.paused,
     projectRunning: state.scratchGui.vmStatus.running,
     turbo: state.scratchGui.vmStatus.turbo
 });

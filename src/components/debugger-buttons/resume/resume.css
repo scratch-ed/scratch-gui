@@ -12,3 +12,11 @@
 .resume:hover {
     background-color: $motion-light-transparent;
 }
+
+.resume {
+    opacity: 0.5;
+}
+
+.resume.is-paused {
+    opacity: 1;
+}

@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import debugModeIcon from './icon--debug-mode.svg';
+import debugModeIcon from '../../../debugger-icons/icon--debug-mode.svg';
 import styles from './debug-mode.css';
 
 const DebugModeComponent = function (props) {

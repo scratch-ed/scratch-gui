@@ -12,3 +12,11 @@
 .step:hover {
     background-color: $motion-light-transparent;
 }
+
+.step {
+    opacity: 0.5;
+}
+
+.step.is-paused {
+    opacity: 1;
+}

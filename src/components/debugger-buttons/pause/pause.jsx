@@ -2,13 +2,14 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import pauseIcon from './icon--pause.svg';
+import pauseIcon from '../../../debugger-icons/icon--pause.svg';
 import styles from './pause.css';
 
 const PauseComponent = function (props) {
     const {
         className,
         onClick,
+        paused,
         title,
         ...componentProps
     } = props;
@@ -17,7 +18,10 @@ const PauseComponent = function (props) {
         <img
             className={classNames(
                 className,
-                styles.pause
+                styles.pause,
+                {
+                    [styles.isPaused]: paused
+                }
             )}
             draggable={false}
             src={pauseIcon}
@@ -31,6 +35,7 @@ const PauseComponent = function (props) {
 PauseComponent.propTypes = {
     className: PropTypes.string,
     onClick: PropTypes.func.isRequired,
+    paused: PropTypes.bool.isRequired,
     title: PropTypes.string
 };
 

@@ -19,6 +19,7 @@ const initialState = {
     context: null,
     debugMode: false,
     numberOfFrames: 0,
+    paused: false,
     timeFrame: 0,
     trailLength: 0
 };

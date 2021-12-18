@@ -39,7 +39,7 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
-import debuggerIcon from './icon--debugger.svg';
+import debuggerIcon from '../../debugger-icons/icon--debugger.svg';
 import DebuggerTab from '../../containers/debugger-tab.jsx';
 
 const messages = defineMessages({

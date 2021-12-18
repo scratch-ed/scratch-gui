@@ -59,6 +59,7 @@ const Controls = function (props) {
         onResumeClick,
         onStepClick,
         onStopAllClick,
+        paused,
         turbo,
         ...componentProps
     } = props;
@@ -86,14 +87,17 @@ const Controls = function (props) {
             {debugMode ?
                 <>
                     <Resume
+                        paused={paused}
                         title={intl.formatMessage(messages.resumeTitle)}
                         onClick={onResumeClick}
                     />
                     <Pause
+                        paused={paused}
                         title={intl.formatMessage(messages.pauseTitle)}
                         onClick={onPauseClick}
                     />
                     <Step
+                        paused={paused}
                         title={intl.formatMessage(messages.stepTitle)}
                         onClick={onStepClick}
                     />
@@ -117,6 +121,7 @@ Controls.propTypes = {
     onResumeClick: PropTypes.func.isRequired,
     onStepClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
+    paused: PropTypes.bool.isRequired,
     turbo: PropTypes.bool
 };
 

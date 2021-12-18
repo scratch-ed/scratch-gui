@@ -12,3 +12,7 @@
 .pause:hover {
     background-color: $motion-light-transparent;
 }
+
+.pause.is-paused {
+    background-color: $motion-transparent;
+}

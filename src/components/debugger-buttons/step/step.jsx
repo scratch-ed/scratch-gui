@@ -2,13 +2,14 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import stepIcon from './icon--step.svg';
+import stepIcon from '../../../debugger-icons/icon--step.svg';
 import styles from './step.css';
 
 const StepComponent = function (props) {
     const {
         className,
         onClick,
+        paused,
         title,
         ...componentProps
     } = props;
@@ -17,7 +18,10 @@ const StepComponent = function (props) {
         <img
             className={classNames(
                 className,
-                styles.step
+                styles.step,
+                {
+                    [styles.isPaused]: paused
+                }
             )}
             draggable={false}
             src={stepIcon}
@@ -31,6 +35,7 @@ const StepComponent = function (props) {
 StepComponent.propTypes = {
     className: PropTypes.string,
     onClick: PropTypes.func.isRequired,
+    paused: PropTypes.bool.isRequired,
     title: PropTypes.string
 };
 

@@ -2,13 +2,14 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import resumeIcon from './icon--resume.svg';
+import resumeIcon from '../../../debugger-icons/icon--resume.svg';
 import styles from './resume.css';
 
 const ResumeComponent = function (props) {
     const {
         className,
         onClick,
+        paused,
         title,
         ...componentProps
     } = props;
@@ -17,7 +18,10 @@ const ResumeComponent = function (props) {
         <img
             className={classNames(
                 className,
-                styles.resume
+                styles.resume,
+                {
+                    [styles.isPaused]: paused
+                }
             )}
             draggable={false}
             src={resumeIcon}
@@ -31,6 +35,7 @@ const ResumeComponent = function (props) {
 ResumeComponent.propTypes = {
     className: PropTypes.string,
     onClick: PropTypes.func.isRequired,
+    paused: PropTypes.bool.isRequired,
     title: PropTypes.string
 };
 
