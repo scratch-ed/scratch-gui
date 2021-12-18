@@ -7,6 +7,7 @@ import {
     setAnimationSkinId,
     setContext,
     setDebugMode,
+    setPaused,
     setNumberOfFrames,
     setTimeFrame,
     setTrailSkinId
@@ -24,6 +25,8 @@ const DebuggerHOC = function (WrappedComponent) {
             bindAll(this, [
                 'clearBreakpoints',
                 'handleProjectLoaded',
+                'handleProjectPaused',
+                'handleProjectResumed',
                 'removeBreakpoint',
                 'updateBreakpoints'
             ]);
@@ -35,6 +38,9 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.sequencer.debugMode = this.props.debugMode;
 
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
+
+            this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
+            this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
         }
 
         shouldComponentUpdate (nextProps) {
@@ -70,6 +76,14 @@ const DebuggerHOC = function (WrappedComponent) {
         handleProjectLoaded () {
             this.props.disableDebugMode();
             this.clearBreakpoints();
+        }
+
+        handleProjectPaused () {
+            this.props.setPaused(true);
+        }
+
+        handleProjectResumed () {
+            this.props.setPaused(false);
         }
 
         /**
@@ -162,6 +176,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'setAnimationSkinId',
                 'setContext',
                 'setNumberOfFrames',
+                'setPaused',
                 'setTimeFrame',
                 'setTrailSkinId'
             ]);
@@ -193,6 +208,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setAnimationSkinId: PropTypes.func.isRequired,
         setContext: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
+        setPaused: PropTypes.func.isRequired,
         setTimeFrame: PropTypes.func.isRequired,
         setTrailSkinId: PropTypes.func.isRequired
     };
@@ -216,6 +232,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setAnimationSkinId: animationSkinId => dispatch(setAnimationSkinId(animationSkinId)),
         setContext: context => dispatch(setContext(context)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
+        setPaused: paused => dispatch(setPaused(paused)),
         setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
         setTrailSkinId: trailSkinId => dispatch(setTrailSkinId(trailSkinId))
     });
