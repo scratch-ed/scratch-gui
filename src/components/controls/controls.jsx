@@ -88,16 +88,19 @@ const Controls = function (props) {
                 <>
                     <Resume
                         paused={paused}
+                        running={active}
                         title={intl.formatMessage(messages.resumeTitle)}
                         onClick={onResumeClick}
                     />
                     <Pause
                         paused={paused}
+                        running={active}
                         title={intl.formatMessage(messages.pauseTitle)}
                         onClick={onPauseClick}
                     />
                     <Step
                         paused={paused}
+                        running={active}
                         title={intl.formatMessage(messages.stepTitle)}
                         onClick={onStepClick}
                     />

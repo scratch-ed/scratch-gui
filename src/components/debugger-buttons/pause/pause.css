@@ -13,6 +13,14 @@
     background-color: $motion-light-transparent;
 }
 
-.pause.is-paused {
+.pause {
+    opacity: 0.5;
+}
+
+.pause.is-enabled {
+    opacity: 1;
+}
+
+.pause.is-active {
     background-color: $motion-transparent;
 }

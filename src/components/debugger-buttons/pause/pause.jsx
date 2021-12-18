@@ -10,6 +10,7 @@ const PauseComponent = function (props) {
         className,
         onClick,
         paused,
+        running,
         title,
         ...componentProps
     } = props;
@@ -20,7 +21,9 @@ const PauseComponent = function (props) {
                 className,
                 styles.pause,
                 {
-                    [styles.isPaused]: paused
+                    [styles.isEnabled]: running,
+                    [styles.isActive]: running && paused
+
                 }
             )}
             draggable={false}
@@ -36,6 +39,7 @@ PauseComponent.propTypes = {
     className: PropTypes.string,
     onClick: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
+    running: PropTypes.bool.isRequired,
     title: PropTypes.string
 };
 

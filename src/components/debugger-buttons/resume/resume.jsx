@@ -10,6 +10,7 @@ const ResumeComponent = function (props) {
         className,
         onClick,
         paused,
+        running,
         title,
         ...componentProps
     } = props;
@@ -20,7 +21,7 @@ const ResumeComponent = function (props) {
                 className,
                 styles.resume,
                 {
-                    [styles.isPaused]: paused
+                    [styles.isEnabled]: running && paused
                 }
             )}
             draggable={false}
@@ -36,6 +37,7 @@ ResumeComponent.propTypes = {
     className: PropTypes.string,
     onClick: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
+    running: PropTypes.bool.isRequired,
     title: PropTypes.string
 };
 

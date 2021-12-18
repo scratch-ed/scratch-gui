@@ -17,6 +17,6 @@
     opacity: 0.5;
 }
 
-.resume.is-paused {
+.resume.is-enabled {
     opacity: 1;
 }

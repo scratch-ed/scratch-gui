@@ -17,6 +17,6 @@
     opacity: 0.5;
 }
 
-.step.is-paused {
+.step.is-enabled {
     opacity: 1;
 }
