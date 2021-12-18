@@ -74,8 +74,16 @@ const DebuggerHOC = function (WrappedComponent) {
          * disable debug mode and clear the current set of breakpoints.
          */
         handleProjectLoaded () {
+            const containsBreakpoints = this.breakpoints.size > 0;
+
             this.props.disableDebugMode();
             this.clearBreakpoints();
+
+            // Manually trigger a workspace update to remove the red color
+            // from block ids that contain a breakpoint.
+            if (containsBreakpoints) {
+                this.props.vm.emitWorkspaceUpdate();
+            }
         }
 
         handleProjectPaused () {
