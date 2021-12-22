@@ -97,8 +97,8 @@ Alle toegevoegde iconen bevinden zich in `src/debugger-icons`.
 - [`icon--debug-mode.svg`](https://www.iconfinder.com/icons/3671718/bug_icon)
 - [`icon--debugger.svg`](https://www.iconfinder.com/icons/3671718/bug_icon)
 - [`icon--pause.svg`](https://www.svgrepo.com/svg/176023/music-pause-button-pair-of-lines)
-- [`icon-resume.svg`](https://www.svgrepo.com/svg/204978/play)
-- [`icon-step.svg`](https://www.iconfinder.com/icons/1564530/arrow_next_share_direction_icon)
+- [`icon--resume.svg`](https://www.svgrepo.com/svg/204978/play)
+- [`icon--step.svg`](https://www.iconfinder.com/icons/1564530/arrow_next_share_direction_icon)
 
 ### Wijzigingen
 - `icon--debugger.svg`: Toevoeging kleur #4C97FF.
