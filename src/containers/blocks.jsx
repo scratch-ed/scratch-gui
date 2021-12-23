@@ -426,9 +426,13 @@ class Blocks extends React.Component {
             const block = this.workspace.blockDB_[blockId];
 
             if (block) {
-                block.setColour('#FF0000', block.colourSecondary_, block.colourTertiary_);
+                block.setColour('#FF0000', '#B60000', '#B60000');
             }
         }
+
+        // Reset the block glow.
+        const sequencer = this.props.vm.runtime.sequencer;
+        sequencer.glowLastExecutedBlocks(sequencer.isPaused());
     }
     handleExtensionAdded (categoryInfo) {
         const defineBlocks = blockInfoArray => {
