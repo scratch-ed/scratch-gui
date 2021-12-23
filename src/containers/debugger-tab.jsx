@@ -17,16 +17,16 @@ class DebuggerTab extends React.Component {
         super(props);
 
         bindAll(this, [
-            'handleTimeInput',
+            'handleTimeChange',
             'handleTimeMouseDown',
             'handleTimeMouseUp',
-            'handleTrailInput',
+            'handleTrailChange',
             'handleTrailMouseDown',
             'handleTrailMouseUp'
         ]);
     }
 
-    handleTimeInput (event) {
+    handleTimeChange (event) {
         this.props.setTimeFrame(parseInt(event.target.value, 10));
     }
 
@@ -43,7 +43,7 @@ class DebuggerTab extends React.Component {
         }
     }
 
-    handleTrailInput (event) {
+    handleTrailChange (event) {
         this.props.setTrailLength(parseInt(event.target.value, 10));
     }
 
@@ -74,10 +74,10 @@ class DebuggerTab extends React.Component {
         return (
             <DebuggerTabComponent
                 {...componentProps}
-                onTimeChange={this.handleTimeInput}
+                onTimeChange={this.handleTimeChange}
                 onTimeMouseDown={this.handleTimeMouseDown}
                 onTimeMouseUp={this.handleTimeMouseUp}
-                onTrailChange={this.handleTrailInput}
+                onTrailChange={this.handleTrailChange}
                 onTrailMouseDown={this.handleTrailMouseDown}
                 onTrailMouseUp={this.handleTrailMouseUp}
             />
