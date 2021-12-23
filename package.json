@@ -26,7 +26,6 @@
         "url": "git+ssh://git@github.com/LLK/scratch-gui.git"
     },
     "dependencies": {
-        "ace-builds": "^1.4.13",
         "arraybuffer-loader": "^1.0.6",
         "autoprefixer": "^9.0.1",
         "base64-loader": "1.0.0",
@@ -59,7 +58,6 @@
         "query-string": "^5.1.1",
         "raw-loader": "^0.5.1",
         "react": "^16.0.0",
-        "react-ace": "^9.5.0",
         "react-contextmenu": "2.9.4",
         "react-dom": "^16.0.0",
         "react-draggable": "3.0.5",
@@ -71,7 +69,6 @@
         "react-responsive": "5.0.0",
         "react-style-proptype": "3.2.2",
         "react-tabs": "2.3.0",
-        "react-toggle-button": "^2.2.0",
         "react-tooltip": "3.8.0",
         "react-virtualized": "9.20.1",
         "redux": "3.7.2",
