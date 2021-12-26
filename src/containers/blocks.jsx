@@ -87,29 +87,8 @@ class Blocks extends React.Component {
         this.onTargetsUpdate = debounce(this.onTargetsUpdate, 100);
         this.toolboxUpdateQueue = [];
 
-        // OVERRIDE BLOCKLY METHODS IN ORDER TO ADD/REMOVE BREAKPOINTS
-        const self = this;
-        // Override behaviour when a block is clicked.
-        const oldDoBlockClick = this.ScratchBlocks.Gesture.prototype.doBlockClick_;
-        this.ScratchBlocks.Gesture.prototype.doBlockClick_ = function () {
-            if (self.props.debugMode) {
-                if (!this.targetBlock_.isInFlyout) {
-                    self.props.updateBreakpoints(this.targetBlock_.id);
-                }
-            } else {
-                oldDoBlockClick.bind(this)();
-            }
-        };
-
-        // Override behaviour when a block is removed.
-        const oldDispose = this.ScratchBlocks.Block.prototype.dispose;
-        this.ScratchBlocks.Block.prototype.dispose = function (healStack) {
-            if (this.workspace && !this.workspace.isClearing && self.ScratchBlocks.Events.isEnabled()) {
-                self.props.removeBreakpoint(this.id);
-            }
-
-            oldDispose.bind(this)(healStack);
-        };
+        // OVERRIDE BLOCKLY METHODS
+        this.overrideBlocklyMethods();
     }
     componentDidMount () {
         this.ScratchBlocks.FieldColourSlider.activateEyedropper_ = this.props.onActivateColorPicker;
@@ -216,6 +195,31 @@ class Blocks extends React.Component {
         this.detachVM();
         this.workspace.dispose();
         clearTimeout(this.toolboxUpdateTimeout);
+    }
+    overrideBlocklyMethods () {
+        const self = this;
+
+        // Override behaviour when a block is clicked.
+        const oldDoBlockClick = this.ScratchBlocks.Gesture.prototype.doBlockClick_;
+        this.ScratchBlocks.Gesture.prototype.doBlockClick_ = function () {
+            if (self.props.debugMode) {
+                if (!this.targetBlock_.isInFlyout) {
+                    self.props.updateBreakpoints(this.targetBlock_.id);
+                }
+            } else {
+                oldDoBlockClick.bind(this)();
+            }
+        };
+
+        // Override behaviour when a block is removed.
+        const oldDispose = this.ScratchBlocks.Block.prototype.dispose;
+        this.ScratchBlocks.Block.prototype.dispose = function (healStack) {
+            if (this.workspace && !this.workspace.isClearing && self.ScratchBlocks.Events.isEnabled()) {
+                self.props.removeBreakpoint(this.id);
+            }
+
+            oldDispose.bind(this)(healStack);
+        };
     }
     requestToolboxUpdate () {
         clearTimeout(this.toolboxUpdateTimeout);
