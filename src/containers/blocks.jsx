@@ -206,7 +206,7 @@ class Blocks extends React.Component {
                         this.props.updateBreakpoints(thisArg.targetBlock_.id);
                     }
                 } else {
-                    target.apply(thisArg, argArray);
+                    return target.apply(thisArg, argArray);
                 }
             }
         });
@@ -219,7 +219,19 @@ class Blocks extends React.Component {
                     this.props.removeBreakpoint(thisArg.id);
                 }
 
-                target.apply(thisArg, argArray);
+                return target.apply(thisArg, argArray);
+            }
+        });
+
+        // Override behaviour when block is dragged
+        const oldUpdateIsDraggingBlock = this.ScratchBlocks.Gesture.prototype.updateIsDraggingBlock_;
+        this.ScratchBlocks.Gesture.prototype.updateIsDraggingBlock_ = new Proxy(oldUpdateIsDraggingBlock, {
+            apply: (target, thisArg, argArray) => {
+                if (this.props.debugMode) {
+                    return false;
+                }
+
+                return target.apply(thisArg, argArray);
             }
         });
     }
