@@ -197,29 +197,31 @@ class Blocks extends React.Component {
         clearTimeout(this.toolboxUpdateTimeout);
     }
     overrideBlocklyMethods () {
-        const self = this;
-
         // Override behaviour when a block is clicked.
         const oldDoBlockClick = this.ScratchBlocks.Gesture.prototype.doBlockClick_;
-        this.ScratchBlocks.Gesture.prototype.doBlockClick_ = function () {
-            if (self.props.debugMode) {
-                if (!this.targetBlock_.isInFlyout) {
-                    self.props.updateBreakpoints(this.targetBlock_.id);
+        this.ScratchBlocks.Gesture.prototype.doBlockClick_ = new Proxy(oldDoBlockClick, {
+            apply: (target, thisArg, argArray) => {
+                if (this.props.debugMode) {
+                    if (!thisArg.targetBlock_.isInFlyout) {
+                        this.props.updateBreakpoints(thisArg.targetBlock_.id);
+                    }
+                } else {
+                    target.apply(thisArg, argArray);
                 }
-            } else {
-                oldDoBlockClick.bind(this)();
             }
-        };
+        });
 
         // Override behaviour when a block is removed.
         const oldDispose = this.ScratchBlocks.Block.prototype.dispose;
-        this.ScratchBlocks.Block.prototype.dispose = function (healStack) {
-            if (this.workspace && !this.workspace.isClearing && self.ScratchBlocks.Events.isEnabled()) {
-                self.props.removeBreakpoint(this.id);
-            }
+        this.ScratchBlocks.Block.prototype.dispose = new Proxy(oldDispose, {
+            apply: (target, thisArg, argArray) => {
+                if (thisArg.workspace && !thisArg.workspace.isClearing) {
+                    this.props.removeBreakpoint(thisArg.id);
+                }
 
-            oldDispose.bind(this)(healStack);
-        };
+                target.apply(thisArg, argArray);
+            }
+        });
     }
     requestToolboxUpdate () {
         clearTimeout(this.toolboxUpdateTimeout);
