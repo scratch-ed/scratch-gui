@@ -77,6 +77,7 @@ const initPlayer = function (currentState) {
         }}
     );
 };
+
 const initFullScreen = function (currentState) {
     return Object.assign(
         {},
