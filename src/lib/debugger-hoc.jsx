@@ -4,13 +4,11 @@ import {connect} from 'react-redux';
 
 import VM from 'scratch-vm';
 import {
-    setAnimationSkinId,
     setContext,
     setDebugMode,
     setPaused,
     setNumberOfFrames,
-    setTimeFrame,
-    setTrailSkinId
+    setTimeFrame
 } from '../reducers/debugger.js';
 import {Context} from '@ftrprf/judge-core';
 import omit from 'lodash.omit';
@@ -144,21 +142,7 @@ const DebuggerHOC = function (WrappedComponent) {
 
                 // Set up the current VM as the VM used in the context.
                 await context.initialiseVm(this.props.vm);
-
-                // Initialize the pen skin and pen layer to draw the trail on.
-                const trailSkinId = context.vm.renderer.createPenSkin();
-                context.vm.renderer.updateDrawableSkinId(context.vm.renderer.createDrawable('pen'), trailSkinId);
-                this.props.setTrailSkinId(trailSkinId);
-
-                // Initialize the pen skin and pen layer to draw the animations on.
-                const animationSkinId = context.vm.renderer.createPenSkin();
-                context.vm.renderer.updateDrawableSkinId(context.vm.renderer.createDrawable('pen'), animationSkinId);
-                this.props.setAnimationSkinId(animationSkinId);
             } else {
-                // Destroy the skins for trail and animation.
-                this.props.vm.renderer.destroySkin(this.props.trailSkinId);
-                this.props.vm.renderer.destroySkin(this.props.animationSkinId);
-
                 // Restore the VM to the state before the creation of the current context.
                 await this.props.context.restoreVm();
 
@@ -169,24 +153,20 @@ const DebuggerHOC = function (WrappedComponent) {
         render () {
             const componentProps = omit(this.props, [
                 'activeTab',
-                'animationSkinId',
                 'context',
                 'debugMode',
                 'intervalIndex',
                 'numberOfFrames',
                 'running',
                 'timeFrame',
-                'trailSkinId',
                 'vm',
                 'activateTab',
                 'disableDebugMode',
                 'removeAllBreakpoints',
-                'setAnimationSkinId',
                 'setContext',
                 'setNumberOfFrames',
                 'setPaused',
-                'setTimeFrame',
-                'setTrailSkinId'
+                'setTimeFrame'
             ]);
 
             return (
@@ -202,47 +182,39 @@ const DebuggerHOC = function (WrappedComponent) {
 
     DebuggerWrapper.propTypes = {
         activeTab: PropTypes.number.isRequired,
-        animationSkinId: PropTypes.number.isRequired,
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         intervalIndex: PropTypes.number,
         numberOfFrames: PropTypes.number.isRequired,
         running: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
-        trailSkinId: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         activateTab: PropTypes.func.isRequired,
         disableDebugMode: PropTypes.func.isRequired,
-        setAnimationSkinId: PropTypes.func.isRequired,
         setContext: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setTimeFrame: PropTypes.func.isRequired,
-        setTrailSkinId: PropTypes.func.isRequired
     };
 
     const mapStateToProps = state => ({
         activeTab: state.scratchGui.editorTab.activeTabIndex,
-        animationSkinId: state.scratchGui.debugger.animationSkinId,
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
         intervalIndex: state.scratchGui.debugger.intervalIndex,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
         running: state.scratchGui.vmStatus.running,
         timeFrame: state.scratchGui.debugger.timeFrame,
-        trailSkinId: state.scratchGui.debugger.trailSkinId,
         vm: state.scratchGui.vm
     });
 
     const mapDispatchToProps = dispatch => ({
         activateTab: tab => dispatch(activateTab(tab)),
         disableDebugMode: () => dispatch(setDebugMode(false)),
-        setAnimationSkinId: animationSkinId => dispatch(setAnimationSkinId(animationSkinId)),
         setContext: context => dispatch(setContext(context)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setPaused: paused => dispatch(setPaused(paused)),
-        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
-        setTrailSkinId: trailSkinId => dispatch(setTrailSkinId(trailSkinId))
+        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
     });
 
     return connect(
