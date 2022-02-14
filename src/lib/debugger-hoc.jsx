@@ -194,7 +194,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setContext: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
-        setTimeFrame: PropTypes.func.isRequired,
+        setTimeFrame: PropTypes.func.isRequired
     };
 
     const mapStateToProps = state => ({
