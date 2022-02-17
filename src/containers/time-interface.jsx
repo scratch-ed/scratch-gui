@@ -1,35 +1,35 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import DebuggerTabComponent from '../components/debugger-tab/debugger-tab.jsx';
 import bindAll from 'lodash.bindall';
 import PropTypes from 'prop-types';
 import VM from 'scratch-vm';
-import {disableAnimation, enableAnimation, setTrailLength} from '../reducers/debugger.js';
+import {connect} from 'react-redux';
+import {disableAnimation, enableAnimation, setTimeFrame} from '../reducers/debugger.js';
+import TimeInterfaceComponent from '../components/time-interface/time-interface.jsx';
 import omit from 'lodash.omit';
 
-class DebuggerTab extends React.Component {
+class TimeInterface extends React.Component {
     constructor (props) {
         super(props);
 
         bindAll(this, [
-            'handleTrailChange',
-            'handleTrailMouseDown',
-            'handleTrailMouseUp'
+            'handleTimeChange',
+            'handleTimeMouseDown',
+            'handleTimeMouseUp'
         ]);
     }
 
-    handleTrailChange (event) {
-        this.props.setTrailLength(parseInt(event.target.value, 10));
+    handleTimeChange (event) {
+        this.props.setTimeFrame(parseInt(event.target.value, 10));
     }
 
-    handleTrailMouseDown () {
+    handleTimeMouseDown () {
         if (!this.props.running) {
             this.props.disableAnimation();
             this.props.vm.renderer.penClear(this.props.animationSkinId);
         }
     }
 
-    handleTrailMouseUp () {
+    handleTimeMouseUp () {
         if (!this.props.running) {
             this.props.enableAnimation();
         }
@@ -38,48 +38,49 @@ class DebuggerTab extends React.Component {
     render () {
         const componentProps = omit(this.props, [
             'animationSkinId',
-            'running',
             'vm',
             'disableAnimation',
             'enableAnimation',
-            'setTrailLength'
+            'setTimeFrame'
         ]);
 
         return (
-            <DebuggerTabComponent
+            <TimeInterfaceComponent
                 {...componentProps}
-                onTrailChange={this.handleTrailChange}
-                onTrailMouseDown={this.handleTrailMouseDown}
-                onTrailMouseUp={this.handleTrailMouseUp}
+                onTimeChange={this.handleTimeChange}
+                onTimeMouseDown={this.handleTimeMouseUp}
+                onTimeMouseUp={this.handleTimeMouseUp}
             />
         );
     }
+
 }
 
 const mapStateToProps = state => ({
     animationSkinId: state.scratchGui.debugger.animationSkinId,
+    numberOfFrames: state.scratchGui.debugger.numberOfFrames,
     running: state.scratchGui.vmStatus.running,
-    trailLength: state.scratchGui.debugger.trailLength
+    timeFrame: state.scratchGui.debugger.timeFrame
 });
 
 const mapDispatchToProps = dispatch => ({
     disableAnimation: () => dispatch(disableAnimation()),
     enableAnimation: () => dispatch(enableAnimation()),
-    setTrailLength: trailLength => dispatch(setTrailLength(trailLength))
+    setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
 });
 
-DebuggerTab.propTypes = {
+TimeInterface.propTypes = {
     animationSkinId: PropTypes.number,
-    breakpoints: PropTypes.instanceOf(Set).isRequired,
+    numberOfFrames: PropTypes.number.isRequired,
     running: PropTypes.bool.isRequired,
-    trailLength: PropTypes.number.isRequired,
+    timeFrame: PropTypes.number.isRequired,
     vm: PropTypes.instanceOf(VM).isRequired,
     disableAnimation: PropTypes.func.isRequired,
     enableAnimation: PropTypes.func.isRequired,
-    setTrailLength: PropTypes.func.isRequired
+    setTimeFrame: PropTypes.func.isRequired
 };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(DebuggerTab);
+)(TimeInterface);

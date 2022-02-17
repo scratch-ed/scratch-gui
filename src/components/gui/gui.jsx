@@ -41,6 +41,7 @@ import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
 import debuggerIcon from '../../debugger-icons/icon--debugger.svg';
 import DebuggerTab from '../../containers/debugger-tab.jsx';
+import TimeInterface from '../../containers/time-interface.jsx';
 
 const messages = defineMessages({
     addExtension: {
@@ -379,6 +380,7 @@ const GUIComponent = props => {
                                 stageSize={stageSize}
                                 vm={vm}
                             />
+                            {debugMode ? <TimeInterface vm={vm} /> : null}
                             <Box className={styles.targetWrapper}>
                                 <TargetPane
                                     stageSize={stageSize}

@@ -22,7 +22,7 @@ const SliderComponent = function (props) {
                 value={value}
             />
             <br />
-            <output name={'rangeValue'}>{value}</output>
+            <output name={'rangeValue'}>{`${value}/${max}`}</output>
         </div>
     );
 };
