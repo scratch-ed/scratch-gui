@@ -32,7 +32,7 @@ const DebuggerTabComponent = function (props) {
             <h2>{'Breakpoints: '}</h2>
             <ul>
                 {breakpoints.size > 0 ?
-                    [...breakpoints].map((blockId, i) => <li key={i}>{blockId}</li>) :
+                    Array.from(breakpoints.keys()).map((blockId, i) => <li key={i}>{blockId}</li>) :
                     <p>{'No breakpoints placed.'}</p>
                 }
             </ul>
@@ -41,7 +41,7 @@ const DebuggerTabComponent = function (props) {
 };
 
 DebuggerTabComponent.propTypes = {
-    breakpoints: PropTypes.instanceOf(Set).isRequired,
+    breakpoints: PropTypes.instanceOf(Map).isRequired,
     onTrailChange: PropTypes.func.isRequired,
     onTrailMouseDown: PropTypes.func.isRequired,
     onTrailMouseUp: PropTypes.func.isRequired,

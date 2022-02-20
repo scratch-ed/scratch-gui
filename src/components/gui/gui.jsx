@@ -59,6 +59,7 @@ const GUIComponent = props => {
     const {
         accountNavOpen,
         activeTabIndex,
+        addBreakpoint,
         alertsVisible,
         authorId,
         authorThumbnailUrl,
@@ -126,7 +127,6 @@ const GUIComponent = props => {
         targetIsStage,
         telemetryModalVisible,
         tipsLibraryVisible,
-        updateBreakpoints,
         vm,
         ...componentProps
     } = omit(props, 'dispatch');
@@ -324,6 +324,7 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
                                         <Blocks
+                                            addBreakpoint={addBreakpoint}
                                             breakpoints={breakpoints}
                                             canUseCloud={canUseCloud}
                                             grow={1}
@@ -333,7 +334,6 @@ const GUIComponent = props => {
                                             }}
                                             removeBreakpoint={removeBreakpoint}
                                             stageSize={stageSize}
-                                            updateBreakpoints={updateBreakpoints}
                                             vm={vm}
                                         />
                                     </Box>
@@ -399,6 +399,7 @@ const GUIComponent = props => {
 GUIComponent.propTypes = {
     accountNavOpen: PropTypes.bool,
     activeTabIndex: PropTypes.number,
+    addBreakpoint: PropTypes.func,
     authorId: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]), // can be false
     authorThumbnailUrl: PropTypes.string,
     authorUsername: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]), // can be false
@@ -407,7 +408,7 @@ GUIComponent.propTypes = {
     backpackVisible: PropTypes.bool,
     basePath: PropTypes.string,
     blocksTabVisible: PropTypes.bool,
-    breakpoints: PropTypes.instanceOf(Set),
+    breakpoints: PropTypes.instanceOf(Map),
     canChangeLanguage: PropTypes.bool,
     canCreateCopy: PropTypes.bool,
     canCreateNew: PropTypes.bool,
@@ -462,7 +463,6 @@ GUIComponent.propTypes = {
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
     tipsLibraryVisible: PropTypes.bool,
-    updateBreakpoints: PropTypes.func,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 

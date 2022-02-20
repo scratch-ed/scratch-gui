@@ -21,15 +21,14 @@ const DebuggerHOC = function (WrappedComponent) {
             super(props);
 
             bindAll(this, [
-                'clearBreakpoints',
+                'addBreakpoint',
                 'handleProjectLoaded',
                 'handleProjectPaused',
                 'handleProjectResumed',
-                'removeBreakpoint',
-                'updateBreakpoints'
+                'removeBreakpoint'
             ]);
 
-            this.breakpoints = new Set();
+            this.breakpoints = new Map();
 
             // Set breakpoints and initial debugMode.
             this.props.vm.runtime.sequencer.breakpoints = this.breakpoints;
@@ -75,10 +74,11 @@ const DebuggerHOC = function (WrappedComponent) {
             const containsBreakpoints = this.breakpoints.size > 0;
 
             this.props.disableDebugMode();
-            this.clearBreakpoints();
+            this.breakpoints.clear();
 
             // Manually trigger a workspace update to remove the red color
-            // from block ids that contain a breakpoint.
+            // from blocks that contain a breakpoint. This is needed when the
+            // current project gets loaded in again.
             if (containsBreakpoints) {
                 this.props.vm.emitWorkspaceUpdate();
             }
@@ -93,10 +93,15 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         /**
-         * Removes all current breakpoints.
+         * Adds a breakpoint for the block corresponding to `blockId`.
+         * If this block already contains a breakpoint, this breakpoint gets overwritten.
+         * @param {string} blockId - id of block whose breakpoint to remove
+         * @param {string?} expression - optional expression used for conditional breakpoints
          */
-        clearBreakpoints () {
-            this.breakpoints.clear();
+        addBreakpoint (blockId, expression = '') {
+            const value = {};
+
+            this.breakpoints.set(blockId, value);
         }
 
         /**
@@ -106,19 +111,6 @@ const DebuggerHOC = function (WrappedComponent) {
          */
         removeBreakpoint (blockId) {
             this.breakpoints.delete(blockId);
-        }
-
-        /**
-         * If a breakpoint corresponding to `blockId` exists, it gets removed.
-         * Else, a breakpoint for `blockId` gets added.
-         * @param {string} blockId - id of block for which a breakpoint must be added/removed
-         */
-        updateBreakpoints (blockId) {
-            if (!this.breakpoints.delete(blockId)) {
-                this.breakpoints.add(blockId);
-            }
-
-            this.props.vm.emitWorkspaceUpdate();
         }
 
         /**
@@ -162,7 +154,6 @@ const DebuggerHOC = function (WrappedComponent) {
                 'vm',
                 'activateTab',
                 'disableDebugMode',
-                'removeAllBreakpoints',
                 'setContext',
                 'setNumberOfFrames',
                 'setPaused',
@@ -172,8 +163,8 @@ const DebuggerHOC = function (WrappedComponent) {
             return (
                 <WrappedComponent
                     breakpoints={this.breakpoints}
+                    addBreakpoint={this.addBreakpoint}
                     removeBreakpoint={this.removeBreakpoint}
-                    updateBreakpoints={this.updateBreakpoints}
                     {...componentProps}
                 />
             );

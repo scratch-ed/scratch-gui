@@ -203,7 +203,13 @@ class Blocks extends React.Component {
             apply: (target, thisArg, argArray) => {
                 if (this.props.debugMode) {
                     if (!thisArg.targetBlock_.isInFlyout) {
-                        this.props.updateBreakpoints(thisArg.targetBlock_.id);
+                        if (this.props.breakpoints.has(thisArg.targetBlock_.id)) {
+                            this.props.removeBreakpoint(thisArg.targetBlock_.id);
+                        } else {
+                            this.props.addBreakpoint(thisArg.targetBlock_.id);
+                        }
+
+                        this.props.vm.emitWorkspaceUpdate();
                     }
                 } else {
                     return target.apply(thisArg, argArray);
@@ -440,7 +446,7 @@ class Blocks extends React.Component {
         this.doWorkspaceUpdate(data);
 
         // Color all blocks with breakpoints red.
-        for (const blockId of this.props.breakpoints) {
+        for (const blockId of this.props.breakpoints.keys()) {
             const block = this.workspace.blockDB_[blockId];
 
             if (block) {
@@ -584,9 +590,9 @@ class Blocks extends React.Component {
             toolboxXML,
             updateMetrics: updateMetricsProp,
             workspaceMetrics,
+            addBreakpoint: addBreakpointProp,
             debugMode,
             removeBreakpoint: removeBreakpointProp,
-            updateBreakpoints: updateBreakpointsProp,
             ...props
         } = this.props;
         /* eslint-enable no-unused-vars */
@@ -675,10 +681,10 @@ Blocks.propTypes = {
     workspaceMetrics: PropTypes.shape({
         targets: PropTypes.objectOf(PropTypes.object)
     }),
-    breakpoints: PropTypes.instanceOf(Set).isRequired,
+    addBreakpoint: PropTypes.func.isRequired,
+    breakpoints: PropTypes.instanceOf(Map).isRequired,
     debugMode: PropTypes.bool.isRequired,
-    removeBreakpoint: PropTypes.func.isRequired,
-    updateBreakpoints: PropTypes.func.isRequired
+    removeBreakpoint: PropTypes.func.isRequired
 };
 
 Blocks.defaultOptions = {
