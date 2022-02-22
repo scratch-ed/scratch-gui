@@ -317,5 +317,25 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/vernier'
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Debugger"
+                description="Name for the 'Debugger' extension"
+                id="gui.extension.debugger.name"
+            />
+        ),
+        extensionId: 'debugger',
+        iconURL: musicIconURL,
+        insetIconURL: musicInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Debug your Scratch program"
+                description="Description for the 'Debbuger' extension"
+                id="gui.extension.debugger.description"
+            />
+        ),
+        featured: true
     }
 ];
