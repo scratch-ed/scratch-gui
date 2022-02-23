@@ -8,7 +8,6 @@ import styles from './debugger-tab.css';
 
 const DebuggerTabComponent = function (props) {
     const {
-        breakpoints,
         onTrailChange,
         onTrailMouseDown,
         onTrailMouseUp,
@@ -29,19 +28,11 @@ const DebuggerTabComponent = function (props) {
                     value={trailLength}
                 />
             </label>
-            <h2>{'Breakpoints: '}</h2>
-            <ul>
-                {breakpoints.size > 0 ?
-                    Array.from(breakpoints.keys()).map((blockId, i) => <li key={i}>{blockId}</li>) :
-                    <p>{'No breakpoints placed.'}</p>
-                }
-            </ul>
         </Box>
     );
 };
 
 DebuggerTabComponent.propTypes = {
-    breakpoints: PropTypes.instanceOf(Map).isRequired,
     onTrailChange: PropTypes.func.isRequired,
     onTrailMouseDown: PropTypes.func.isRequired,
     onTrailMouseUp: PropTypes.func.isRequired,

@@ -70,7 +70,6 @@ const mapDispatchToProps = dispatch => ({
 
 DebuggerTab.propTypes = {
     animationSkinId: PropTypes.number,
-    breakpoints: PropTypes.instanceOf(Map).isRequired,
     running: PropTypes.bool.isRequired,
     trailLength: PropTypes.number.isRequired,
     vm: PropTypes.instanceOf(VM).isRequired,

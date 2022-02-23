@@ -59,7 +59,6 @@ const GUIComponent = props => {
     const {
         accountNavOpen,
         activeTabIndex,
-        addBreakpoint,
         alertsVisible,
         authorId,
         authorThumbnailUrl,
@@ -69,7 +68,6 @@ const GUIComponent = props => {
         backpackHost,
         backpackVisible,
         blocksTabVisible,
-        breakpoints,
         cardsVisible,
         canChangeLanguage,
         canCreateNew,
@@ -120,7 +118,6 @@ const GUIComponent = props => {
         onTelemetryModalCancel,
         onTelemetryModalOptIn,
         onTelemetryModalOptOut,
-        removeBreakpoint,
         showComingSoon,
         soundsTabVisible,
         stageSizeMode,
@@ -324,15 +321,12 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
                                         <Blocks
-                                            addBreakpoint={addBreakpoint}
-                                            breakpoints={breakpoints}
                                             canUseCloud={canUseCloud}
                                             grow={1}
                                             isVisible={blocksTabVisible}
                                             options={{
                                                 media: `${basePath}static/blocks-media/`
                                             }}
-                                            removeBreakpoint={removeBreakpoint}
                                             stageSize={stageSize}
                                             vm={vm}
                                         />
@@ -362,10 +356,7 @@ const GUIComponent = props => {
                                 </TabPanel>
                                 {debugMode ?
                                     <TabPanel className={tabClassNames.tabPanel}>
-                                        {debuggerTabVisible ? <DebuggerTab
-                                            breakpoints={breakpoints}
-                                            vm={vm}
-                                        /> : null}
+                                        {debuggerTabVisible ? <DebuggerTab vm={vm} /> : null}
                                     </TabPanel> : null}
                             </Tabs>
                             {backpackVisible ? (
@@ -399,7 +390,6 @@ const GUIComponent = props => {
 GUIComponent.propTypes = {
     accountNavOpen: PropTypes.bool,
     activeTabIndex: PropTypes.number,
-    addBreakpoint: PropTypes.func,
     authorId: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]), // can be false
     authorThumbnailUrl: PropTypes.string,
     authorUsername: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]), // can be false
@@ -408,7 +398,6 @@ GUIComponent.propTypes = {
     backpackVisible: PropTypes.bool,
     basePath: PropTypes.string,
     blocksTabVisible: PropTypes.bool,
-    breakpoints: PropTypes.instanceOf(Map),
     canChangeLanguage: PropTypes.bool,
     canCreateCopy: PropTypes.bool,
     canCreateNew: PropTypes.bool,
@@ -455,7 +444,6 @@ GUIComponent.propTypes = {
     onTelemetryModalOptIn: PropTypes.func,
     onTelemetryModalOptOut: PropTypes.func,
     onToggleLoginOpen: PropTypes.func,
-    removeBreakpoint: PropTypes.func,
     renderLogin: PropTypes.func,
     showComingSoon: PropTypes.bool,
     soundsTabVisible: PropTypes.bool,

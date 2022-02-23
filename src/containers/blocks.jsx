@@ -197,38 +197,6 @@ class Blocks extends React.Component {
         clearTimeout(this.toolboxUpdateTimeout);
     }
     overrideBlocklyMethods () {
-        // Override behaviour when a block is clicked.
-        const oldDoBlockClick = this.ScratchBlocks.Gesture.prototype.doBlockClick_;
-        this.ScratchBlocks.Gesture.prototype.doBlockClick_ = new Proxy(oldDoBlockClick, {
-            apply: (target, thisArg, argArray) => {
-                if (this.props.debugMode) {
-                    if (!thisArg.targetBlock_.isInFlyout) {
-                        if (this.props.breakpoints.has(thisArg.targetBlock_.id)) {
-                            this.props.removeBreakpoint(thisArg.targetBlock_.id);
-                        } else {
-                            this.props.addBreakpoint(thisArg.targetBlock_.id);
-                        }
-
-                        this.props.vm.emitWorkspaceUpdate();
-                    }
-                } else {
-                    return target.apply(thisArg, argArray);
-                }
-            }
-        });
-
-        // Override behaviour when a block is removed.
-        const oldDispose = this.ScratchBlocks.Block.prototype.dispose;
-        this.ScratchBlocks.Block.prototype.dispose = new Proxy(oldDispose, {
-            apply: (target, thisArg, argArray) => {
-                if (thisArg.workspace && !thisArg.workspace.isClearing) {
-                    this.props.removeBreakpoint(thisArg.id);
-                }
-
-                return target.apply(thisArg, argArray);
-            }
-        });
-
         // Override behaviour when block is dragged
         const oldUpdateIsDraggingBlock = this.ScratchBlocks.Gesture.prototype.updateIsDraggingBlock_;
         this.ScratchBlocks.Gesture.prototype.updateIsDraggingBlock_ = new Proxy(oldUpdateIsDraggingBlock, {
@@ -445,18 +413,9 @@ class Blocks extends React.Component {
     onWorkspaceUpdate (data) {
         this.doWorkspaceUpdate(data);
 
-        // Color all blocks with breakpoints red.
-        for (const blockId of this.props.breakpoints.keys()) {
-            const block = this.workspace.blockDB_[blockId];
-
-            if (block) {
-                block.setColour('#FF0000', '#B60000', '#B60000');
-            }
-        }
-
         // Reset the block glow.
-        const sequencer = this.props.vm.runtime.sequencer;
-        sequencer.glowLastExecutedBlocks(sequencer.isPaused());
+        const runtime = this.props.vm.runtime;
+        runtime.sequencer.glowLastExecutedBlocks(runtime.isPaused());
     }
     handleExtensionAdded (categoryInfo) {
         const defineBlocks = blockInfoArray => {
@@ -590,9 +549,7 @@ class Blocks extends React.Component {
             toolboxXML,
             updateMetrics: updateMetricsProp,
             workspaceMetrics,
-            addBreakpoint: addBreakpointProp,
             debugMode,
-            removeBreakpoint: removeBreakpointProp,
             ...props
         } = this.props;
         /* eslint-enable no-unused-vars */
@@ -640,6 +597,7 @@ Blocks.propTypes = {
     anyModalVisible: PropTypes.bool,
     canUseCloud: PropTypes.bool,
     customProceduresVisible: PropTypes.bool,
+    debugMode: PropTypes.bool.isRequired,
     extensionLibraryVisible: PropTypes.bool,
     isRtl: PropTypes.bool,
     isVisible: PropTypes.bool,
@@ -680,11 +638,7 @@ Blocks.propTypes = {
     vm: PropTypes.instanceOf(VM).isRequired,
     workspaceMetrics: PropTypes.shape({
         targets: PropTypes.objectOf(PropTypes.object)
-    }),
-    addBreakpoint: PropTypes.func.isRequired,
-    breakpoints: PropTypes.instanceOf(Map).isRequired,
-    debugMode: PropTypes.bool.isRequired,
-    removeBreakpoint: PropTypes.func.isRequired
+    })
 };
 
 Blocks.defaultOptions = {
@@ -725,6 +679,7 @@ const mapStateToProps = state => ({
         Object.keys(state.scratchGui.modals).some(key => state.scratchGui.modals[key]) ||
         state.scratchGui.mode.isFullScreen
     ),
+    debugMode: state.scratchGui.debugger.debugMode,
     extensionLibraryVisible: state.scratchGui.modals.extensionLibrary,
     isRtl: state.locales.isRtl,
     locale: state.locales.locale,
@@ -732,7 +687,6 @@ const mapStateToProps = state => ({
     toolboxXML: state.scratchGui.toolbox.toolboxXML,
     customProceduresVisible: state.scratchGui.customProcedures.active,
     workspaceMetrics: state.scratchGui.workspaceMetrics,
-    debugMode: state.scratchGui.debugger.debugMode
 });
 
 const mapDispatchToProps = dispatch => ({

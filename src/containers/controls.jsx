@@ -41,21 +41,21 @@ class Controls extends React.Component {
     handlePauseClick (e) {
         e.preventDefault();
         if (this.props.projectRunning && !this.props.paused) {
-            this.props.vm.runtime.sequencer.pause();
+            this.props.vm.runtime.pause();
         }
     }
 
     handleResumeClick (e) {
         e.preventDefault();
         if (this.props.projectRunning && this.props.paused) {
-            this.props.vm.runtime.sequencer.resume();
+            this.props.vm.runtime.resume();
         }
     }
 
     handleStepClick (e) {
         e.preventDefault();
         if (this.props.projectRunning && this.props.paused) {
-            this.props.vm.runtime.sequencer.step();
+            this.props.vm.runtime.step();
         }
     }
 

@@ -46,6 +46,9 @@ import gdxforInsetIconURL from './gdxfor/gdxfor-small.svg';
 import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
+import debuggerIconURL from './debugger/debugger.png';
+import debuggerInsetIconURL from './debugger/debugger-small.svg';
+
 export default [
     {
         name: (
@@ -327,12 +330,12 @@ export default [
             />
         ),
         extensionId: 'debugger',
-        iconURL: musicIconURL,
-        insetIconURL: musicInsetIconURL,
+        iconURL: debuggerIconURL,
+        insetIconURL: debuggerInsetIconURL,
         description: (
             <FormattedMessage
-                defaultMessage="Debug your Scratch program"
-                description="Description for the 'Debbuger' extension"
+                defaultMessage="Debug your Scratch program."
+                description="Description for the 'Debugger' extension"
                 id="gui.extension.debugger.description"
             />
         ),
