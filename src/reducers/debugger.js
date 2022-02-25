@@ -1,13 +1,12 @@
-const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
-const TOGGLE_DEBUG_MODE = 'scratch-gui/debugger/TOGGLE_DEBUG_MODE';
-const SET_PAUSED = 'scratch-gui/debugger/SET_PAUSED';
-const ENABLE_ANIMATION = 'scratch-gui/debugger/ENABLE_ANIMATION';
-const DISABLE_ANIMATION = 'scratch-gui/debugger/DISABLE_ANIMATION';
-const SET_TRAIL_SKIN_ID = 'scratch-gui/debugger/SET_TRAIL_SKIN_ID';
+const SET_ANIMATION = 'scratch-gui/debugger/SET_ANIMATION';
 const SET_ANIMATION_SKIN_ID = 'scratch-gui/debugger/SET_ANIMATION_SKIN_ID';
+const SET_TRAIL_SKIN_ID = 'scratch-gui/debugger/SET_TRAIL_SKIN_ID';
+
 const SET_CONTEXT = 'scratch-gui/debugger/SET_CONTEXT';
-const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
+const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
+const SET_PAUSED = 'scratch-gui/debugger/SET_PAUSED';
+const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
 const SET_TRAIL_LENGTH = 'scratch-gui/debugger/SET_TRAIL_LENGTH';
 
 const initialState = {
@@ -27,46 +26,39 @@ const initialState = {
 const reducer = function (state, action) {
     if (typeof state === 'undefined') state = initialState;
     switch (action.type) {
-    case SET_DEBUG_MODE:
+    case SET_ANIMATION:
         return Object.assign({}, state, {
-            debugMode: action.debugMode
-        });
-    case TOGGLE_DEBUG_MODE:
-        return Object.assign({}, state, {
-            debugMode: !state.debugMode
-        });
-    case SET_PAUSED:
-        return Object.assign({}, state, {
-            paused: action.paused
-        });
-    case ENABLE_ANIMATION:
-        return Object.assign({}, state, {
-            animate: true
-        });
-    case DISABLE_ANIMATION:
-        return Object.assign({}, state, {
-            animate: false
-        });
-    case SET_TRAIL_SKIN_ID:
-        return Object.assign({}, state, {
-            trailSkinId: action.trailSkinId
+            animate: action.animate
         });
     case SET_ANIMATION_SKIN_ID:
         return Object.assign({}, state, {
             animationSkinId: action.animationSkinId
         });
+    case SET_TRAIL_SKIN_ID:
+        return Object.assign({}, state, {
+            trailSkinId: action.trailSkinId
+        });
     case SET_CONTEXT:
         return Object.assign({}, state, {
             context: action.context
         });
-    case SET_TIME_FRAME:
+    case SET_DEBUG_MODE:
         return Object.assign({}, state, {
-            timeFrame: action.timeFrame
+            debugMode: action.debugMode
         });
     case SET_NUMBER_OF_FRAMES:
         return Object.assign({}, state, {
             numberOfFrames: action.numberOfFrames
         });
+    case SET_PAUSED:
+        return Object.assign({}, state, {
+            paused: action.paused
+        });
+    case SET_TIME_FRAME:
+        return Object.assign({}, state, {
+            timeFrame: action.timeFrame
+        });
+
     case SET_TRAIL_LENGTH:
         return Object.assign({}, state, {
             trailLength: action.trailLength
@@ -76,36 +68,17 @@ const reducer = function (state, action) {
     }
 };
 
-const setDebugMode = function (debugMode) {
-    return {
-        type: SET_DEBUG_MODE,
-        debugMode: debugMode
-    };
-};
-
-const toggleDebugMode = function () {
-    return {type: TOGGLE_DEBUG_MODE};
-};
-
-const setPaused = function (paused) {
-    return {
-        type: SET_PAUSED,
-        paused: paused
-    };
-};
-
 const enableAnimation = function () {
-    return {type: ENABLE_ANIMATION};
+    return {
+        type: SET_ANIMATION,
+        animate: true
+    };
 };
 
 const disableAnimation = function () {
-    return {type: DISABLE_ANIMATION};
-};
-
-const setTrailSkinId = function (trailSkinId) {
     return {
-        type: SET_TRAIL_SKIN_ID,
-        trailSkinId: trailSkinId
+        type: SET_ANIMATION,
+        animate: false
     };
 };
 
@@ -116,6 +89,13 @@ const setAnimationSkinId = function (animationSkinId) {
     };
 };
 
+const setTrailSkinId = function (trailSkinId) {
+    return {
+        type: SET_TRAIL_SKIN_ID,
+        trailSkinId: trailSkinId
+    };
+};
+
 const setContext = function (context) {
     return {
         type: SET_CONTEXT,
@@ -123,10 +103,10 @@ const setContext = function (context) {
     };
 };
 
-const setTimeFrame = function (timeFrame) {
+const setDebugMode = function (debugMode) {
     return {
-        type: SET_TIME_FRAME,
-        timeFrame: timeFrame
+        type: SET_DEBUG_MODE,
+        debugMode: debugMode
     };
 };
 
@@ -134,6 +114,20 @@ const setNumberOfFrames = function (numberOfFrames) {
     return {
         type: SET_NUMBER_OF_FRAMES,
         numberOfFrames: numberOfFrames
+    };
+};
+
+const setPaused = function (paused) {
+    return {
+        type: SET_PAUSED,
+        paused: paused
+    };
+};
+
+const setTimeFrame = function (timeFrame) {
+    return {
+        type: SET_TIME_FRAME,
+        timeFrame: timeFrame
     };
 };
 
@@ -147,15 +141,14 @@ const setTrailLength = function (trailLength) {
 export {
     reducer as default,
     initialState as debuggerInitialState,
-    setDebugMode,
-    toggleDebugMode,
-    setPaused,
     enableAnimation,
     disableAnimation,
-    setTrailSkinId,
     setAnimationSkinId,
+    setTrailSkinId,
     setContext,
-    setTimeFrame,
+    setDebugMode,
     setNumberOfFrames,
+    setPaused,
+    setTimeFrame,
     setTrailLength
 };

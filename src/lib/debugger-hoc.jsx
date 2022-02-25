@@ -21,16 +21,16 @@ const DebuggerHOC = function (WrappedComponent) {
             super(props);
 
             bindAll(this, [
+                'handleDebugModeDisabled',
+                'handleDebugModeEnabled',
                 'handleProjectLoaded',
                 'handleProjectPaused',
                 'handleProjectResumed'
             ]);
 
-            // Set initial debugMode.
-            this.props.vm.runtime.debugMode = this.props.debugMode;
-
+            this.props.vm.runtime.addListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
+            this.props.vm.runtime.addListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
-
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
         }
@@ -40,7 +40,12 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         async componentDidUpdate (prevProps) {
-            if (this.props.debugMode && this.props.running && prevProps.running !== this.props.running) {
+            // Execution started while in debug mode.
+            if (prevProps.running !== this.props.running &&
+                this.props.debugMode &&
+                this.props.running
+            ) {
+                // Remove all frames after the current timeframe.
                 for (let i = this.props.context.log.frames.length - 1; i > this.props.timeFrame; i--) {
                     this.props.context.log.frames.splice(i, 1);
                 }
@@ -49,10 +54,8 @@ const DebuggerHOC = function (WrappedComponent) {
             }
 
             if (prevProps.debugMode !== this.props.debugMode) {
-                this.props.vm.runtime.debugMode = this.props.debugMode;
-
-                // If debugger tab is selected when debug mode gets disabled, switch active
-                // tab to the blocks tab.
+                // If the debugger tab is selected when debug mode gets disabled,
+                // switch the active tab to the blocks tab.
                 if (!this.props.debugMode && this.props.activeTab === DEBUGGER_TAB_INDEX) {
                     this.props.activateTab(BLOCKS_TAB_INDEX);
                 }
@@ -61,11 +64,19 @@ const DebuggerHOC = function (WrappedComponent) {
             }
         }
 
+        handleDebugModeDisabled () {
+            this.props.setDebugMode(false);
+        }
+
+        handleDebugModeEnabled () {
+            this.props.setDebugMode(true);
+        }
+
         /**
          * When a new project gets loaded into the VM, disable debug mode.
          */
         handleProjectLoaded () {
-            this.props.disableDebugMode();
+            this.props.vm.runtime.disableDebugMode();
         }
 
         handleProjectPaused () {
@@ -80,6 +91,8 @@ const DebuggerHOC = function (WrappedComponent) {
          * Method executed whenever the `debugMode` state variable changes.
          */
         async changeDebugMode () {
+            // Unpause the VM and stop the execution.
+            this.props.vm.resume();
             this.props.vm.stopAll();
 
             if (this.props.debugMode) {
@@ -87,15 +100,14 @@ const DebuggerHOC = function (WrappedComponent) {
                 this.props.setContext(context);
 
                 // Increase the length of the time slider every time a new frame gets added to the log.
-                const oldFunction = context.log.addFrame.bind(context.log);
+                const oldAddFrame = context.log.addFrame.bind(context.log);
                 context.log.addFrame = (_context, _block) => {
-                    oldFunction(_context, _block);
+                    oldAddFrame(_context, _block);
 
                     this.props.setTimeFrame(this.props.numberOfFrames);
                     this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
                 };
 
-                // Set up the current VM as the VM used in the context.
                 await context.initialiseVm(this.props.vm);
             } else {
                 // Restore the VM to the state before the creation of the current context.
@@ -110,14 +122,13 @@ const DebuggerHOC = function (WrappedComponent) {
                 'activeTab',
                 'context',
                 'debugMode',
-                'intervalIndex',
                 'numberOfFrames',
                 'running',
                 'timeFrame',
                 'vm',
                 'activateTab',
-                'disableDebugMode',
                 'setContext',
+                'setDebugMode',
                 'setNumberOfFrames',
                 'setPaused',
                 'setTimeFrame'
@@ -135,14 +146,13 @@ const DebuggerHOC = function (WrappedComponent) {
         activeTab: PropTypes.number.isRequired,
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
-        intervalIndex: PropTypes.number,
         numberOfFrames: PropTypes.number.isRequired,
         running: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         activateTab: PropTypes.func.isRequired,
-        disableDebugMode: PropTypes.func.isRequired,
         setContext: PropTypes.func.isRequired,
+        setDebugMode: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setTimeFrame: PropTypes.func.isRequired
@@ -152,7 +162,6 @@ const DebuggerHOC = function (WrappedComponent) {
         activeTab: state.scratchGui.editorTab.activeTabIndex,
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
-        intervalIndex: state.scratchGui.debugger.intervalIndex,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
         running: state.scratchGui.vmStatus.running,
         timeFrame: state.scratchGui.debugger.timeFrame,
@@ -161,8 +170,8 @@ const DebuggerHOC = function (WrappedComponent) {
 
     const mapDispatchToProps = dispatch => ({
         activateTab: tab => dispatch(activateTab(tab)),
-        disableDebugMode: () => dispatch(setDebugMode(false)),
         setContext: context => dispatch(setContext(context)),
+        setDebugMode: debugMode => dispatch(setDebugMode(debugMode)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setPaused: paused => dispatch(setPaused(paused)),
         setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
