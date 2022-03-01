@@ -88,7 +88,7 @@ class Blocks extends React.Component {
         this.toolboxUpdateQueue = [];
 
         // OVERRIDE BLOCKLY METHODS
-        this.overrideBlocklyMethods();
+        // this.overrideBlocklyMethods();
     }
     componentDidMount () {
         this.ScratchBlocks.FieldColourSlider.activateEyedropper_ = this.props.onActivateColorPicker;

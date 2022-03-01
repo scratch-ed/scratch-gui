@@ -92,7 +92,7 @@ const DebuggerHOC = function (WrappedComponent) {
          */
         async changeDebugMode () {
             // Unpause the VM and stop the execution.
-            this.props.vm.resume();
+            this.props.vm.runtime.resume();
             this.props.vm.stopAll();
 
             if (this.props.debugMode) {
@@ -135,9 +135,7 @@ const DebuggerHOC = function (WrappedComponent) {
             ]);
 
             return (
-                <WrappedComponent
-                    {...componentProps}
-                />
+                <WrappedComponent {...componentProps} />
             );
         }
     }
