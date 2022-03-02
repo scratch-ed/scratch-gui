@@ -48,7 +48,7 @@ class TimeInterface extends React.Component {
             <TimeInterfaceComponent
                 {...componentProps}
                 onTimeChange={this.handleTimeChange}
-                onTimeMouseDown={this.handleTimeMouseUp}
+                onTimeMouseDown={this.handleTimeMouseDown}
                 onTimeMouseUp={this.handleTimeMouseUp}
             />
         );

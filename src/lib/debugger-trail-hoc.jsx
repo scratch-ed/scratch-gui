@@ -7,8 +7,6 @@ import {
     disableAnimation,
     enableAnimation,
     setAnimationSkinId,
-    setNumberOfFrames,
-    setTimeFrame,
     setTrailSkinId
 } from '../reducers/debugger.js';
 import {findSpriteLog, positionsAreEqual, updateSprite} from '../util.js';
@@ -22,9 +20,12 @@ const DebuggerTrailHOC = function (WrappedComponent) {
 
             // The time interval after which the animation must be updated (in ms).
             this.ANIMATION_INTERVAL = 100;
-
+            // Index corresponding to the interval for the animation.
             this.intervalIndex = null;
+
+            // Indicates for each sprite which trail index should be animated.
             this.animateIndex = {};
+            // Contains a trail of log frame indices for each sprite.
             this.trail = {};
 
             bindAll(this, [
@@ -43,35 +44,39 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             if (prevProps.debugMode !== this.props.debugMode) {
                 if (this.props.debugMode) {
                     this.createSkins();
+                    this.intervalIndex = setInterval(this.updateAnimation, this.ANIMATION_INTERVAL);
+
+                    this.props.enableAnimation();
                 } else {
-                    // If debugMode gets disabled, remove the current trail and animation from the canvas.
-                    // The clear of the trail and animation skin is not necessarily needed, since these skins
-                    // wil be destroyed in the `destroySkins`.
-                    this.clearSkins();
+                    this.props.disableAnimation();
+
+                    clearInterval(this.intervalIndex);
                     this.destroySkins();
 
-                    this.animateIndex = {};
-                    this.trail = {};
-
-                    this.props.setNumberOfFrames(0);
-                    this.props.setTimeFrame(0);
+                    this.clearTrail();
                 }
             }
 
             if (this.props.debugMode) {
                 if (prevProps.running !== this.props.running) {
-                    this.updateSkins();
-                    return;
+                    if (this.props.running) {
+                        this.clearSkins();
+                    } else {
+                        this.redrawTrails();
+                    }
                 }
 
                 if (!this.props.running &&
                     (prevProps.timeFrame !== this.props.timeFrame || prevProps.trailLength !== this.props.trailLength)
                 ) {
-                    this.resetTrail();
+                    this.redrawTrails();
                 }
             }
         }
 
+        /**
+         * Create the pen skins for drawing and animating the trail.
+         */
         createSkins () {
             // Initialize the pen skin and pen layer to draw the trail on.
             const trailSkinId = this.props.vm.renderer.createPenSkin();
@@ -84,46 +89,37 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             this.props.setAnimationSkinId(animationSkinId);
         }
 
+        /**
+         * Destroy the pen skins for drawing and animating the trail.
+         */
         destroySkins () {
             // Destroy the skins for trail and animation.
             this.props.vm.renderer.destroySkin(this.props.trailSkinId);
             this.props.vm.renderer.destroySkin(this.props.animationSkinId);
         }
 
+        /**
+         * Clear the pen skins for drawing and animating the trail.
+         */
         clearSkins () {
-            if (this.props.animate) {
-                this.props.vm.renderer.penClear(this.props.trailSkinId);
-                this.props.vm.renderer.penClear(this.props.animationSkinId);
-
-                this.props.disableAnimation();
-                clearInterval(this.intervalIndex);
-            }
+            this.props.vm.renderer.penClear(this.props.trailSkinId);
+            this.props.vm.renderer.penClear(this.props.animationSkinId);
         }
 
-        updateSkins () {
-            if (this.props.running) {
-                this.clearSkins();
-            } else {
-                this.resetTrail();
-
-                this.props.enableAnimation();
-                this.intervalIndex = setInterval(this.updateAnimation, this.ANIMATION_INTERVAL);
-            }
+        clearTrail () {
+            this.animateIndex = {};
+            this.trail = {};
         }
 
-        resetTrail () {
+        redrawTrails () {
             if (this.props.numberOfFrames === 0) {
                 return;
             }
 
-            this.props.vm.renderer.penClear(this.props.trailSkinId);
-            this.props.vm.renderer.penClear(this.props.animationSkinId);
+            this.clearSkins();
+            this.clearTrail();
 
-            this.animateIndex = {};
-            this.trail = {};
-
-            let frame = this.props.context.log.frames[this.props.timeFrame];
-
+            const frame = this.props.context.log.frames[this.props.timeFrame];
             for (const spriteLog of frame.sprites) {
                 const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
 
@@ -157,8 +153,6 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 }
             }
 
-            frame = this.props.context.log.frames[this.props.timeFrame];
-
             for (const spriteLog of frame.sprites) {
                 const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
 
@@ -170,7 +164,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         }
 
         updateAnimation () {
-            if (!this.props.animate || this.props.numberOfFrames === 0) {
+            if (!this.props.animate || this.props.running || this.props.numberOfFrames === 0) {
                 return;
             }
 
@@ -196,7 +190,6 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             }
 
             const currentFrame = this.props.context.log.frames[this.props.timeFrame];
-
             for (const spriteLog of currentFrame.sprites) {
                 const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
                 if (sprite) {
@@ -221,8 +214,6 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 'disableAnimation',
                 'enableAnimation',
                 'setAnimationSkinId',
-                'setNumberOfFrames',
-                'setTimeFrame',
                 'setTrailSkinId'
             ]);
 
@@ -246,8 +237,6 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         disableAnimation: PropTypes.func.isRequired,
         enableAnimation: PropTypes.func.isRequired,
         setAnimationSkinId: PropTypes.func.isRequired,
-        setNumberOfFrames: PropTypes.func.isRequired,
-        setTimeFrame: PropTypes.func.isRequired,
         setTrailSkinId: PropTypes.func.isRequired
     };
 
@@ -268,8 +257,6 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         disableAnimation: () => dispatch(disableAnimation()),
         enableAnimation: () => dispatch(enableAnimation()),
         setAnimationSkinId: animationSkinId => dispatch(setAnimationSkinId(animationSkinId)),
-        setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
-        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
         setTrailSkinId: trailSkinId => dispatch(setTrailSkinId(trailSkinId))
     });
 

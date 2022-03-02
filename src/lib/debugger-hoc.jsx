@@ -111,6 +111,9 @@ const DebuggerHOC = function (WrappedComponent) {
                 await this.props.context.restoreVm();
 
                 this.props.setContext(null);
+
+                this.props.setTimeFrame(0);
+                this.props.setNumberOfFrames(0);
             }
         }
 
