@@ -17,6 +17,8 @@ export const positionsAreEqual = function (position1, position2) {
 };
 
 /**
+ * TODO: Much more properties need to be set, e.g. sprite size, costume size...
+ *
  * Update the sprite's position, direction and costume based on the information
  * stored in the logged sprite.
  *
@@ -44,4 +46,15 @@ export const findSpriteLog = function (frame, spriteId) {
     }
 
     return null;
+};
+
+/**
+ * Returns whether the bit at the given index is set.
+ *
+ * @param {number} bitIndex - index of bit that is checked
+ * @param {string} value - bit sequence in which we want to check for set bits
+ * @return {boolean} - whether the bit at index 'bitIndex' is set in 'value'
+ */
+export const isBitSet = function (bitIndex, value) {
+    return !!(value & (1 << bitIndex));
 };
