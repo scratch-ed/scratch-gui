@@ -25,8 +25,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'handleDebugModeEnabled',
                 'handleProjectLoaded',
                 'handleProjectPaused',
-                'handleProjectResumed',
-                'handleProjectStopAll'
+                'handleProjectResumed'
             ]);
 
             this.props.vm.runtime.addListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
@@ -34,7 +33,6 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
-            this.props.vm.runtime.addListener('PROJECT_STOP_ALL', this.handleProjectStopAll);
         }
 
         shouldComponentUpdate (nextProps) {
@@ -42,19 +40,6 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         async componentDidUpdate (prevProps) {
-            // Execution started while in debug mode.
-            if (prevProps.running !== this.props.running &&
-                this.props.debugMode &&
-                this.props.running
-            ) {
-                // Remove all frames after the current timeframe.
-                for (let i = this.props.context.log.frames.length - 1; i > this.props.timeFrame; i--) {
-                    this.props.context.log.frames.splice(i, 1);
-                }
-
-                this.props.setNumberOfFrames(this.props.context.log.frames.length);
-            }
-
             if (prevProps.debugMode !== this.props.debugMode) {
                 // If the debugger tab is selected when debug mode gets disabled,
                 // switch the active tab to the blocks tab.
@@ -63,6 +48,20 @@ const DebuggerHOC = function (WrappedComponent) {
                 }
 
                 await this.changeDebugMode();
+            }
+
+            if (prevProps.running !== this.props.running) {
+                if (this.props.running) {
+                    // Execution started while in debug mode.
+                    if (this.props.debugMode) {
+                        this.props.context.log.reset();
+
+                        this.props.setTimeFrame(0);
+                        this.props.setNumberOfFrames(0);
+                    }
+                } else {
+                    this.props.vm.runtime.resume();
+                }
             }
         }
 
@@ -89,16 +88,6 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.setPaused(false);
         }
 
-        /**
-         * When the project is stopped, unpause the VM.
-         */
-        handleProjectStopAll () {
-            this.props.vm.runtime.resume();
-        }
-
-        /**
-         * Method executed whenever the `debugMode` state variable changes.
-         */
         async changeDebugMode () {
             this.props.vm.stopAll();
 
