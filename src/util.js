@@ -47,14 +47,3 @@ export const findSpriteLog = function (frame, spriteId) {
 
     return null;
 };
-
-/**
- * Returns whether the bit at the given position is set.
- *
- * @param {number} position - position of bit that is checked
- * @param {string} value - bit sequence in which we want to check for a set bit
- * @return {boolean} - whether the bit at position 'position' is set in 'value'
- */
-export const isBitSet = function (position, value) {
-    return !!(value & (1 << position));
-};
