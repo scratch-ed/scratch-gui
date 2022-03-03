@@ -17,8 +17,6 @@ export const positionsAreEqual = function (position1, position2) {
 };
 
 /**
- * TODO: Much more properties need to be set, e.g. sprite size, costume size...
- *
  * Update the sprite's position, direction and costume based on the information
  * stored in the logged sprite.
  *
@@ -28,7 +26,15 @@ export const positionsAreEqual = function (position1, position2) {
 export const updateSprite = function (sprite, spriteLog) {
     sprite.setXY(spriteLog.x, spriteLog.y);
     sprite.setDirection(spriteLog.direction);
+    sprite.setDraggable(spriteLog.draggable);
+    sprite.setVisible(spriteLog.visible);
+    sprite.setSize(spriteLog.size);
     sprite.setCostume(sprite.getCostumeIndexByName(spriteLog.costume));
+    sprite.setRotationStyle(spriteLog.rotationStyle);
+
+    for (const [effectName, value] of Object.entries(spriteLog.effects)) {
+        sprite.setEffect(effectName, value);
+    }
 };
 
 /**

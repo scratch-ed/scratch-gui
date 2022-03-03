@@ -35,6 +35,10 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             bindAll(this, [
                 'updateAnimation'
             ]);
+
+            // TODO: When restarting the execution in debug mode all effects etc. should be cleared.
+            //       This is normally done when the STOP_ALL event is emitted.
+            //       Find a way to first call STOP_ALL before re-executing in debug mode.
         }
 
         shouldComponentUpdate (nextProps) {
@@ -165,7 +169,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                     this.trail[sprite.id] = [];
 
                     let currentIndex = this.props.timeFrame - 1;
-                    let previousPosition = null;
+                    let previousPosition = [spriteLog.x, spriteLog.y];
                     let renderedAmount = 0;
 
                     while (renderedAmount < this.props.trailLength && currentIndex >= 0) {
@@ -175,8 +179,9 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                         const currentPosition = [currentSpriteLog.x, currentSpriteLog.y];
 
                         if (!positionsAreEqual(previousPosition, currentPosition)) {
-                            sprite.setEffect('ghost', 90);
                             updateSprite(sprite, currentSpriteLog);
+
+                            sprite.setEffect('ghost', 90);
                             this.props.vm.renderer.penStamp(this.props.trailSkinId, sprite.drawableID);
 
                             this.trail[sprite.id].unshift(currentIndex);
@@ -214,8 +219,9 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                         // Store the current ghost value of the sprite.
                         const ghostValue = sprite.effects.ghost;
 
-                        sprite.setEffect('ghost', 50);
                         updateSprite(sprite, spriteLog);
+
+                        sprite.setEffect('ghost', 50);
                         this.props.vm.renderer.penStamp(this.props.animationSkinId, sprite.drawableID);
 
                         // Restore the ghost value of the current sprite.
