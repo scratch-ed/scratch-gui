@@ -11,6 +11,7 @@ import {
 } from '../reducers/debugger.js';
 import {
     findSpriteLog,
+    isBitSet,
     positionsAreEqual,
     updateSprite
 } from '../util.js';
@@ -137,6 +138,38 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         }
 
         /**
+         * Return whether the drawable corresponding to 'drawableId' has the effect corresponding to
+         * 'effectName' applied to it.
+         *
+         * @param {string} drawableId - id of the drawable
+         * @param {string} effectName - name of the effect
+         * @return {boolean} - whether the drawable has the effect applied to it
+         */
+        hasEffect (drawableId, effectName) {
+            // Mapping from effect name to index in bit mask indicating
+            // if drawable has certain effect.
+            const effectPositions = {
+                color: 0,
+                fisheye: 1,
+                whirl: 2,
+                pixelate: 3,
+                mosaic: 4,
+                brightness: 5,
+                ghost: 6
+            };
+
+            const position = effectPositions[effectName];
+            const drawable = this.props.vm.renderer._allDrawables[drawableId];
+
+            // No effect with given name or no drawable with given id.
+            if (typeof position === 'undefined' || typeof drawable === 'undefined') {
+                return false;
+            }
+
+            return isBitSet(position, drawable.enabledEffects);
+        }
+
+        /**
          * For each sprite in the current log frame,
          * draw a trail of previous positions (and states)
          * and store the indices of the log frames corresponding to the trail.
@@ -155,6 +188,11 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
 
                 if (sprite) {
+                    // Store the current ghost value of the sprite.
+                    const ghostValue = this.hasEffect(sprite.drawableID, 'ghost') ?
+                        this.props.vm.renderer._allDrawables[sprite.drawableID]._uniforms.u_ghost :
+                        -1;
+
                     this.trail[sprite.id] = [];
 
                     let currentIndex = this.props.timeFrame - 1;
@@ -168,8 +206,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                         const currentPosition = [currentSpriteLog.x, currentSpriteLog.y];
 
                         if (!positionsAreEqual(previousPosition, currentPosition)) {
-                            // TODO: store ghost value and reset after
-                            // this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 90);
+                            this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 90);
                             updateSprite(sprite, currentSpriteLog);
                             this.props.vm.renderer.penStamp(this.props.trailSkinId, sprite.drawableID);
 
@@ -180,6 +217,13 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                         }
 
                         currentIndex--;
+                    }
+
+                    // Restore the ghost value of the current sprite.
+                    if (ghostValue === -1) {
+                        this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost');
+                    } else {
+                        this.props.vm.renderer._allDrawables[sprite.drawableID]._uniforms.u_ghost = ghostValue;
                     }
                 }
             }
@@ -203,10 +247,21 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                     const sprite = this.props.vm.runtime.getTargetById(spriteId);
 
                     if (sprite) {
-                        // TODO: store ghost value and reset after
-                        // this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 50);
+                        // Store the current ghost value of the sprite.
+                        const ghostValue = this.hasEffect(sprite.drawableID, 'ghost') ?
+                            this.props.vm.renderer._allDrawables[sprite.drawableID]._uniforms.u_ghost :
+                            -1;
+
+                        this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost', 50);
                         updateSprite(sprite, spriteLog);
                         this.props.vm.renderer.penStamp(this.props.animationSkinId, sprite.drawableID);
+
+                        // Restore the ghost value of the current sprite.
+                        if (ghostValue === -1) {
+                            this.props.vm.renderer.updateDrawableEffect(sprite.drawableID, 'ghost');
+                        } else {
+                            this.props.vm.renderer._allDrawables[sprite.drawableID]._uniforms.u_ghost = ghostValue;
+                        }
                     }
 
                     this.animateIndex[spriteId] = (animateIndex + 1) % this.trail[spriteId].length;
