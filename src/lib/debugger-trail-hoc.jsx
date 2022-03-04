@@ -70,6 +70,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                     if (this.props.running) {
                         this.clearSkins();
                     } else {
+                        this.loadLogFrame();
                         this.redrawTrails();
                     }
                 }
@@ -128,7 +129,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
 
         loadSprites () {
             for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
-                const sprite = this.props.vm.runtime.getSpriteTargetByName(spriteLog.name);
+                const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
                     updateSprite(sprite, spriteLog);
