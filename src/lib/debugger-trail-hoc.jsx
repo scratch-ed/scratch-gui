@@ -35,10 +35,6 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             bindAll(this, [
                 'updateAnimation'
             ]);
-
-            // TODO: When restarting the execution in debug mode all effects etc. should be cleared.
-            //       This is normally done when the STOP_ALL event is emitted.
-            //       Find a way to first call STOP_ALL before re-executing in debug mode.
         }
 
         shouldComponentUpdate (nextProps) {
