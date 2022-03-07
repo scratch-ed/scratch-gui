@@ -132,7 +132,29 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
+                    if (!sprite.isStage) {
+                        // Remove all clones of the current sprite that is not the sprite itself.
+                        for (const clone of sprite.sprite.clones) {
+                            if (!clone.isOriginal) {
+                                this.props.vm.runtime.disposeTarget(clone);
+                                this.props.vm.runtime.stopForTarget(clone);
+                            }
+                        }
+                    }
+
                     updateSprite(sprite, spriteLog);
+
+                    if (!sprite.isStage) {
+                        // Initialize all clones of the current sprite.
+                        for (const cloneLog of spriteLog.clones) {
+                            const clone = sprite.makeClone();
+
+                            this.props.vm.runtime.addTarget(clone);
+                            clone.goBehindOther(sprite);
+
+                            updateSprite(clone, cloneLog);
+                        }
+                    }
                 }
             }
         }
