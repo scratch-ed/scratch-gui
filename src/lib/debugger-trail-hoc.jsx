@@ -73,7 +73,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
 
                 if (!this.props.running && (prevProps.timeFrame !== this.props.timeFrame)) {
                     this.loadLogFrame();
-                    this.redrawTrails();
+                    // this.redrawTrails();
                 }
 
                 if (!this.props.running && (prevProps.trailLength !== this.props.trailLength)) {
@@ -123,40 +123,44 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             this.props.vm.renderer.penClear(this.props.animationSkinId);
         }
 
+        loadClones () {
+            for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
+                const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
+
+                if (sprite) {
+                    // Remove all clones of the current sprite that is not the sprite itself.
+                    for (const clone of sprite.sprite.clones) {
+                        if (!clone.isOriginal) {
+                            this.props.vm.runtime.disposeTarget(clone);
+                        }
+                    }
+
+                    // Initialize all clones of the current sprite.
+                    for (const cloneLog of spriteLog.clones) {
+                        const clone = sprite.makeClone(false);
+
+                        this.props.vm.runtime.addTarget(clone);
+                        clone.goBehindOther(sprite);
+
+                        updateSprite(clone, cloneLog);
+                    }
+                }
+            }
+        }
+
         loadSprites () {
             for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
-                    if (!sprite.isStage) {
-                        // Remove all clones of the current sprite that is not the sprite itself.
-                        for (const clone of sprite.sprite.clones) {
-                            if (!clone.isOriginal) {
-                                this.props.vm.runtime.disposeTarget(clone);
-                                this.props.vm.runtime.stopForTarget(clone);
-                            }
-                        }
-                    }
-
                     updateSprite(sprite, spriteLog);
-
-                    if (!sprite.isStage) {
-                        // Initialize all clones of the current sprite.
-                        for (const cloneLog of spriteLog.clones) {
-                            const clone = sprite.makeClone();
-
-                            this.props.vm.runtime.addTarget(clone);
-                            clone.goBehindOther(sprite);
-
-                            updateSprite(clone, cloneLog);
-                        }
-                    }
                 }
             }
         }
 
         loadLogFrame () {
             this.loadSprites();
+            this.loadClones();
         }
 
         /**

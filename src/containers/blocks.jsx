@@ -412,10 +412,6 @@ class Blocks extends React.Component {
     }
     onWorkspaceUpdate (data) {
         this.doWorkspaceUpdate(data);
-
-        // Reset the block glow.
-        const runtime = this.props.vm.runtime;
-        runtime.sequencer.glowLastExecutedBlocks(runtime.isPaused());
     }
     handleExtensionAdded (categoryInfo) {
         const defineBlocks = blockInfoArray => {
