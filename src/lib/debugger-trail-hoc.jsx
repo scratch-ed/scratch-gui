@@ -137,7 +137,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
 
                     // Initialize all clones of the current sprite.
                     for (const cloneLog of spriteLog.clones) {
-                        const clone = sprite.makeClone(false);
+                        const clone = sprite.makeClone();
 
                         this.props.vm.runtime.addTarget(clone);
                         clone.goBehindOther(sprite);
