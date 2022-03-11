@@ -25,7 +25,6 @@ class DebuggerTab extends React.Component {
     handleTrailMouseDown () {
         if (!this.props.running) {
             this.props.disableAnimation();
-            this.props.vm.renderer.penClear(this.props.animationSkinId);
         }
     }
 
@@ -37,7 +36,6 @@ class DebuggerTab extends React.Component {
 
     render () {
         const componentProps = omit(this.props, [
-            'animationSkinId',
             'running',
             'vm',
             'disableAnimation',
@@ -57,7 +55,6 @@ class DebuggerTab extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    animationSkinId: state.scratchGui.debugger.animationSkinId,
     running: state.scratchGui.vmStatus.running,
     trailLength: state.scratchGui.debugger.trailLength
 });
@@ -69,7 +66,6 @@ const mapDispatchToProps = dispatch => ({
 });
 
 DebuggerTab.propTypes = {
-    animationSkinId: PropTypes.number,
     running: PropTypes.bool.isRequired,
     trailLength: PropTypes.number.isRequired,
     vm: PropTypes.instanceOf(VM).isRequired,

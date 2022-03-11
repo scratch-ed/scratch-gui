@@ -3,12 +3,7 @@ import {connect} from 'react-redux';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import {Context} from '@ftrprf/judge-core';
-import {
-    disableAnimation,
-    enableAnimation,
-    setAnimationSkinId,
-    setTrailSkinId
-} from '../reducers/debugger.js';
+import {disableAnimation, enableAnimation} from '../reducers/debugger.js';
 import {
     findSpriteLog,
     positionsAreEqual,
@@ -31,6 +26,9 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             this.animateIndex = {};
             // Contains a trail of log frame indices for each sprite.
             this.trail = {};
+
+            this.trailSkinId = -1;
+            this.animationSkinId = -1;
 
             bindAll(this, [
                 'updateAnimation'
@@ -73,7 +71,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
 
                 if (!this.props.running && (prevProps.timeFrame !== this.props.timeFrame)) {
                     this.loadLogFrame();
-                    // this.redrawTrails();
+                    this.redrawTrails();
                 }
 
                 if (!this.props.running && (prevProps.trailLength !== this.props.trailLength)) {
@@ -96,14 +94,18 @@ const DebuggerTrailHOC = function (WrappedComponent) {
          */
         createSkins () {
             // Initialize the pen skin and pen layer to draw the trail on.
-            const trailSkinId = this.props.vm.renderer.createPenSkin();
-            this.props.vm.renderer.updateDrawableSkinId(this.props.vm.renderer.createDrawable('pen'), trailSkinId);
-            this.props.setTrailSkinId(trailSkinId);
+            this.trailSkinId = this.props.vm.renderer.createPenSkin();
+            this.props.vm.renderer.updateDrawableSkinId(
+                this.props.vm.renderer.createDrawable('pen'),
+                this.trailSkinId
+            );
 
             // Initialize the pen skin and pen layer to draw the animations on.
-            const animationSkinId = this.props.vm.renderer.createPenSkin();
-            this.props.vm.renderer.updateDrawableSkinId(this.props.vm.renderer.createDrawable('pen'), animationSkinId);
-            this.props.setAnimationSkinId(animationSkinId);
+            this.animationSkinId = this.props.vm.renderer.createPenSkin();
+            this.props.vm.renderer.updateDrawableSkinId(
+                this.props.vm.renderer.createDrawable('pen'),
+                this.animationSkinId
+            );
         }
 
         /**
@@ -111,16 +113,16 @@ const DebuggerTrailHOC = function (WrappedComponent) {
          */
         destroySkins () {
             // Destroy the skins for trail and animation.
-            this.props.vm.renderer.destroySkin(this.props.trailSkinId);
-            this.props.vm.renderer.destroySkin(this.props.animationSkinId);
+            this.props.vm.renderer.destroySkin(this.trailSkinId);
+            this.props.vm.renderer.destroySkin(this.animationSkinId);
         }
 
         /**
          * Clear the pen skins for drawing and animating the trail.
          */
         clearSkins () {
-            this.props.vm.renderer.penClear(this.props.trailSkinId);
-            this.props.vm.renderer.penClear(this.props.animationSkinId);
+            this.props.vm.renderer.penClear(this.trailSkinId);
+            this.props.vm.renderer.penClear(this.animationSkinId);
         }
 
         loadClones () {
@@ -205,7 +207,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                             updateSprite(sprite, currentSpriteLog);
 
                             sprite.setEffect('ghost', 90);
-                            this.props.vm.renderer.penStamp(this.props.trailSkinId, sprite.drawableID);
+                            this.props.vm.renderer.penStamp(this.trailSkinId, sprite.drawableID);
 
                             this.trail[sprite.id].unshift(currentIndex);
                             previousPosition = currentPosition;
@@ -228,7 +230,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 return;
             }
 
-            this.props.vm.renderer.penClear(this.props.animationSkinId);
+            this.props.vm.renderer.penClear(this.animationSkinId);
 
             for (const spriteId in this.trail) {
                 if (this.trail[spriteId].length !== 0) {
@@ -245,7 +247,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                         updateSprite(sprite, spriteLog);
 
                         sprite.setEffect('ghost', 50);
-                        this.props.vm.renderer.penStamp(this.props.animationSkinId, sprite.drawableID);
+                        this.props.vm.renderer.penStamp(this.animationSkinId, sprite.drawableID);
 
                         // Restore the ghost value of the current sprite.
                         sprite.setEffect('ghost', ghostValue);
@@ -261,19 +263,15 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         render () {
             const componentProps = omit(this.props, [
                 'animate',
-                'animationSkinId',
                 'context',
                 'debugMode',
                 'numberOfFrames',
                 'running',
                 'timeFrame',
                 'trailLength',
-                'trailSkinId',
                 'vm',
                 'disableAnimation',
-                'enableAnimation',
-                'setAnimationSkinId',
-                'setTrailSkinId'
+                'enableAnimation'
             ]);
 
             return (
@@ -284,39 +282,31 @@ const DebuggerTrailHOC = function (WrappedComponent) {
 
     DebuggerTrailWrapper.propTypes = {
         animate: PropTypes.bool.isRequired,
-        animationSkinId: PropTypes.number.isRequired,
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         numberOfFrames: PropTypes.number.isRequired,
         running: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
         trailLength: PropTypes.number.isRequired,
-        trailSkinId: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         disableAnimation: PropTypes.func.isRequired,
-        enableAnimation: PropTypes.func.isRequired,
-        setAnimationSkinId: PropTypes.func.isRequired,
-        setTrailSkinId: PropTypes.func.isRequired
+        enableAnimation: PropTypes.func.isRequired
     };
 
     const mapStateToProps = state => ({
         animate: state.scratchGui.debugger.animate,
-        animationSkinId: state.scratchGui.debugger.animationSkinId,
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
         running: state.scratchGui.vmStatus.running,
         timeFrame: state.scratchGui.debugger.timeFrame,
         trailLength: state.scratchGui.debugger.trailLength,
-        trailSkinId: state.scratchGui.debugger.trailSkinId,
         vm: state.scratchGui.vm
     });
 
     const mapDispatchToProps = dispatch => ({
         disableAnimation: () => dispatch(disableAnimation()),
-        enableAnimation: () => dispatch(enableAnimation()),
-        setAnimationSkinId: animationSkinId => dispatch(setAnimationSkinId(animationSkinId)),
-        setTrailSkinId: trailSkinId => dispatch(setTrailSkinId(trailSkinId))
+        enableAnimation: () => dispatch(enableAnimation())
     });
 
     return connect(

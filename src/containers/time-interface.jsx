@@ -25,7 +25,6 @@ class TimeInterface extends React.Component {
     handleTimeMouseDown () {
         if (!this.props.running) {
             this.props.disableAnimation();
-            this.props.vm.renderer.penClear(this.props.animationSkinId);
         }
     }
 
@@ -37,7 +36,6 @@ class TimeInterface extends React.Component {
 
     render () {
         const componentProps = omit(this.props, [
-            'animationSkinId',
             'vm',
             'disableAnimation',
             'enableAnimation',
@@ -57,7 +55,6 @@ class TimeInterface extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    animationSkinId: state.scratchGui.debugger.animationSkinId,
     numberOfFrames: state.scratchGui.debugger.numberOfFrames,
     running: state.scratchGui.vmStatus.running,
     timeFrame: state.scratchGui.debugger.timeFrame
@@ -70,7 +67,6 @@ const mapDispatchToProps = dispatch => ({
 });
 
 TimeInterface.propTypes = {
-    animationSkinId: PropTypes.number,
     numberOfFrames: PropTypes.number.isRequired,
     running: PropTypes.bool.isRequired,
     timeFrame: PropTypes.number.isRequired,

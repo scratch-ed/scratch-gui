@@ -1,7 +1,4 @@
 const SET_ANIMATION = 'scratch-gui/debugger/SET_ANIMATION';
-const SET_ANIMATION_SKIN_ID = 'scratch-gui/debugger/SET_ANIMATION_SKIN_ID';
-const SET_TRAIL_SKIN_ID = 'scratch-gui/debugger/SET_TRAIL_SKIN_ID';
-
 const SET_CONTEXT = 'scratch-gui/debugger/SET_CONTEXT';
 const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
@@ -12,8 +9,6 @@ const SET_TRAIL_LENGTH = 'scratch-gui/debugger/SET_TRAIL_LENGTH';
 const initialState = {
     // State related to the trail animation.
     animate: false,
-    animationSkinId: -1,
-    trailSkinId: -1,
     // State related to the debugger GUI.
     context: null,
     debugMode: false,
@@ -29,14 +24,6 @@ const reducer = function (state, action) {
     case SET_ANIMATION:
         return Object.assign({}, state, {
             animate: action.animate
-        });
-    case SET_ANIMATION_SKIN_ID:
-        return Object.assign({}, state, {
-            animationSkinId: action.animationSkinId
-        });
-    case SET_TRAIL_SKIN_ID:
-        return Object.assign({}, state, {
-            trailSkinId: action.trailSkinId
         });
     case SET_CONTEXT:
         return Object.assign({}, state, {
@@ -79,20 +66,6 @@ const disableAnimation = function () {
     return {
         type: SET_ANIMATION,
         animate: false
-    };
-};
-
-const setAnimationSkinId = function (animationSkinId) {
-    return {
-        type: SET_ANIMATION_SKIN_ID,
-        animationSkinId: animationSkinId
-    };
-};
-
-const setTrailSkinId = function (trailSkinId) {
-    return {
-        type: SET_TRAIL_SKIN_ID,
-        trailSkinId: trailSkinId
     };
 };
 
@@ -143,8 +116,6 @@ export {
     initialState as debuggerInitialState,
     enableAnimation,
     disableAnimation,
-    setAnimationSkinId,
-    setTrailSkinId,
     setContext,
     setDebugMode,
     setNumberOfFrames,
