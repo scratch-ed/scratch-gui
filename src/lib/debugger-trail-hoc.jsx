@@ -131,10 +131,14 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
+                    // Copy the list of clones in order to correctly remove all clones from the original list.
+                    const currentClones = [...sprite.sprite.clones];
+
                     // Remove all clones of the current sprite that is not the sprite itself.
-                    for (const clone of sprite.sprite.clones) {
+                    for (const clone of currentClones) {
                         if (!clone.isOriginal) {
                             this.props.vm.runtime.disposeTarget(clone);
+                            this.props.vm.runtime.stopForTarget(clone);
                         }
                     }
 
@@ -162,8 +166,8 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         }
 
         loadLogFrame () {
-            this.loadSprites();
             this.loadClones();
+            this.loadSprites();
         }
 
         /**
