@@ -11,19 +11,17 @@ const TimeInterfaceComponent = function (props) {
         onTimeChange,
         onTimeMouseDown,
         onTimeMouseUp,
-        running,
         timeFrame
     } = props;
 
     return (
         <Box className={styles.timeInterface}>
             <TimeSliderComponent
-                disabled={running}
                 numberOfFrames={numberOfFrames}
                 onChange={onTimeChange}
                 onMouseDown={onTimeMouseDown}
                 onMouseUp={onTimeMouseUp}
-                value={timeFrame}
+                timeFrame={timeFrame}
             />
         </Box>
     );
@@ -34,7 +32,6 @@ TimeInterfaceComponent.propTypes = {
     onTimeChange: PropTypes.func.isRequired,
     onTimeMouseDown: PropTypes.func.isRequired,
     onTimeMouseUp: PropTypes.func.isRequired,
-    running: PropTypes.bool.isRequired,
     timeFrame: PropTypes.number.isRequired
 };
 

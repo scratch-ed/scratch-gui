@@ -36,6 +36,7 @@ class TimeInterface extends React.Component {
 
     render () {
         const componentProps = omit(this.props, [
+            'running',
             'vm',
             'disableAnimation',
             'enableAnimation',

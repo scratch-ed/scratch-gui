@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Box from '../box/box.jsx';
-import SliderComponent from '../slider/slider.jsx';
 
 import styles from './debugger-tab.css';
 import {FormattedMessage} from 'react-intl';
+import TrailSliderComponent from '../trail-slider/trail-slider.jsx';
 
 const DebuggerTabComponent = function (props) {
     const {
@@ -27,12 +27,12 @@ const DebuggerTabComponent = function (props) {
                         id="gui.debuggerTab.trailLength"
                     />
                 </span>
-                <SliderComponent
-                    max={MAX_TRAIL_LENGTH}
+                <TrailSliderComponent
+                    maxTrailLength={MAX_TRAIL_LENGTH}
                     onChange={onTrailChange}
                     onMouseDown={onTrailMouseDown}
                     onMouseUp={onTrailMouseUp}
-                    value={trailLength}
+                    trailLength={trailLength}
                 />
             </label>
         </Box>
