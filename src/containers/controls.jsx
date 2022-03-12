@@ -15,6 +15,7 @@ class Controls extends React.Component {
             'handleGreenFlagClick',
             'handlePauseClick',
             'handleResumeClick',
+            'handleRewindModeClick',
             'handleStepClick',
             'handleStopAllClick'
         ]);
@@ -55,6 +56,17 @@ class Controls extends React.Component {
         }
     }
 
+    handleRewindModeClick (e) {
+        e.preventDefault();
+        if (this.props.numberOfFrames > 0) {
+            if (this.props.rewindMode) {
+                this.props.vm.runtime.disableRewindMode();
+            } else {
+                this.props.vm.runtime.enableRewindMode();
+            }
+        }
+    }
+
     handleStepClick (e) {
         e.preventDefault();
         if (this.props.projectRunning && this.props.paused) {
@@ -85,6 +97,7 @@ class Controls extends React.Component {
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onPauseClick={this.handlePauseClick}
                 onResumeClick={this.handleResumeClick}
+                onRewindModeClick={this.handleRewindModeClick}
                 onStepClick={this.handleStepClick}
                 onStopAllClick={this.handleStopAllClick}
             />
@@ -95,8 +108,10 @@ class Controls extends React.Component {
 Controls.propTypes = {
     debugMode: PropTypes.bool.isRequired,
     isStarted: PropTypes.bool.isRequired,
+    numberOfFrames: PropTypes.number.isRequired,
     paused: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
+    rewindMode: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM)
 };
@@ -104,8 +119,10 @@ Controls.propTypes = {
 const mapStateToProps = state => ({
     debugMode: state.scratchGui.debugger.debugMode,
     isStarted: state.scratchGui.vmStatus.running,
+    numberOfFrames: state.scratchGui.debugger.numberOfFrames,
     paused: state.scratchGui.debugger.paused,
     projectRunning: state.scratchGui.vmStatus.running,
+    rewindMode: state.scratchGui.debugger.rewindMode,
     turbo: state.scratchGui.vmStatus.turbo
 });
 

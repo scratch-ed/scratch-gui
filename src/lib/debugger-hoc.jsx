@@ -8,6 +8,7 @@ import {
     setDebugMode,
     setPaused,
     setNumberOfFrames,
+    setRewindMode,
     setTimeFrame
 } from '../reducers/debugger.js';
 import {Context} from '@ftrprf/judge-core';
@@ -25,18 +26,26 @@ const DebuggerHOC = function (WrappedComponent) {
                 'handleDebugModeEnabled',
                 'handleProjectLoaded',
                 'handleProjectPaused',
-                'handleProjectResumed'
+                'handleProjectResumed',
+                'handleRewindModeDisabled',
+                'handleRewindModeEnabled'
             ]);
 
             this.props.vm.runtime.addListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
             this.props.vm.runtime.addListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
+
+            this.props.vm.runtime.addListener('REWIND_MODE_DISABLED', this.handleRewindModeDisabled);
+            this.props.vm.runtime.addListener('REWIND_MODE_ENABLED', this.handleRewindModeEnabled);
+
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
         }
 
         shouldComponentUpdate (nextProps) {
-            return this.props.debugMode !== nextProps.debugMode || this.props.running !== nextProps.running;
+            return this.props.debugMode !== nextProps.debugMode ||
+                   this.props.rewindMode !== nextProps.rewindMode ||
+                   this.props.running !== nextProps.running;
         }
 
         async componentDidUpdate (prevProps) {
@@ -48,6 +57,10 @@ const DebuggerHOC = function (WrappedComponent) {
                 }
 
                 await this.changeDebugMode();
+            }
+
+            if (prevProps.rewindMode !== this.props.rewindMode) {
+                this.props.vm.stopAll();
             }
 
             if (prevProps.running !== this.props.running) {
@@ -89,6 +102,14 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.setPaused(false);
         }
 
+        handleRewindModeDisabled () {
+            this.props.setRewindMode(false);
+        }
+
+        handleRewindModeEnabled () {
+            this.props.setRewindMode(true);
+        }
+
         async changeDebugMode () {
             this.props.vm.stopAll();
 
@@ -123,6 +144,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'context',
                 'debugMode',
                 'numberOfFrames',
+                'rewindMode',
                 'running',
                 'timeFrame',
                 'vm',
@@ -131,6 +153,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'setDebugMode',
                 'setNumberOfFrames',
                 'setPaused',
+                'setRewindMode',
                 'setTimeFrame'
             ]);
 
@@ -145,6 +168,7 @@ const DebuggerHOC = function (WrappedComponent) {
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         numberOfFrames: PropTypes.number.isRequired,
+        rewindMode: PropTypes.bool.isRequired,
         running: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
@@ -153,6 +177,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setDebugMode: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
+        setRewindMode: PropTypes.func.isRequired,
         setTimeFrame: PropTypes.func.isRequired
     };
 
@@ -161,6 +186,7 @@ const DebuggerHOC = function (WrappedComponent) {
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
+        rewindMode: state.scratchGui.debugger.rewindMode,
         running: state.scratchGui.vmStatus.running,
         timeFrame: state.scratchGui.debugger.timeFrame,
         vm: state.scratchGui.vm
@@ -172,6 +198,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setDebugMode: debugMode => dispatch(setDebugMode(debugMode)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setPaused: paused => dispatch(setPaused(paused)),
+        setRewindMode: rewindMode => dispatch(setRewindMode(rewindMode)),
         setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
     });
 
