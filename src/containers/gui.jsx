@@ -178,8 +178,10 @@ const ConnectedGUI = injectIntl(connect(
 // the hierarchy of HOC constructor calls clearer here; it has nothing to do with redux's
 // ability to compose reducers.
 const WrappedGui = compose(
-    DebuggerHOC,
+    // Keep this order for DebuggerTrailHOC and DebuggerHOC.
+    // This way DebuggerHOC always gets executed first.
     DebuggerTrailHOC,
+    DebuggerHOC,
     LocalizationHOC,
     ErrorBoundaryHOC('Top Level App'),
     FontLoaderHOC,

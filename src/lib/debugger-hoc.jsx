@@ -128,6 +128,8 @@ const DebuggerHOC = function (WrappedComponent) {
 
                 await context.initialiseVm(this.props.vm);
             } else {
+                this.props.vm.runtime.disableRewindMode();
+
                 // Restore the VM to the state before the creation of the current context.
                 await this.props.context.restoreVm();
 

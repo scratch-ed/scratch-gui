@@ -27,8 +27,8 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             // Contains a trail of log frame indices for each sprite.
             this.trail = {};
 
-            this.trailSkinId = -1;
-            this.animationSkinId = -1;
+            this.trailSkinId = null;
+            this.animationSkinId = null;
 
             bindAll(this, [
                 'updateAnimation'
@@ -37,7 +37,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
 
         shouldComponentUpdate (nextProps) {
             return this.props.debugMode !== nextProps.debugMode ||
-                   this.props.running !== nextProps.running ||
+                   this.props.rewindMode !== nextProps.rewindMode ||
                    this.props.timeFrame !== nextProps.timeFrame ||
                    this.props.trailLength !== nextProps.trailLength;
         }
@@ -46,35 +46,33 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             if (prevProps.debugMode !== this.props.debugMode) {
                 if (this.props.debugMode) {
                     this.createSkins();
-                    this.intervalIndex = setInterval(this.updateAnimation, this.ANIMATION_INTERVAL);
 
+                    this.intervalIndex = setInterval(this.updateAnimation, this.ANIMATION_INTERVAL);
                     this.props.enableAnimation();
                 } else {
                     this.props.disableAnimation();
-
                     clearInterval(this.intervalIndex);
-                    this.destroySkins();
 
-                    this.clearTrail();
+                    this.destroySkins();
                 }
             }
 
-            if (this.props.debugMode) {
-                if (prevProps.running !== this.props.running) {
-                    if (this.props.running) {
-                        this.clearSkins();
-                    } else {
-                        this.loadLogFrame();
-                        this.redrawTrails();
-                    }
+            if (this.props.debugMode && prevProps.rewindMode !== this.props.rewindMode) {
+                if (this.props.rewindMode) {
+                    this.loadLogFrame();
+                    this.redrawTrails();
+                } else {
+                    this.clearSkins();
                 }
+            }
 
-                if (!this.props.running && (prevProps.timeFrame !== this.props.timeFrame)) {
+            if (this.props.debugMode && this.props.rewindMode) {
+                if (prevProps.timeFrame !== this.props.timeFrame) {
                     this.loadLogFrame();
                     this.redrawTrails();
                 }
 
-                if (!this.props.running && (prevProps.trailLength !== this.props.trailLength)) {
+                if (prevProps.trailLength !== this.props.trailLength) {
                     this.redrawTrails();
                 }
             }
@@ -115,6 +113,9 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             // Destroy the skins for trail and animation.
             this.props.vm.renderer.destroySkin(this.trailSkinId);
             this.props.vm.renderer.destroySkin(this.animationSkinId);
+
+            this.trailSkinId = null;
+            this.animationSkinId = null;
         }
 
         /**
@@ -226,7 +227,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         }
 
         updateAnimation () {
-            if (!this.props.animate || this.props.running || this.props.numberOfFrames === 0) {
+            if (!this.props.animate || !this.props.rewindMode || this.props.numberOfFrames === 0) {
                 return;
             }
 
@@ -266,7 +267,6 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 'context',
                 'debugMode',
                 'numberOfFrames',
-                'running',
                 'timeFrame',
                 'trailLength',
                 'vm',
@@ -285,7 +285,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         numberOfFrames: PropTypes.number.isRequired,
-        running: PropTypes.bool.isRequired,
+        rewindMode: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
         trailLength: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
@@ -298,7 +298,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-        running: state.scratchGui.vmStatus.running,
+        rewindMode: state.scratchGui.debugger.rewindMode,
         timeFrame: state.scratchGui.debugger.timeFrame,
         trailLength: state.scratchGui.debugger.trailLength,
         vm: state.scratchGui.vm
