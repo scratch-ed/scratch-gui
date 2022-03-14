@@ -1,5 +1,7 @@
 # scratch-debugger-gui
 
+Documentatie: [https://blink-documentation.netlify.app/](https://blink-documentation.netlify.app/)
+
 ## Benodigdheden
 - Node.js (Ik gebruik versie 16.13.0, aangezien alle versies vanaf 17.0.0 te recent zijn)
 - npm
