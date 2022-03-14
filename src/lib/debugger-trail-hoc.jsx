@@ -7,8 +7,9 @@ import {disableAnimation, enableAnimation} from '../reducers/debugger.js';
 import {
     findSpriteLog,
     positionsAreEqual,
-    updateSprite
-} from '../util.js';
+    updateSpriteState,
+    updateSpriteVariables
+} from './time-slider-utility.js';
 import VM from 'scratch-vm';
 import bindAll from 'lodash.bindall';
 
@@ -149,7 +150,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                         this.props.vm.runtime.addTarget(clone);
                         clone.goBehindOther(sprite);
 
-                        updateSprite(clone, cloneLog);
+                        updateSpriteState(clone, cloneLog);
                     }
                 }
             }
@@ -160,7 +161,17 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
-                    updateSprite(sprite, spriteLog);
+                    updateSpriteState(sprite, spriteLog);
+                }
+            }
+        }
+
+        loadVariables () {
+            for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
+                const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
+
+                if (sprite) {
+                    updateSpriteVariables(sprite, spriteLog.variables);
                 }
             }
         }
@@ -168,6 +179,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         loadLogFrame () {
             this.loadClones();
             this.loadSprites();
+            this.loadVariables();
         }
 
         /**
@@ -209,7 +221,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                         const currentPosition = [currentSpriteLog.x, currentSpriteLog.y];
 
                         if (!positionsAreEqual(previousPosition, currentPosition)) {
-                            updateSprite(sprite, currentSpriteLog);
+                            updateSpriteState(sprite, currentSpriteLog);
 
                             sprite.setEffect('ghost', 90);
                             this.props.vm.renderer.penStamp(this.trailSkinId, sprite.drawableID);
@@ -249,7 +261,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                         // Store the current ghost value of the sprite.
                         const ghostValue = sprite.effects.ghost;
 
-                        updateSprite(sprite, spriteLog);
+                        updateSpriteState(sprite, spriteLog);
 
                         sprite.setEffect('ghost', 50);
                         this.props.vm.renderer.penStamp(this.animationSkinId, sprite.drawableID);

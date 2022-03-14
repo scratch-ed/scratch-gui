@@ -23,7 +23,7 @@ export const positionsAreEqual = function (position1, position2) {
  * @param {RenderedTarget} sprite - Sprite that needs to be updated.
  * @param {LoggedSprite} spriteLog - Logged sprite containing the new values.
  */
-export const updateSprite = function (sprite, spriteLog) {
+export const updateSpriteState = function (sprite, spriteLog) {
     sprite.setXY(spriteLog.x, spriteLog.y);
     sprite.setDirection(spriteLog.direction);
     sprite.setDraggable(spriteLog.draggable);
@@ -34,6 +34,19 @@ export const updateSprite = function (sprite, spriteLog) {
 
     for (const [effectName, value] of Object.entries(spriteLog.effects)) {
         sprite.setEffect(effectName, value);
+    }
+};
+
+/**
+ * Restore the sprite's variables to the values stored in the log.
+ *
+ * @param {RenderedTarget} sprite - Sprite that needs to be updated.
+ * @param {LoggedVariable[]} loggedVariables - Variables stored in the log.
+ */
+export const updateSpriteVariables = function (sprite, loggedVariables) {
+    for (const variableLog of loggedVariables) {
+        const variable = sprite.lookupOrCreateVariable(variableLog.id, variableLog.name);
+        variable.value = variableLog.value;
     }
 };
 
