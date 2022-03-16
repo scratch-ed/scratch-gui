@@ -35,6 +35,10 @@ class Controls extends React.Component {
         if (e.shiftKey) {
             this.props.vm.setTurboMode(!this.props.turbo);
         } else {
+            if (this.props.rewindMode) {
+                return;
+            }
+
             if (!this.props.isStarted) {
                 this.props.vm.start();
             }
@@ -76,6 +80,10 @@ class Controls extends React.Component {
 
     handleStopAllClick (e) {
         e.preventDefault();
+        if (this.props.rewindMode) {
+            return;
+        }
+
         this.props.vm.stopAll();
     }
 
