@@ -118,13 +118,15 @@ const DebuggerHOC = function (WrappedComponent) {
                 this.props.setContext(context);
 
                 // Increase the length of the time slider every time a new frame gets added to the log.
-                const oldAddFrame = context.log.addFrame.bind(context.log);
-                context.log.addFrame = (_context, _block) => {
-                    oldAddFrame(_context, _block);
+                const oldAddFrame = context.log.addFrame;
+                context.log.addFrame = new Proxy(oldAddFrame, {
+                    apply: (target, thisArg, argArray) => {
+                        target.apply(thisArg, argArray);
 
-                    this.props.setTimeFrame(this.props.numberOfFrames);
-                    this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
-                };
+                        this.props.setTimeFrame(this.props.numberOfFrames);
+                        this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
+                    }
+                });
 
                 await context.initialiseVm(this.props.vm);
             } else {
