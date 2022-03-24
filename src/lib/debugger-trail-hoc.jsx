@@ -166,6 +166,16 @@ const DebuggerTrailHOC = function (WrappedComponent) {
             }
         }
 
+        loadBubbles () {
+            for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
+                const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
+
+                if (sprite) {
+                    // RESET BUBBLE
+                }
+            }
+        }
+
         loadVariables () {
             for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
@@ -179,6 +189,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         loadLogFrame () {
             this.loadClones();
             this.loadSprites();
+            this.loadBubbles();
             this.loadVariables();
         }
 
