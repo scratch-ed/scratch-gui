@@ -7,14 +7,15 @@ import {disableAnimation, enableAnimation} from '../reducers/debugger.js';
 import {
     findSpriteLog,
     positionsAreEqual,
+    updateSpriteBubble,
     updateSpriteState,
     updateSpriteVariables
 } from './time-slider-utility.js';
 import VM from 'scratch-vm';
 import bindAll from 'lodash.bindall';
 
-const DebuggerTrailHOC = function (WrappedComponent) {
-    class DebuggerTrailWrapper extends React.Component {
+const DebuggerTimeSliderHOC = function (WrappedComponent) {
+    class DebuggerTimeSliderWrapper extends React.Component {
         constructor (props) {
             super(props);
 
@@ -146,6 +147,8 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                     // Initialize all clones of the current sprite.
                     for (const cloneLog of spriteLog.clones) {
                         const clone = sprite.makeClone();
+                        // Store the most recent id of the clone in the log.
+                        cloneLog.id = clone.id;
 
                         this.props.vm.runtime.addTarget(clone);
                         clone.goBehindOther(sprite);
@@ -171,7 +174,15 @@ const DebuggerTrailHOC = function (WrappedComponent) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
-                    // RESET BUBBLE
+                    updateSpriteBubble(sprite, spriteLog.bubbleState);
+
+                    for (const cloneLog of spriteLog.clones) {
+                        const clone = this.props.vm.runtime.getTargetById(cloneLog.id);
+
+                        if (clone) {
+                            updateSpriteBubble(clone, cloneLog.bubbleState);
+                        }
+                    }
                 }
             }
         }
@@ -307,7 +318,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
         }
     }
 
-    DebuggerTrailWrapper.propTypes = {
+    DebuggerTimeSliderWrapper.propTypes = {
         animate: PropTypes.bool.isRequired,
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
@@ -339,7 +350,7 @@ const DebuggerTrailHOC = function (WrappedComponent) {
     return connect(
         mapStateToProps,
         mapDispatchToProps
-    )(DebuggerTrailWrapper);
+    )(DebuggerTimeSliderWrapper);
 };
 
-export default DebuggerTrailHOC;
+export default DebuggerTimeSliderHOC;

@@ -51,6 +51,20 @@ export const updateSpriteVariables = function (sprite, loggedVariables) {
 };
 
 /**
+ * Restore the sprite's bubble to the state in the log.
+ *
+ * @param {RenderedTarget} sprite - Sprite that needs to be updated.
+ * @param {LoggedBubbleState?} bubbleState - Bubble state stored in the log.
+ */
+export const updateSpriteBubble = function (sprite, bubbleState) {
+    if (bubbleState) {
+        sprite.runtime.emit('SAY', sprite, bubbleState.type, bubbleState.text);
+    } else {
+        sprite.runtime.emit('SAY', sprite, 'say', '');
+    }
+};
+
+/**
  * Finds the logged sprite in the log frame corresponding to the given sprite id.
  *
  * @param {LogFrame} frame - frame in the log
