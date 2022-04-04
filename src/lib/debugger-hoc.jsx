@@ -65,9 +65,6 @@ const DebuggerHOC = function (WrappedComponent) {
 
             if (prevProps.running !== this.props.running) {
                 if (this.props.running) {
-                    // Unpause the runtime when (re)starting the execution.
-                    this.props.vm.runtime.resume();
-
                     // Clear the log when (re)starting the execution in debug mode.
                     if (this.props.debugMode) {
                         this.props.context.log.reset();
