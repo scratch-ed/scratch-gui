@@ -28,7 +28,8 @@ const DebuggerHOC = function (WrappedComponent) {
                 'handleProjectPaused',
                 'handleProjectResumed',
                 'handleRewindModeDisabled',
-                'handleRewindModeEnabled'
+                'handleRewindModeEnabled',
+                'handleThreadsStarted'
             ]);
 
             this.props.vm.runtime.addListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
@@ -40,12 +41,13 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
+
+            this.props.vm.runtime.addListener('THREADS_STARTED', this.handleThreadsStarted);
         }
 
         shouldComponentUpdate (nextProps) {
             return this.props.debugMode !== nextProps.debugMode ||
-                   this.props.rewindMode !== nextProps.rewindMode ||
-                   this.props.running !== nextProps.running;
+                   this.props.rewindMode !== nextProps.rewindMode;
         }
 
         async componentDidUpdate (prevProps) {
@@ -61,18 +63,6 @@ const DebuggerHOC = function (WrappedComponent) {
 
             if (prevProps.rewindMode !== this.props.rewindMode) {
                 this.props.vm.stopAll();
-            }
-
-            if (prevProps.running !== this.props.running) {
-                if (this.props.running) {
-                    // Clear the log when (re)starting the execution in debug mode.
-                    if (this.props.debugMode) {
-                        this.props.context.log.reset();
-
-                        this.props.setTimeFrame(0);
-                        this.props.setNumberOfFrames(0);
-                    }
-                }
             }
         }
 
@@ -105,6 +95,15 @@ const DebuggerHOC = function (WrappedComponent) {
 
         handleRewindModeEnabled () {
             this.props.setRewindMode(true);
+        }
+
+        handleThreadsStarted () {
+            if (this.props.debugMode) {
+                this.props.context.log.reset();
+
+                this.props.setTimeFrame(0);
+                this.props.setNumberOfFrames(0);
+            }
         }
 
         async changeDebugMode () {
@@ -146,7 +145,6 @@ const DebuggerHOC = function (WrappedComponent) {
                 'debugMode',
                 'numberOfFrames',
                 'rewindMode',
-                'running',
                 'timeFrame',
                 'vm',
                 'activateTab',
@@ -170,7 +168,6 @@ const DebuggerHOC = function (WrappedComponent) {
         debugMode: PropTypes.bool.isRequired,
         numberOfFrames: PropTypes.number.isRequired,
         rewindMode: PropTypes.bool.isRequired,
-        running: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         activateTab: PropTypes.func.isRequired,
@@ -188,7 +185,6 @@ const DebuggerHOC = function (WrappedComponent) {
         debugMode: state.scratchGui.debugger.debugMode,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
         rewindMode: state.scratchGui.debugger.rewindMode,
-        running: state.scratchGui.vmStatus.running,
         timeFrame: state.scratchGui.debugger.timeFrame,
         vm: state.scratchGui.vm
     });
