@@ -53,7 +53,6 @@ class Blocks extends React.Component {
         bindAll(this, [
             'attachVM',
             'detachVM',
-            'doWorkspaceUpdate',
             'getToolboxXML',
             'handleCategorySelected',
             'handleConnectionModalStart',
@@ -68,6 +67,8 @@ class Blocks extends React.Component {
             'onScriptGlowOff',
             'onBlockGlowOn',
             'onBlockGlowOff',
+            'onBlockIndicateOn',
+            'onBlockIndicateOff',
             'handleExtensionAdded',
             'handleBlocksInfoUpdate',
             'onTargetsUpdate',
@@ -88,7 +89,7 @@ class Blocks extends React.Component {
         this.toolboxUpdateQueue = [];
 
         // OVERRIDE BLOCKLY METHODS
-        // this.overrideBlocklyMethods();
+        this.overrideBlocklyMethods();
     }
     componentDidMount () {
         this.ScratchBlocks.FieldColourSlider.activateEyedropper_ = this.props.onActivateColorPicker;
@@ -197,17 +198,30 @@ class Blocks extends React.Component {
         clearTimeout(this.toolboxUpdateTimeout);
     }
     overrideBlocklyMethods () {
-        // Override behaviour when block is dragged
-        const oldUpdateIsDraggingBlock = this.ScratchBlocks.Gesture.prototype.updateIsDraggingBlock_;
-        this.ScratchBlocks.Gesture.prototype.updateIsDraggingBlock_ = new Proxy(oldUpdateIsDraggingBlock, {
-            apply: (target, thisArg, argArray) => {
-                if (this.props.debugMode) {
-                    return false;
+        this.ScratchBlocks.WorkspaceSvg.prototype.indicateBlock = function (id, isIndicated) {
+            if (id) {
+                const block = this.getBlockById(id);
+                if (!block) {
+                    throw new Error('Tried to glow block that does not exist.');
                 }
 
-                return target.apply(thisArg, argArray);
+                if (isIndicated) {
+                    block.oldSecondary = block.getColourSecondary();
+                    block.oldShadow = block.getShadowColour();
+                    block.colourSecondary_ = '#FF0000';
+                    block.shadowColour_ = '#FF0000';
+                } else {
+                    if (block.oldSecondary) {
+                        block.colourSecondary_ = block.oldSecondary;
+                    }
+                    if (block.oldShadow) {
+                        block.shadowColour_ = block.oldShadow;
+                    }
+                }
+
+                block.setGlowBlock(isIndicated);
             }
-        });
+        };
     }
     requestToolboxUpdate () {
         clearTimeout(this.toolboxUpdateTimeout);
@@ -278,6 +292,9 @@ class Blocks extends React.Component {
         this.props.vm.addListener('BLOCKSINFO_UPDATE', this.handleBlocksInfoUpdate);
         this.props.vm.addListener('PERIPHERAL_CONNECTED', this.handleStatusButtonUpdate);
         this.props.vm.addListener('PERIPHERAL_DISCONNECTED', this.handleStatusButtonUpdate);
+
+        this.props.vm.addListener('BLOCK_INDICATE_ON', this.onBlockIndicateOn);
+        this.props.vm.addListener('BLOCK_INDICATE_OFF', this.onBlockIndicateOff);
     }
     detachVM () {
         this.props.vm.removeListener('SCRIPT_GLOW_ON', this.onScriptGlowOn);
@@ -291,6 +308,9 @@ class Blocks extends React.Component {
         this.props.vm.removeListener('BLOCKSINFO_UPDATE', this.handleBlocksInfoUpdate);
         this.props.vm.removeListener('PERIPHERAL_CONNECTED', this.handleStatusButtonUpdate);
         this.props.vm.removeListener('PERIPHERAL_DISCONNECTED', this.handleStatusButtonUpdate);
+
+        this.props.vm.removeListener('BLOCK_INDICATE_ON', this.onBlockIndicateOn);
+        this.props.vm.removeListener('BLOCK_INDICATE_OFF', this.onBlockIndicateOff);
     }
     updateToolboxBlockValue (id, value) {
         this.withToolboxUpdates(() => {
@@ -339,6 +359,12 @@ class Blocks extends React.Component {
     onBlockGlowOff (data) {
         this.workspace.glowBlock(data.id, false);
     }
+    onBlockIndicateOn (data) {
+        this.workspace.indicateBlock(data.id, true);
+    }
+    onBlockIndicateOff (data) {
+        this.workspace.indicateBlock(data.id, false);
+    }
     onVisualReport (data) {
         this.workspace.reportValue(data.id, data.value);
     }
@@ -364,7 +390,7 @@ class Blocks extends React.Component {
             return null;
         }
     }
-    doWorkspaceUpdate (data) {
+    onWorkspaceUpdate (data) {
         // When we change sprites, update the toolbox to have the new sprite's blocks
         const toolboxXML = this.getToolboxXML();
         if (toolboxXML) {
@@ -409,9 +435,6 @@ class Blocks extends React.Component {
         // fresh workspace and we don't want any changes made to another sprites
         // workspace to be 'undone' here.
         this.workspace.clearUndo();
-    }
-    onWorkspaceUpdate (data) {
-        this.doWorkspaceUpdate(data);
     }
     handleExtensionAdded (categoryInfo) {
         const defineBlocks = blockInfoArray => {
@@ -682,7 +705,7 @@ const mapStateToProps = state => ({
     messages: state.locales.messages,
     toolboxXML: state.scratchGui.toolbox.toolboxXML,
     customProceduresVisible: state.scratchGui.customProcedures.active,
-    workspaceMetrics: state.scratchGui.workspaceMetrics,
+    workspaceMetrics: state.scratchGui.workspaceMetrics
 });
 
 const mapDispatchToProps = dispatch => ({
