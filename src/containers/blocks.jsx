@@ -202,7 +202,7 @@ class Blocks extends React.Component {
             if (id) {
                 const block = this.getBlockById(id);
                 if (!block) {
-                    throw new Error('Tried to glow block that does not exist.');
+                    return;
                 }
 
                 if (isIndicated) {

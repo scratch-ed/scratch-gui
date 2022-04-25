@@ -33,11 +33,14 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             this.animationSkinId = null;
 
             bindAll(this, [
+                'handleWorkspaceUpdate',
                 'updateAnimation'
             ]);
         }
 
         componentDidMount () {
+            this.props.vm.addListener('workspaceUpdate', this.handleWorkspaceUpdate);
+
             if (this.props.debugMode) {
                 this.construct();
 
@@ -67,8 +70,16 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                 if (this.props.rewindMode) {
                     this.loadLogFrame();
                     this.redrawTrails();
+                    this.props.vm.runtime.indicateBlock(
+                        this.props.context.log.frames[this.props.timeFrame].blockId,
+                        true
+                    );
                 } else {
                     this.clearSkins();
+                    this.props.vm.runtime.indicateBlock(
+                        this.props.context.log.frames[this.props.timeFrame].blockId,
+                        false
+                    );
                 }
             }
 
@@ -76,6 +87,14 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                 if (prevProps.timeFrame !== this.props.timeFrame) {
                     this.loadLogFrame();
                     this.redrawTrails();
+                    this.props.vm.runtime.indicateBlock(
+                        this.props.context.log.frames[prevProps.timeFrame].blockId,
+                        false
+                    );
+                    this.props.vm.runtime.indicateBlock(
+                        this.props.context.log.frames[this.props.timeFrame].blockId,
+                        true
+                    );
                 }
 
                 if (prevProps.trailLength !== this.props.trailLength) {
@@ -102,6 +121,18 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             clearInterval(this.intervalIndex);
 
             this.destroySkins();
+        }
+
+        handleWorkspaceUpdate () {
+            if (this.props.rewindMode) {
+                this.props.vm.runtime.indicateBlock(
+                    this.props.context.log.frames[this.props.timeFrame].blockId,
+                    true
+                );
+            }
+
+            // Make sure this callback is only called once.
+            this.props.vm.removeListener('workspaceUpdate', this.handleWorkspaceUpdate);
         }
 
         /**

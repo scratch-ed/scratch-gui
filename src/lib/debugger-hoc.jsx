@@ -31,21 +31,11 @@ const DebuggerHOC = function (WrappedComponent) {
                 'handleRewindModeEnabled',
                 'handleThreadsStarted'
             ]);
-
-            this.props.vm.runtime.addListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
-            this.props.vm.runtime.addListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
-
-            this.props.vm.runtime.addListener('REWIND_MODE_DISABLED', this.handleRewindModeDisabled);
-            this.props.vm.runtime.addListener('REWIND_MODE_ENABLED', this.handleRewindModeEnabled);
-
-            this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
-            this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
-            this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
-
-            this.props.vm.runtime.addListener('THREADS_STARTED', this.handleThreadsStarted);
         }
 
         componentDidMount () {
+            this.addListeners();
+
             if (this.props.debugMode) {
                 this.proxyAddFrame(this.props.context);
             }
@@ -73,9 +63,39 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         componentWillUnmount () {
+            this.removeListeners();
+
             if (this.props.debugMode) {
                 this.props.context.log.addFrame = this.oldAddFrame;
             }
+        }
+
+        addListeners () {
+            this.props.vm.runtime.addListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
+            this.props.vm.runtime.addListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
+
+            this.props.vm.runtime.addListener('REWIND_MODE_DISABLED', this.handleRewindModeDisabled);
+            this.props.vm.runtime.addListener('REWIND_MODE_ENABLED', this.handleRewindModeEnabled);
+
+            this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
+            this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
+            this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
+
+            this.props.vm.runtime.addListener('THREADS_STARTED', this.handleThreadsStarted);
+        }
+
+        removeListeners () {
+            this.props.vm.runtime.removeListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
+            this.props.vm.runtime.removeListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
+
+            this.props.vm.runtime.removeListener('REWIND_MODE_DISABLED', this.handleRewindModeDisabled);
+            this.props.vm.runtime.removeListener('REWIND_MODE_ENABLED', this.handleRewindModeEnabled);
+
+            this.props.vm.runtime.removeListener('PROJECT_LOADED', this.handleProjectLoaded);
+            this.props.vm.runtime.removeListener('PROJECT_PAUSED', this.handleProjectPaused);
+            this.props.vm.runtime.removeListener('PROJECT_RESUMED', this.handleProjectResumed);
+
+            this.props.vm.runtime.removeListener('THREADS_STARTED', this.handleThreadsStarted);
         }
 
         handleDebugModeDisabled () {
