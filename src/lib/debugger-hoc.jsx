@@ -45,6 +45,12 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.addListener('THREADS_STARTED', this.handleThreadsStarted);
         }
 
+        componentDidMount () {
+            if (this.props.debugMode) {
+                this.proxyAddFrame(this.props.context);
+            }
+        }
+
         shouldComponentUpdate (nextProps) {
             return this.props.debugMode !== nextProps.debugMode ||
                    this.props.rewindMode !== nextProps.rewindMode;
@@ -63,6 +69,12 @@ const DebuggerHOC = function (WrappedComponent) {
 
             if (prevProps.rewindMode !== this.props.rewindMode) {
                 this.props.vm.stopAll();
+            }
+        }
+
+        componentWillUnmount () {
+            if (this.props.debugMode) {
+                this.props.context.log.addFrame = this.oldAddFrame;
             }
         }
 
@@ -106,6 +118,19 @@ const DebuggerHOC = function (WrappedComponent) {
             }
         }
 
+        proxyAddFrame (context) {
+            // Increase the length of the time slider every time a new frame gets added to the log.
+            this.oldAddFrame = context.log.addFrame;
+            context.log.addFrame = new Proxy(this.oldAddFrame, {
+                apply: (target, thisArg, argArray) => {
+                    target.apply(thisArg, argArray);
+
+                    this.props.setTimeFrame(this.props.numberOfFrames);
+                    this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
+                }
+            });
+        }
+
         async changeDebugMode () {
             this.props.vm.stopAll();
 
@@ -113,16 +138,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 const context = new Context();
                 this.props.setContext(context);
 
-                // Increase the length of the time slider every time a new frame gets added to the log.
-                const oldAddFrame = context.log.addFrame;
-                context.log.addFrame = new Proxy(oldAddFrame, {
-                    apply: (target, thisArg, argArray) => {
-                        target.apply(thisArg, argArray);
-
-                        this.props.setTimeFrame(this.props.numberOfFrames);
-                        this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
-                    }
-                });
+                this.proxyAddFrame(context);
 
                 await context.initialiseVm(this.props.vm);
             } else {

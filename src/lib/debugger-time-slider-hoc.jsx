@@ -37,6 +37,16 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             ]);
         }
 
+        componentDidMount () {
+            if (this.props.debugMode) {
+                this.construct();
+
+                if (this.props.rewindMode) {
+                    this.redrawTrails();
+                }
+            }
+        }
+
         shouldComponentUpdate (nextProps) {
             return this.props.debugMode !== nextProps.debugMode ||
                    this.props.rewindMode !== nextProps.rewindMode ||
@@ -47,15 +57,9 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         componentDidUpdate (prevProps) {
             if (prevProps.debugMode !== this.props.debugMode) {
                 if (this.props.debugMode) {
-                    this.createSkins();
-
-                    this.intervalIndex = setInterval(this.updateAnimation, this.ANIMATION_INTERVAL);
-                    this.props.enableAnimation();
+                    this.construct();
                 } else {
-                    this.props.disableAnimation();
-                    clearInterval(this.intervalIndex);
-
-                    this.destroySkins();
+                    this.destruct();
                 }
             }
 
@@ -78,6 +82,26 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     this.redrawTrails();
                 }
             }
+        }
+
+        componentWillUnmount () {
+            if (this.props.debugMode) {
+                this.destruct();
+            }
+        }
+
+        construct () {
+            this.createSkins();
+
+            this.intervalIndex = setInterval(this.updateAnimation, this.ANIMATION_INTERVAL);
+            this.props.enableAnimation();
+        }
+
+        destruct () {
+            this.props.disableAnimation();
+            clearInterval(this.intervalIndex);
+
+            this.destroySkins();
         }
 
         /**
