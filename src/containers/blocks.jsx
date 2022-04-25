@@ -207,18 +207,13 @@ class Blocks extends React.Component {
 
                 if (isIndicated) {
                     block.oldSecondary = block.getColourSecondary();
-                    block.oldColourTertiary = block.getColourTertiary();
                     block.oldShadow = block.getShadowColour();
 
                     block.colourSecondary_ = '#FF0000';
-                    block.colourTertiary_ = '#FF00AA';
                     block.shadowColour_ = '#FF0000';
                 } else {
                     if (block.oldSecondary) {
                         block.colourSecondary_ = block.oldSecondary;
-                    }
-                    if (block.oldColourTertiary) {
-                        block.colourTertiary_ = block.oldColourTertiary;
                     }
                     if (block.oldShadow) {
                         block.shadowColour_ = block.oldShadow;

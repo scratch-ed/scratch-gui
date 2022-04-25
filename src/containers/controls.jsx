@@ -23,6 +23,9 @@ class Controls extends React.Component {
 
     handleDebugModeClick (e) {
         e.preventDefault();
+
+        this.props.vm.stopAll();
+
         if (this.props.debugMode) {
             this.props.vm.runtime.disableDebugMode();
         } else {
@@ -62,7 +65,10 @@ class Controls extends React.Component {
 
     handleRewindModeClick (e) {
         e.preventDefault();
+
         if (this.props.numberOfFrames > 0) {
+            this.props.vm.stopAll();
+
             if (this.props.rewindMode) {
                 this.props.vm.runtime.disableRewindMode();
             } else {

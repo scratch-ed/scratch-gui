@@ -42,8 +42,7 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         shouldComponentUpdate (nextProps) {
-            return this.props.debugMode !== nextProps.debugMode ||
-                   this.props.rewindMode !== nextProps.rewindMode;
+            return this.props.debugMode !== nextProps.debugMode;
         }
 
         async componentDidUpdate (prevProps) {
@@ -55,10 +54,6 @@ const DebuggerHOC = function (WrappedComponent) {
                 }
 
                 await this.changeDebugMode();
-            }
-
-            if (prevProps.rewindMode !== this.props.rewindMode) {
-                this.props.vm.stopAll();
             }
         }
 
@@ -152,8 +147,6 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         async changeDebugMode () {
-            this.props.vm.stopAll();
-
             if (this.props.debugMode) {
                 const context = new Context();
                 this.props.setContext(context);
