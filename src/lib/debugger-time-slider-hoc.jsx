@@ -63,6 +63,10 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     this.construct();
                 } else {
                     this.destruct();
+                    this.props.vm.runtime.indicateBlock(
+                        this.props.context.log.frames[this.props.timeFrame].blockId,
+                        false
+                    );
                 }
             }
 
