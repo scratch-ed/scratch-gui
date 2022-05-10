@@ -41,6 +41,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         componentDidMount () {
             this.props.vm.addListener('workspaceUpdate', this.handleWorkspaceUpdate);
 
+            console.log('HERE');
             if (this.props.debugMode) {
                 this.construct();
 
@@ -111,6 +112,8 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         componentWillUnmount () {
+            this.props.vm.removeListener('workspaceUpdate', this.handleWorkspaceUpdate);
+
             if (this.props.debugMode) {
                 this.destruct();
             }
@@ -137,9 +140,6 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     true
                 );
             }
-
-            // Make sure this callback is only called once.
-            this.props.vm.removeListener('workspaceUpdate', this.handleWorkspaceUpdate);
         }
 
         /**
