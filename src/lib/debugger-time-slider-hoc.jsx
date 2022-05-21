@@ -41,7 +41,6 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         componentDidMount () {
             this.props.vm.addListener('workspaceUpdate', this.handleWorkspaceUpdate);
 
-            console.log('HERE');
             if (this.props.debugMode) {
                 this.construct();
 
