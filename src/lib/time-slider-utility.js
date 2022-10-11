@@ -21,7 +21,7 @@ export const positionsAreEqual = function (position1, position2) {
  * stored in the logged sprite.
  *
  * @param {RenderedTarget} sprite - Sprite that needs to be updated.
- * @param {LoggedSprite} spriteLog - Logged sprite containing the new values.
+ * @param {ScratchSprite} spriteLog - Logged sprite containing the new values.
  */
 export const updateSpriteState = function (sprite, spriteLog) {
     sprite.setXY(spriteLog.x, spriteLog.y);
@@ -41,7 +41,7 @@ export const updateSpriteState = function (sprite, spriteLog) {
  * Restore the sprite's variables to the values stored in the log.
  *
  * @param {RenderedTarget} sprite - Sprite that needs to be updated.
- * @param {LoggedVariable[]} loggedVariables - Variables stored in the log.
+ * @param {ScratchVariable[]} loggedVariables - Variables stored in the log.
  */
 export const updateSpriteVariables = function (sprite, loggedVariables) {
     for (const variableLog of loggedVariables) {
@@ -54,7 +54,7 @@ export const updateSpriteVariables = function (sprite, loggedVariables) {
  * Restore the sprite's bubble to the state in the log.
  *
  * @param {RenderedTarget} sprite - Sprite that needs to be updated.
- * @param {LoggedBubbleState?} bubbleState - Bubble state stored in the log.
+ * @param {BubbleState?} bubbleState - Bubble state stored in the log.
  */
 export const updateSpriteBubble = function (sprite, bubbleState) {
     if (bubbleState) {
@@ -62,21 +62,4 @@ export const updateSpriteBubble = function (sprite, bubbleState) {
     } else {
         sprite.runtime.emit('SAY', sprite, 'say', '');
     }
-};
-
-/**
- * Finds the logged sprite in the log frame corresponding to the given sprite id.
- *
- * @param {LogFrame} frame - frame in the log
- * @param {string} spriteId - id of the sprite
- * @return {LoggedSprite | null} - logged sprite corresponding to given id
- */
-export const findSpriteLog = function (frame, spriteId) {
-    for (const spriteLog of frame.sprites) {
-        if (spriteLog.id === spriteId) {
-            return spriteLog;
-        }
-    }
-
-    return null;
 };

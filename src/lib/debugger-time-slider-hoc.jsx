@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import {Context} from '@ftrprf/judge-core';
 import {disableAnimation, enableAnimation} from '../reducers/debugger.js';
 import {
-    findSpriteLog,
     positionsAreEqual,
     updateSpriteBubble,
     updateSpriteState,
@@ -78,13 +77,13 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     this.loadLogFrame();
                     this.redrawTrails();
                     this.props.vm.runtime.indicateBlock(
-                        this.props.context.log.frames[this.props.timeFrame].blockId,
+                        this.props.context.log.snapshots[this.props.timeFrame].blockId,
                         true
                     );
                 } else {
                     this.clearSkins();
                     this.props.vm.runtime.indicateBlock(
-                        this.props.context.log.frames[this.props.timeFrame].blockId,
+                        this.props.context.log.snapshots[this.props.timeFrame].blockId,
                         false
                     );
                 }
@@ -95,11 +94,11 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     this.loadLogFrame();
                     this.redrawTrails();
                     this.props.vm.runtime.indicateBlock(
-                        this.props.context.log.frames[prevProps.timeFrame].blockId,
+                        this.props.context.log.snapshots[prevProps.timeFrame].blockId,
                         false
                     );
                     this.props.vm.runtime.indicateBlock(
-                        this.props.context.log.frames[this.props.timeFrame].blockId,
+                        this.props.context.log.snapshots[this.props.timeFrame].blockId,
                         true
                     );
                 }
@@ -190,7 +189,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadClones () {
-            for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
+            for (const spriteLog of this.props.context.log.snapshots[this.props.timeFrame].sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
@@ -221,7 +220,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadSprites () {
-            for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
+            for (const spriteLog of this.props.context.log.snapshots[this.props.timeFrame].sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
@@ -231,7 +230,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadBubbles () {
-            for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
+            for (const spriteLog of this.props.context.log.snapshots[this.props.timeFrame].sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
@@ -249,7 +248,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadVariables () {
-            for (const spriteLog of this.props.context.log.frames[this.props.timeFrame].sprites) {
+            for (const spriteLog of this.props.context.log.snapshots[this.props.timeFrame].sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
@@ -278,7 +277,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             this.clearSkins();
             this.clearTrail();
 
-            const frame = this.props.context.log.frames[this.props.timeFrame];
+            const frame = this.props.context.log.snapshots[this.props.timeFrame];
 
             for (const spriteLog of frame.sprites) {
                 if (spriteLog.isStage) {
@@ -299,7 +298,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
 
                     while (renderedAmount < this.props.trailLength && currentIndex >= 0) {
                         const currentFrame = this.props.context.log.frames[currentIndex];
-                        const currentSpriteLog = findSpriteLog(currentFrame, sprite.id);
+                        const currentSpriteLog = currentFrame.spriteById(sprite.id);
 
                         const currentPosition = [currentSpriteLog.x, currentSpriteLog.y];
 
@@ -337,7 +336,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     const animateIndex = this.animateIndex[spriteId] ? this.animateIndex[spriteId] : 0;
                     const frameIndex = this.trail[spriteId][animateIndex];
 
-                    const spriteLog = findSpriteLog(this.props.context.log.frames[frameIndex], spriteId);
+                    const spriteLog = this.props.context.log.snapshots[frameIndex].spriteById(spriteId);
                     const sprite = this.props.vm.runtime.getTargetById(spriteId);
 
                     if (sprite) {

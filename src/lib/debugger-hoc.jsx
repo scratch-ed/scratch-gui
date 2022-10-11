@@ -11,7 +11,7 @@ import {
     setRewindMode,
     setTimeFrame
 } from '../reducers/debugger.js';
-import {Context} from '@ftrprf/judge-core';
+import {createContextWithVm, Context, snapshotFromVm} from '@ftrprf/judge-core';
 import omit from 'lodash.omit';
 import bindAll from 'lodash.bindall';
 import {activateTab, BLOCKS_TAB_INDEX, DEBUGGER_TAB_INDEX} from '../reducers/editor-tab.js';
@@ -61,7 +61,7 @@ const DebuggerHOC = function (WrappedComponent) {
             this.removeListeners();
 
             if (this.props.debugMode) {
-                this.props.context.log.addFrame = this.oldAddFrame;
+                this.props.context.log.registerSnapshot = this.oldAddFrame;
             }
         }
 
@@ -118,15 +118,19 @@ const DebuggerHOC = function (WrappedComponent) {
 
         handleRewindModeDisabled () {
             this.props.setRewindMode(false);
+            this.props.context.log.started = true;
         }
 
         handleRewindModeEnabled () {
             this.props.setRewindMode(true);
+            this.props.context.log.started = false;
         }
 
         handleThreadsStarted () {
             if (this.props.debugMode) {
                 this.props.context.log.reset();
+                const snapshot = snapshotFromVm(this.props.vm);
+                this.props.context.log.registerStartSnapshots(snapshot, snapshot);
 
                 this.props.setTimeFrame(0);
                 this.props.setNumberOfFrames(0);
@@ -135,31 +139,36 @@ const DebuggerHOC = function (WrappedComponent) {
 
         proxyAddFrame (context) {
             // Increase the length of the time slider every time a new frame gets added to the log.
-            this.oldAddFrame = context.log.addFrame;
-            context.log.addFrame = new Proxy(this.oldAddFrame, {
+            this.oldAddFrame = context.log.registerSnapshot;
+            context.log.registerSnapshot = new Proxy(this.oldAddFrame, {
                 apply: (target, thisArg, argArray) => {
-                    target.apply(thisArg, argArray);
-
-                    this.props.setTimeFrame(this.props.numberOfFrames);
-                    this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
+                    const added = target.apply(thisArg, argArray);
+                    if (added) {
+                        this.props.setTimeFrame(this.props.numberOfFrames);
+                        this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
+                    }
+                    return added;
                 }
             });
         }
 
         async changeDebugMode () {
+            this.props.vm.stopAll();
+
             if (this.props.debugMode) {
-                const context = new Context();
+                const context = await createContextWithVm(this.props.vm);
+                context.instrumentVm(false);
+                context.log.started = true;
+                const snapshot = snapshotFromVm(this.props.vm);
+                context.log.registerStartSnapshots(snapshot, snapshot);
                 this.props.setContext(context);
 
                 this.proxyAddFrame(context);
-
-                await context.initialiseVm(this.props.vm);
             } else {
                 this.props.vm.runtime.disableRewindMode();
 
                 // Restore the VM to the state before the creation of the current context.
-                await this.props.context.restoreVm();
-
+                await this.props.context.deinstrumentVm();
                 this.props.setContext(null);
 
                 this.props.setTimeFrame(0);
