@@ -139,11 +139,11 @@ const DebuggerHOC = function (WrappedComponent) {
 
         proxyAddFrame (context) {
             // Increase the length of the time slider every time a new frame gets added to the log.
-            this.oldAddFrame = context.log.registerSnapshot;
-            context.log.registerSnapshot = new Proxy(this.oldAddFrame, {
+            this.oldAddFrame = context.log.registerEvent;
+            context.log.registerEvent = new Proxy(this.oldAddFrame, {
                 apply: (target, thisArg, argArray) => {
                     const added = target.apply(thisArg, argArray);
-                    if (added) {
+                    if (added && argArray[0].type === 'ops') {
                         this.props.setTimeFrame(this.props.numberOfFrames);
                         this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
                     }
@@ -157,7 +157,7 @@ const DebuggerHOC = function (WrappedComponent) {
 
             if (this.props.debugMode) {
                 const context = await createContextWithVm(this.props.vm);
-                context.instrumentVm(false);
+                context.instrumentVm(false, true);
                 context.log.started = true;
                 const snapshot = snapshotFromVm(this.props.vm);
                 context.log.registerStartSnapshots(snapshot, snapshot);
