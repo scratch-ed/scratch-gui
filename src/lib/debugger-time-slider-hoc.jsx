@@ -297,7 +297,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     let renderedAmount = 0;
 
                     while (renderedAmount < this.props.trailLength && currentIndex >= 0) {
-                        const currentFrame = this.props.context.log.frames[currentIndex];
+                        const currentFrame = this.props.context.log.ops[currentIndex].previous;
                         const currentSpriteLog = currentFrame.spriteById(sprite.id);
 
                         const currentPosition = [currentSpriteLog.x, currentSpriteLog.y];

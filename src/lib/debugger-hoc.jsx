@@ -157,7 +157,7 @@ const DebuggerHOC = function (WrappedComponent) {
 
             if (this.props.debugMode) {
                 const context = await createContextWithVm(this.props.vm);
-                context.instrumentVm(false, true);
+                context.instrumentVm('debugger');
                 context.log.started = true;
                 const snapshot = snapshotFromVm(this.props.vm);
                 context.log.registerStartSnapshots(snapshot, snapshot);
