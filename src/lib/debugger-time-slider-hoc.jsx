@@ -65,7 +65,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
 
                     if (this.props.rewindMode) {
                         this.props.vm.runtime.indicateBlock(
-                            this.props.context.log.executions[this.props.timeFrame].data.blockId,
+                            this.props.context.log.ops[this.props.timeFrame].data.blockId,
                             false
                         );
                     }
