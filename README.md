@@ -11,7 +11,7 @@ This repository is a fork of [scratch-gui](https://github.com/LLK/scratch-gui). 
 - npm
 - git
 
-### judge-core
+### scratch-judge
 `scratch-debugger-gui` uses the [`scratch-judge`](https://github.ugent.be/scratch4d/scratch-judge) as local `npm` package.
 
 Clone the `scratch-judge` repository in the same directory where you clone(d) `scratch-debugger-gui`.
