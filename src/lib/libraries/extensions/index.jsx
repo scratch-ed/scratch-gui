@@ -340,5 +340,25 @@ export default [
             />
         ),
         featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Itch"
+                description="Name of the Itch extension"
+                id="gui.extension.itch.name"
+            />
+        ),
+        extensionId: 'itch',
+        // iconURL: penIconURL,
+        // insetIconURL: penInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Test Scratch code in Scratch!"
+                description="Description for the Itch extension"
+                id="gui.extension.itch.description"
+            />
+        ),
+        featured: true
     }
 ];
