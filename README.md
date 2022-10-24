@@ -67,9 +67,9 @@ The `npm install` command can give an error. As suggested, use `--legacy-peer-de
 Finally, execute the following command in the root of the repository.
 This makes sure the local `scratch-vm` is being used,
 instead of the one from the `npm` repositories.
-´´´
+```
 npm link scratch-vm
-´´´
+```
 
 ### Running
 The scratch GUI with debugger can be executed with the command below, in the `scratch-debugger-gui`-directory. It can be accessed on http://localhost:8601/ and changes to the code will immediately be visible.
