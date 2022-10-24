@@ -6,9 +6,8 @@ import {defineMessages, injectIntl, intlShape} from 'react-intl';
 import GreenFlag from '../green-flag/green-flag.jsx';
 import StopAll from '../stop-all/stop-all.jsx';
 import DebugMode from '../debugger-buttons/debug-mode/debug-mode.jsx';
-import Resume from '../debugger-buttons/resume/resume.jsx';
 import RewindMode from '../debugger-buttons/rewind-mode/rewind-mode.jsx';
-import Pause from '../debugger-buttons/pause/pause.jsx';
+import ResumePause from '../debugger-buttons/resume-pause/resume-pause.jsx';
 import Step from '../debugger-buttons/step/step.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
 
@@ -61,8 +60,7 @@ const Controls = function (props) {
         numberOfFrames,
         onDebugModeClick,
         onGreenFlagClick,
-        onPauseClick,
-        onResumeClick,
+        onToggleResumeClick,
         onRewindModeClick,
         onStepClick,
         onStopAllClick,
@@ -100,17 +98,11 @@ const Controls = function (props) {
                         title={intl.formatMessage(messages.rewindTitle)}
                         onClick={onRewindModeClick}
                     />
-                    <Resume
-                        paused={paused}
-                        running={active}
-                        title={intl.formatMessage(messages.resumeTitle)}
-                        onClick={onResumeClick}
-                    />
-                    <Pause
+                    <ResumePause
                         paused={paused}
                         running={active}
                         title={intl.formatMessage(messages.pauseTitle)}
-                        onClick={onPauseClick}
+                        onClick={onToggleResumeClick}
                     />
                     <Step
                         paused={paused}
@@ -135,8 +127,7 @@ Controls.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
-    onPauseClick: PropTypes.func.isRequired,
-    onResumeClick: PropTypes.func.isRequired,
+    onToggleResumeClick: PropTypes.func.isRequired,
     onRewindModeClick: PropTypes.func.isRequired,
     onStepClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
