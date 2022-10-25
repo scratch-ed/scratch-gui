@@ -14,7 +14,9 @@ class TimeInterface extends React.Component {
         bindAll(this, [
             'handleTimeChange',
             'handleTimeMouseDown',
-            'handleTimeMouseUp'
+            'handleTimeMouseUp',
+            'handleToggleResumeClick',
+            'handleStepClick'
         ]);
     }
 
@@ -34,9 +36,24 @@ class TimeInterface extends React.Component {
         }
     }
 
+    handleToggleResumeClick (e) {
+        e.preventDefault();
+        if (this.props.paused) {
+            this.props.vm.runtime.resume();
+        } else {
+            this.props.vm.runtime.pause();
+        }
+    }
+
+    handleStepClick (e) {
+        e.preventDefault();
+        if (this.props.running && this.props.paused) {
+            this.props.vm.runtime.step();
+        }
+    }
+
     render () {
         const componentProps = omit(this.props, [
-            'running',
             'vm',
             'disableAnimation',
             'enableAnimation',
@@ -49,6 +66,8 @@ class TimeInterface extends React.Component {
                 onTimeChange={this.handleTimeChange}
                 onTimeMouseDown={this.handleTimeMouseDown}
                 onTimeMouseUp={this.handleTimeMouseUp}
+                onToggleResumeClick={this.handleToggleResumeClick}
+                onStepClick={this.handleStepClick}
             />
         );
     }
@@ -58,7 +77,8 @@ class TimeInterface extends React.Component {
 const mapStateToProps = state => ({
     numberOfFrames: state.scratchGui.debugger.numberOfFrames,
     running: state.scratchGui.vmStatus.running,
-    timeFrame: state.scratchGui.debugger.timeFrame
+    timeFrame: state.scratchGui.debugger.timeFrame,
+    paused: state.scratchGui.debugger.paused
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -74,7 +94,8 @@ TimeInterface.propTypes = {
     vm: PropTypes.instanceOf(VM).isRequired,
     disableAnimation: PropTypes.func.isRequired,
     enableAnimation: PropTypes.func.isRequired,
-    setTimeFrame: PropTypes.func.isRequired
+    setTimeFrame: PropTypes.func.isRequired,
+    paused: PropTypes.bool.isRequired
 };
 
 export default connect(

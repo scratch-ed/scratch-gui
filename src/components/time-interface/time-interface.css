@@ -1,1 +1,7 @@
-.time-interface {}
+.time-interface {
+}
+
+.time-interface output {
+    float: right;
+    font-size: larger;
+}

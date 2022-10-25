@@ -27,21 +27,6 @@ const messages = defineMessages({
         id: 'gui.controls.debug',
         defaultMessage: 'Debug mode',
         description: 'Debug mode button title'
-    },
-    resumeTitle: {
-        id: 'gui.controls.resume',
-        defaultMessage: 'Resume',
-        description: 'Resume button title'
-    },
-    pauseTitle: {
-        id: 'gui.controls.pause',
-        defaultMessage: 'Pause',
-        description: 'Pause button title'
-    },
-    stepTitle: {
-        id: 'gui.controls.step',
-        defaultMessage: 'Step',
-        description: 'Step button title'
     }
 });
 
@@ -51,13 +36,9 @@ const Controls = function (props) {
         className,
         debugMode,
         intl,
-        numberOfFrames,
         onDebugModeClick,
         onGreenFlagClick,
-        onToggleResumeClick,
-        onStepClick,
         onStopAllClick,
-        paused,
         turbo,
         ...componentProps
     } = props;
@@ -82,22 +63,6 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.debugTitle)}
                 onClick={onDebugModeClick}
             />
-            {debugMode ?
-                <>
-                    <ResumePause
-                        paused={paused}
-                        running={active}
-                        title={intl.formatMessage(messages.pauseTitle)}
-                        onClick={onToggleResumeClick}
-                    />
-                    <Step
-                        paused={paused}
-                        running={active}
-                        title={intl.formatMessage(messages.stepTitle)}
-                        onClick={onStepClick}
-                    />
-                </> :
-                null}
             {turbo ? (
                 <TurboMode />
             ) : null}
@@ -110,13 +75,9 @@ Controls.propTypes = {
     className: PropTypes.string,
     debugMode: PropTypes.bool.isRequired,
     intl: intlShape.isRequired,
-    numberOfFrames: PropTypes.number.isRequired,
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
-    onToggleResumeClick: PropTypes.func.isRequired,
-    onStepClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
-    paused: PropTypes.bool.isRequired,
     turbo: PropTypes.bool
 };
 
