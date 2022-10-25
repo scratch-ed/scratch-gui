@@ -13,8 +13,6 @@ class Controls extends React.Component {
         bindAll(this, [
             'handleDebugModeClick',
             'handleGreenFlagClick',
-            'handleToggleResumeClick',
-            'handleStepClick',
             'handleStopAllClick'
         ]);
     }
@@ -43,22 +41,6 @@ class Controls extends React.Component {
         }
     }
 
-    handleToggleResumeClick (e) {
-        e.preventDefault();
-        if (this.props.paused) {
-            this.props.vm.runtime.resume();
-        } else {
-            this.props.vm.runtime.pause();
-        }
-    }
-
-    handleStepClick (e) {
-        e.preventDefault();
-        if (this.props.projectRunning && this.props.paused) {
-            this.props.vm.runtime.step();
-        }
-    }
-
     handleStopAllClick (e) {
         e.preventDefault();
 
@@ -81,8 +63,6 @@ class Controls extends React.Component {
                 turbo={turbo}
                 onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
-                onToggleResumeClick={this.handleToggleResumeClick}
-                onStepClick={this.handleStepClick}
                 onStopAllClick={this.handleStopAllClick}
             />
         );
@@ -93,7 +73,6 @@ Controls.propTypes = {
     debugMode: PropTypes.bool.isRequired,
     isStarted: PropTypes.bool.isRequired,
     numberOfFrames: PropTypes.number.isRequired,
-    paused: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM)
@@ -102,8 +81,6 @@ Controls.propTypes = {
 const mapStateToProps = state => ({
     debugMode: state.scratchGui.debugger.debugMode,
     isStarted: state.scratchGui.vmStatus.running,
-    numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-    paused: state.scratchGui.debugger.paused,
     projectRunning: state.scratchGui.vmStatus.running,
     turbo: state.scratchGui.vmStatus.turbo
 });
