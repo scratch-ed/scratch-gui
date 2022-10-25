@@ -3,7 +3,6 @@ const SET_CONTEXT = 'scratch-gui/debugger/SET_CONTEXT';
 const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
 const SET_PAUSED = 'scratch-gui/debugger/SET_PAUSED';
-const SET_REWIND_MODE = 'scratch-gui/debugger/SET_REWIND_MODE';
 const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
 const SET_TRAIL_LENGTH = 'scratch-gui/debugger/SET_TRAIL_LENGTH';
 
@@ -15,7 +14,6 @@ const initialState = {
     debugMode: false,
     numberOfFrames: 0,
     paused: false,
-    rewindMode: false,
     timeFrame: 0,
     trailLength: 0
 };
@@ -42,10 +40,6 @@ const reducer = function (state, action) {
     case SET_PAUSED:
         return Object.assign({}, state, {
             paused: action.paused
-        });
-    case SET_REWIND_MODE:
-        return Object.assign({}, state, {
-            rewindMode: action.rewindMode
         });
     case SET_TIME_FRAME:
         return Object.assign({}, state, {
@@ -103,13 +97,6 @@ const setPaused = function (paused) {
     };
 };
 
-const setRewindMode = function (rewindMode) {
-    return {
-        type: SET_REWIND_MODE,
-        rewindMode: rewindMode
-    };
-};
-
 const setTimeFrame = function (timeFrame) {
     return {
         type: SET_TIME_FRAME,
@@ -133,7 +120,6 @@ export {
     setDebugMode,
     setNumberOfFrames,
     setPaused,
-    setRewindMode,
     setTimeFrame,
     setTrailLength
 };

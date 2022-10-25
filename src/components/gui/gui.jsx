@@ -122,7 +122,6 @@ const GUIComponent = props => {
         onTelemetryModalCancel,
         onTelemetryModalOptIn,
         onTelemetryModalOptOut,
-        rewindMode,
         showComingSoon,
         soundsTabVisible,
         stageSizeMode,
@@ -381,7 +380,7 @@ const GUIComponent = props => {
                                 stageSize={stageSize}
                                 vm={vm}
                             />
-                            {rewindMode ? <TimeInterface vm={vm} /> : null}
+                            {debugMode ? <TimeInterface vm={vm} /> : null}
                             <Box className={styles.targetWrapper}>
                                 <TargetPane
                                     stageSize={stageSize}
@@ -458,7 +457,6 @@ GUIComponent.propTypes = {
     onTelemetryModalOptOut: PropTypes.func,
     onToggleLoginOpen: PropTypes.func,
     renderLogin: PropTypes.func,
-    rewindMode: PropTypes.bool,
     showComingSoon: PropTypes.bool,
     soundsTabVisible: PropTypes.bool,
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
@@ -495,7 +493,6 @@ GUIComponent.defaultProps = {
 
 const mapStateToProps = state => ({
     debugMode: state.scratchGui.debugger.debugMode,
-    rewindMode: state.scratchGui.debugger.rewindMode,
     // This is the button's mode, as opposed to the actual current state
     blocksId: state.scratchGui.timeTravel.year.toString(),
     stageSizeMode: state.scratchGui.stageSize.stageSize,

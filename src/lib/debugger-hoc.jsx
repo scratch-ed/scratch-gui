@@ -8,7 +8,6 @@ import {
     setDebugMode,
     setPaused,
     setNumberOfFrames,
-    setRewindMode,
     setTimeFrame
 } from '../reducers/debugger.js';
 import {createContextWithVm, Context, snapshotFromVm} from '@ftrprf/judge-core';
@@ -27,8 +26,6 @@ const DebuggerHOC = function (WrappedComponent) {
                 'handleProjectLoaded',
                 'handleProjectPaused',
                 'handleProjectResumed',
-                'handleRewindModeDisabled',
-                'handleRewindModeEnabled',
                 'handleThreadsStarted'
             ]);
         }
@@ -69,9 +66,6 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.addListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
             this.props.vm.runtime.addListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
 
-            this.props.vm.runtime.addListener('REWIND_MODE_DISABLED', this.handleRewindModeDisabled);
-            this.props.vm.runtime.addListener('REWIND_MODE_ENABLED', this.handleRewindModeEnabled);
-
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
@@ -83,9 +77,6 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.removeListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
             this.props.vm.runtime.removeListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
 
-            this.props.vm.runtime.removeListener('REWIND_MODE_DISABLED', this.handleRewindModeDisabled);
-            this.props.vm.runtime.removeListener('REWIND_MODE_ENABLED', this.handleRewindModeEnabled);
-
             this.props.vm.runtime.removeListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.removeListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.removeListener('PROJECT_RESUMED', this.handleProjectResumed);
@@ -95,10 +86,12 @@ const DebuggerHOC = function (WrappedComponent) {
 
         handleDebugModeDisabled () {
             this.props.setDebugMode(false);
+            // this.props.context.log.started = false;
         }
 
         handleDebugModeEnabled () {
             this.props.setDebugMode(true);
+            // this.props.context.log.started = true;
         }
 
         /**
@@ -116,19 +109,8 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.setPaused(false);
         }
 
-        handleRewindModeDisabled () {
-            this.props.setRewindMode(false);
-            this.props.context.log.started = true;
-        }
-
-        handleRewindModeEnabled () {
-            this.props.setRewindMode(true);
-            this.props.context.log.started = false;
-        }
-
         handleThreadsStarted () {
             if (this.props.debugMode) {
-                this.props.context.log.reset();
                 const snapshot = snapshotFromVm(this.props.vm);
                 this.props.context.log.registerStartSnapshots(snapshot, snapshot);
 
@@ -165,8 +147,6 @@ const DebuggerHOC = function (WrappedComponent) {
 
                 this.proxyAddFrame(context);
             } else {
-                this.props.vm.runtime.disableRewindMode();
-
                 // Restore the VM to the state before the creation of the current context.
                 await this.props.context.deinstrumentVm();
                 this.props.setContext(null);
@@ -182,7 +162,6 @@ const DebuggerHOC = function (WrappedComponent) {
                 'context',
                 'debugMode',
                 'numberOfFrames',
-                'rewindMode',
                 'timeFrame',
                 'vm',
                 'activateTab',
@@ -190,7 +169,6 @@ const DebuggerHOC = function (WrappedComponent) {
                 'setDebugMode',
                 'setNumberOfFrames',
                 'setPaused',
-                'setRewindMode',
                 'setTimeFrame'
             ]);
 
@@ -205,7 +183,6 @@ const DebuggerHOC = function (WrappedComponent) {
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         numberOfFrames: PropTypes.number.isRequired,
-        rewindMode: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         activateTab: PropTypes.func.isRequired,
@@ -213,7 +190,6 @@ const DebuggerHOC = function (WrappedComponent) {
         setDebugMode: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
-        setRewindMode: PropTypes.func.isRequired,
         setTimeFrame: PropTypes.func.isRequired
     };
 
@@ -222,7 +198,6 @@ const DebuggerHOC = function (WrappedComponent) {
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-        rewindMode: state.scratchGui.debugger.rewindMode,
         timeFrame: state.scratchGui.debugger.timeFrame,
         vm: state.scratchGui.vm
     });
@@ -233,7 +208,6 @@ const DebuggerHOC = function (WrappedComponent) {
         setDebugMode: debugMode => dispatch(setDebugMode(debugMode)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setPaused: paused => dispatch(setPaused(paused)),
-        setRewindMode: rewindMode => dispatch(setRewindMode(rewindMode)),
         setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
     });
 

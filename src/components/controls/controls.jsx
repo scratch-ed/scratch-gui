@@ -6,7 +6,6 @@ import {defineMessages, injectIntl, intlShape} from 'react-intl';
 import GreenFlag from '../green-flag/green-flag.jsx';
 import StopAll from '../stop-all/stop-all.jsx';
 import DebugMode from '../debugger-buttons/debug-mode/debug-mode.jsx';
-import RewindMode from '../debugger-buttons/rewind-mode/rewind-mode.jsx';
 import ResumePause from '../debugger-buttons/resume-pause/resume-pause.jsx';
 import Step from '../debugger-buttons/step/step.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
@@ -28,11 +27,6 @@ const messages = defineMessages({
         id: 'gui.controls.debug',
         defaultMessage: 'Debug mode',
         description: 'Debug mode button title'
-    },
-    rewindTitle: {
-        id: 'gui.controls.rewind',
-        defaultMessage: 'Rewind last execution',
-        description: 'Rewind mode button title'
     },
     resumeTitle: {
         id: 'gui.controls.resume',
@@ -61,11 +55,9 @@ const Controls = function (props) {
         onDebugModeClick,
         onGreenFlagClick,
         onToggleResumeClick,
-        onRewindModeClick,
         onStepClick,
         onStopAllClick,
         paused,
-        rewindMode,
         turbo,
         ...componentProps
     } = props;
@@ -92,12 +84,6 @@ const Controls = function (props) {
             />
             {debugMode ?
                 <>
-                    <RewindMode
-                        numberOfFrames={numberOfFrames}
-                        rewindMode={rewindMode}
-                        title={intl.formatMessage(messages.rewindTitle)}
-                        onClick={onRewindModeClick}
-                    />
                     <ResumePause
                         paused={paused}
                         running={active}
@@ -128,11 +114,9 @@ Controls.propTypes = {
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
     onToggleResumeClick: PropTypes.func.isRequired,
-    onRewindModeClick: PropTypes.func.isRequired,
     onStepClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
-    rewindMode: PropTypes.bool.isRequired,
     turbo: PropTypes.bool
 };
 
