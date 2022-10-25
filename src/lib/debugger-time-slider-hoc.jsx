@@ -38,42 +38,32 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         componentDidMount () {
-            this.props.vm.addListener('workspaceUpdate', this.handleWorkspaceUpdate);
+            // this.props.vm.addListener('workspaceUpdate', this.handleWorkspaceUpdate);
 
             if (this.props.debugMode) {
-                this.construct();
+                // this.construct();
 
-                if (this.props.rewindMode) {
-                    this.redrawTrails();
-                }
+                // this.redrawTrails();
             }
         }
 
         shouldComponentUpdate (nextProps) {
             return this.props.debugMode !== nextProps.debugMode ||
-                   this.props.rewindMode !== nextProps.rewindMode ||
                    this.props.timeFrame !== nextProps.timeFrame ||
+                   this.props.numberOfFrames !== nextProps.numberOfFrames ||
                    this.props.trailLength !== nextProps.trailLength;
         }
 
         componentDidUpdate (prevProps) {
+            return;
+            if (!this.props.context) {
+                return;
+            }
+
             if (prevProps.debugMode !== this.props.debugMode) {
                 if (this.props.debugMode) {
                     this.construct();
-                } else {
-                    this.destruct();
 
-                    if (this.props.rewindMode) {
-                        this.props.vm.runtime.indicateBlock(
-                            this.props.context.log.ops[this.props.timeFrame].data.blockId,
-                            false
-                        );
-                    }
-                }
-            }
-
-            if (this.props.debugMode && prevProps.rewindMode !== this.props.rewindMode) {
-                if (this.props.rewindMode) {
                     this.loadLogFrame();
                     this.redrawTrails();
                     this.props.vm.runtime.indicateBlock(
@@ -81,7 +71,8 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                         true
                     );
                 } else {
-                    this.clearSkins();
+                    this.destruct();
+
                     this.props.vm.runtime.indicateBlock(
                         this.props.context.log.ops[this.props.timeFrame].data.blockId,
                         false
@@ -89,8 +80,11 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                 }
             }
 
-            if (this.props.debugMode && this.props.rewindMode) {
-                if (prevProps.timeFrame !== this.props.timeFrame) {
+
+            if (this.props.debugMode) {
+                if (prevProps.timeFrame !== this.props.timeFrame ||
+                    prevProps.numberOfFrames !== this.props.numberOfFrames) {
+
                     this.loadLogFrame();
                     this.redrawTrails();
                     this.props.vm.runtime.indicateBlock(
@@ -110,10 +104,10 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         componentWillUnmount () {
-            this.props.vm.removeListener('workspaceUpdate', this.handleWorkspaceUpdate);
+            // this.props.vm.removeListener('workspaceUpdate', this.handleWorkspaceUpdate);
 
             if (this.props.debugMode) {
-                this.destruct();
+                // this.destruct();
             }
         }
 
@@ -132,7 +126,9 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         handleWorkspaceUpdate () {
-            if (this.props.rewindMode) {
+            if (this.props.context && this.props.context.log && this.props.context.log.ops &&
+                this.props.context.log.ops[this.props.timeFrame]) {
+
                 this.props.vm.runtime.indicateBlock(
                     this.props.context.log.ops[this.props.timeFrame].data.blockId,
                     true
@@ -173,8 +169,8 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
          */
         destroySkins () {
             // Destroy the skins for trail and animation.
-            this.props.vm.renderer.destroySkin(this.trailSkinId);
-            this.props.vm.renderer.destroySkin(this.animationSkinId);
+            if (this.trailSkinId) this.props.vm.renderer.destroySkin(this.trailSkinId);
+            if (this.animationSkinId) this.props.vm.renderer.destroySkin(this.animationSkinId);
 
             this.trailSkinId = null;
             this.animationSkinId = null;
@@ -325,7 +321,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         updateAnimation () {
-            if (!this.props.animate || !this.props.rewindMode || this.props.numberOfFrames === 0) {
+            if (!this.props.animate || this.props.numberOfFrames === 0) {
                 return;
             }
 
@@ -383,7 +379,6 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         numberOfFrames: PropTypes.number.isRequired,
-        rewindMode: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
         trailLength: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
@@ -396,7 +391,6 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-        rewindMode: state.scratchGui.debugger.rewindMode,
         timeFrame: state.scratchGui.debugger.timeFrame,
         trailLength: state.scratchGui.debugger.trailLength,
         vm: state.scratchGui.vm

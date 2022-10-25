@@ -14,7 +14,6 @@ class Controls extends React.Component {
             'handleDebugModeClick',
             'handleGreenFlagClick',
             'handleToggleResumeClick',
-            'handleRewindModeClick',
             'handleStepClick',
             'handleStopAllClick'
         ]);
@@ -37,10 +36,6 @@ class Controls extends React.Component {
         if (e.shiftKey) {
             this.props.vm.setTurboMode(!this.props.turbo);
         } else {
-            if (this.props.rewindMode) {
-                return;
-            }
-
             if (!this.props.isStarted) {
                 this.props.vm.start();
             }
@@ -57,20 +52,6 @@ class Controls extends React.Component {
         }
     }
 
-    handleRewindModeClick (e) {
-        e.preventDefault();
-
-        if (this.props.numberOfFrames > 0) {
-            this.props.vm.stopAll();
-
-            if (this.props.rewindMode) {
-                this.props.vm.runtime.disableRewindMode();
-            } else {
-                this.props.vm.runtime.enableRewindMode();
-            }
-        }
-    }
-
     handleStepClick (e) {
         e.preventDefault();
         if (this.props.projectRunning && this.props.paused) {
@@ -80,9 +61,6 @@ class Controls extends React.Component {
 
     handleStopAllClick (e) {
         e.preventDefault();
-        if (this.props.rewindMode) {
-            return;
-        }
 
         this.props.vm.stopAll();
     }
@@ -104,7 +82,6 @@ class Controls extends React.Component {
                 onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onToggleResumeClick={this.handleToggleResumeClick}
-                onRewindModeClick={this.handleRewindModeClick}
                 onStepClick={this.handleStepClick}
                 onStopAllClick={this.handleStopAllClick}
             />
@@ -118,7 +95,6 @@ Controls.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
     paused: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
-    rewindMode: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM)
 };
@@ -129,7 +105,6 @@ const mapStateToProps = state => ({
     numberOfFrames: state.scratchGui.debugger.numberOfFrames,
     paused: state.scratchGui.debugger.paused,
     projectRunning: state.scratchGui.vmStatus.running,
-    rewindMode: state.scratchGui.debugger.rewindMode,
     turbo: state.scratchGui.vmStatus.turbo
 });
 
