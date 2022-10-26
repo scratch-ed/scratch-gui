@@ -72,7 +72,6 @@ class Controls extends React.Component {
 Controls.propTypes = {
     debugMode: PropTypes.bool.isRequired,
     isStarted: PropTypes.bool.isRequired,
-    numberOfFrames: PropTypes.number.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM)
