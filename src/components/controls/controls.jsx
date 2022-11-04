@@ -13,6 +13,7 @@ import Step from '../debugger-buttons/step/step.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
 
 import styles from './controls.css';
+import TestFlag from '../test-flag/test-flag.jsx';
 
 const messages = defineMessages({
     goTitle: {
@@ -61,6 +62,7 @@ const Controls = function (props) {
         numberOfFrames,
         onDebugModeClick,
         onGreenFlagClick,
+        onTestFlagClick,
         onPauseClick,
         onResumeClick,
         onRewindModeClick,
@@ -123,6 +125,12 @@ const Controls = function (props) {
             {turbo ? (
                 <TurboMode />
             ) : null}
+            <TestFlag
+                active={active}
+                // todo change title
+                title="Test flag"
+                onClick={onTestFlagClick}
+            />
         </div>
     );
 };
@@ -135,6 +143,7 @@ Controls.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
+    onTestFlagClick: PropTypes.func.isRequired,
     onPauseClick: PropTypes.func.isRequired,
     onResumeClick: PropTypes.func.isRequired,
     onRewindModeClick: PropTypes.func.isRequired,
