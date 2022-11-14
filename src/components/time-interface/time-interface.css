@@ -1,6 +1,10 @@
 .time-interface {
 }
 
+.step-back {
+    transform: scaleX(-1);
+}
+
 .time-interface output {
     float: right;
     font-size: larger;

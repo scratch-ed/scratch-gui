@@ -53,15 +53,15 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.goTitle)}
                 onClick={onGreenFlagClick}
             />
-            <StopAll
-                active={active}
-                title={intl.formatMessage(messages.stopTitle)}
-                onClick={onStopAllClick}
-            />
             <DebugMode
                 debugMode={debugMode}
                 title={intl.formatMessage(messages.debugTitle)}
                 onClick={onDebugModeClick}
+            />
+            <StopAll
+                active={active}
+                title={intl.formatMessage(messages.stopTitle)}
+                onClick={onStopAllClick}
             />
             {turbo ? (
                 <TurboMode />
