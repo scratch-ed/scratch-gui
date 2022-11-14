@@ -65,17 +65,19 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     //
                     // this.loadLogFrame();
                     // this.redrawTrails();
-                    // this.props.vm.runtime.indicateBlock(
-                    //     this.props.context.log.ops[this.props.timeFrame].data.blockId,
-                    //     true
-                    // );
+                    this.props.vm.runtime.indicateBlock(
+                        this.props.context.log.ops[this.props.timeFrame].data.blockId,
+                        true
+                    );
                 } else {
                     // this.destruct();
                     //
-                    // this.props.vm.runtime.indicateBlock(
-                    //     this.props.context.log.ops[this.props.timeFrame].data.blockId,
-                    //     false
-                    // );
+                    if (this.props.timeFrame < this.props.numberOfFrames) {
+                        this.props.vm.runtime.indicateBlock(
+                            this.props.context.log.ops[this.props.timeFrame].data.blockId,
+                            false
+                        );
+                    }
                 }
             }
 
@@ -84,14 +86,15 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                 if (prevProps.timeFrame !== this.props.timeFrame ||
                     prevProps.numberOfFrames !== this.props.numberOfFrames) {
 
+                    this.props.vm.runtime.indicateBlock(
+                        this.props.context.log.ops[prevProps.timeFrame].data.blockId,
+                        false
+                    );
+
                     // If not running, load previous log frame
                     if (this.props.timeFrame < this.props.numberOfFrames) {
                         this.loadLogFrame();
                         // this.redrawTrails();
-                        this.props.vm.runtime.indicateBlock(
-                            this.props.context.log.ops[prevProps.timeFrame].data.blockId,
-                            false
-                        );
                         this.props.vm.runtime.indicateBlock(
                             this.props.context.log.ops[this.props.timeFrame].data.blockId,
                             true

@@ -51,6 +51,13 @@ const TimeInterfaceComponent = function (props) {
                 onMouseUp={onTimeMouseUp}
                 timeFrame={timeFrame}
             />
+            <Step
+                className={styles.stepBack}
+                paused={paused}
+                running={running}
+                title={intl.formatMessage(messages.stepTitle)}
+                onClick={onStepClick}
+            />
             <ResumePause
                 paused={paused}
                 running={running}
@@ -66,7 +73,7 @@ const TimeInterfaceComponent = function (props) {
             <output
                 name={'rangeValue'}
             >
-                {`${timeFrame + 1}/${numberOfFrames}`}
+                {numberOfFrames > 0 ? `${timeFrame + 1}/${numberOfFrames}` : '-- / --'}
             </output>
         </Box>
     );
