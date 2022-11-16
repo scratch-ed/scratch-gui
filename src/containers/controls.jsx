@@ -22,11 +22,7 @@ class Controls extends React.Component {
 
         this.props.vm.stopAll();
 
-        // this.props.vm.runtime.enableDebugMode();
-        // this.props.vm.runtime.greenFlagDebug();
-
         if (this.props.debugMode) {
-            this.props.vm.runtime.disableDebugMode();
             this.props.vm.runtime.disableDebugMode();
         } else {
             this.props.vm.runtime.enableDebugMode();
