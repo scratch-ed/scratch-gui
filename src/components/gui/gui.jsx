@@ -41,6 +41,7 @@ import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
 import debuggerIcon from '../../debugger-icons/icon--debugger.svg';
 import DebuggerTab from '../../containers/debugger-tab.jsx';
+import TestResultTab from '../../containers/test-result-tab.jsx';
 import TimeInterface from '../../containers/time-interface.jsx';
 
 const messages = defineMessages({
@@ -105,6 +106,7 @@ const GUIComponent = props => {
         onActivateDebuggerTab,
         onActivateSoundsTab,
         onActivateTab,
+        onActivateTestResultTab,
         onClickLogo,
         onExtensionButtonClick,
         onProjectTelemetryEvent,
@@ -124,6 +126,7 @@ const GUIComponent = props => {
         stageSizeMode,
         targetIsStage,
         telemetryModalVisible,
+        testResultTabVisible,
         tipsLibraryVisible,
         vm,
         ...componentProps
@@ -303,6 +306,20 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
+                                    <Tab
+                                        className={tabClassNames.tab}
+                                        onClick={onActivateTestResultTab}
+                                    >
+                                        <img
+                                            draggable={false}
+                                            src={debuggerIcon}
+                                        />
+                                        <FormattedMessage
+                                            defaultMessage="Test results"
+                                            description="Button to get to the test result panel"
+                                            id="gui.gui.testResultTab"
+                                        />
+                                    </Tab>
                                     {debugMode ?
                                         <Tab
                                             className={tabClassNames.tab}
@@ -354,6 +371,9 @@ const GUIComponent = props => {
                                 </TabPanel>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
+                                </TabPanel>
+                                <TabPanel className={tabClassNames.tabPanel}>
+                                    {testResultTabVisible ? <TestResultTab vm={vm} /> : null}
                                 </TabPanel>
                                 {debugMode ?
                                     <TabPanel className={tabClassNames.tabPanel}>
@@ -425,6 +445,7 @@ GUIComponent.propTypes = {
     logo: PropTypes.string,
     onActivateCostumesTab: PropTypes.func,
     onActivateDebuggerTab: PropTypes.func,
+    onActivateTestResultTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
     onActivateTab: PropTypes.func,
     onClickAccountNav: PropTypes.func,
@@ -452,6 +473,7 @@ GUIComponent.propTypes = {
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
+    testResultTabVisible: PropTypes.bool,
     tipsLibraryVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };

@@ -16,7 +16,8 @@ import {
     BLOCKS_TAB_INDEX,
     COSTUMES_TAB_INDEX,
     SOUNDS_TAB_INDEX,
-    DEBUGGER_TAB_INDEX
+    DEBUGGER_TAB_INDEX,
+    TEST_RESULT_TAB_INDEX
 } from '../reducers/editor-tab';
 
 import {
@@ -139,6 +140,7 @@ const mapStateToProps = state => {
         costumeLibraryVisible: state.scratchGui.modals.costumeLibrary,
         costumesTabVisible: state.scratchGui.editorTab.activeTabIndex === COSTUMES_TAB_INDEX,
         debuggerTabVisible: state.scratchGui.editorTab.activeTabIndex === DEBUGGER_TAB_INDEX,
+        testResultTabVisible: state.scratchGui.editorTab.activeTabIndex === TEST_RESULT_TAB_INDEX,
         error: state.scratchGui.projectState.error,
         isError: getIsError(loadingState),
         isFullScreen: state.scratchGui.mode.isFullScreen,
@@ -164,6 +166,7 @@ const mapDispatchToProps = dispatch => ({
     onActivateCostumesTab: () => dispatch(activateTab(COSTUMES_TAB_INDEX)),
     onActivateSoundsTab: () => dispatch(activateTab(SOUNDS_TAB_INDEX)),
     onActivateDebuggerTab: () => dispatch(activateTab(DEBUGGER_TAB_INDEX)),
+    onActivateTestResultTab: () => dispatch(activateTab(TEST_RESULT_TAB_INDEX)),
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())
