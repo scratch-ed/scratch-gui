@@ -258,11 +258,29 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             }
         }
 
+        loadRuntime () {
+            const toLoad = JSON.parse(this.props.context.advancedLog[this.props.timeFrame - 1]);
+            console.dir(toLoad);
+            // for (const key of Object.keys(toLoad)) {
+            //     this.vm.runtime[key] = toLoad[key];
+            // }
+        }
+
         loadLogFrame () {
+
+            console.log(`timeFrame: ${this.props.timeFrame}`);
+            console.log(`numberOfFrames: ${this.props.numberOfFrames}`);
+            console.log(`numberOfLogs: ${this.props.context.log.ops.length}`);
+            console.log(`numberOfAdvancedLogs: ${this.props.context.advancedLog.length}`);
+
             this.loadClones();
             this.loadSprites();
             this.loadBubbles();
             this.loadVariables();
+
+            if (this.props.timeFrame === 5) {
+                this.loadRuntime();
+            }
         }
 
         /**
