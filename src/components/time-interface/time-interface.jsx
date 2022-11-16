@@ -73,7 +73,7 @@ const TimeInterfaceComponent = function (props) {
             <output
                 name={'rangeValue'}
             >
-                {numberOfFrames > 0 ? `${timeFrame + 1}/${numberOfFrames}` : '-- / --'}
+                {numberOfFrames > 0 ? `${timeFrame + 1}/${numberOfFrames}` : '0/0'}
             </output>
         </Box>
     );
