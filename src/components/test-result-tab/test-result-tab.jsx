@@ -5,45 +5,35 @@ import Box from '../box/box.jsx';
 
 import styles from './test-result-tab.css';
 import {FormattedMessage} from 'react-intl';
-import TrailSliderComponent from '../trail-slider/trail-slider.jsx';
 
 const TestResultTabComponent = function (props) {
     const {
-        onTrailChange,
-        onTrailMouseDown,
-        onTrailMouseUp,
-        trailLength
+        getTestResults
     } = props;
-
-    const MAX_TRAIL_LENGTH = 50;
 
     return (
         <Box className={styles.debuggerTab}>
             <label>
                 <span>
                     <FormattedMessage
-                        defaultMessage="Trail length"
-                        description="Trail length slider label"
-                        id="gui.debuggerTab.trailLength"
+                        defaultMessage="Test Results"
+                        description="head of test result tab"
+                        id="gui.testResultTab.header"
                     />
                 </span>
-                <TrailSliderComponent
-                    maxTrailLength={MAX_TRAIL_LENGTH}
-                    onChange={onTrailChange}
-                    onMouseDown={onTrailMouseDown}
-                    onMouseUp={onTrailMouseUp}
-                    trailLength={trailLength}
-                />
+                <br />
+                <span>
+                    { // TODO: make test result component
+                        getTestResults().map((result, i) => <div key={i}>{result}<br /></div>)
+                    }
+                </span>
             </label>
         </Box>
     );
 };
 
 TestResultTabComponent.propTypes = {
-    onTrailChange: PropTypes.func.isRequired,
-    onTrailMouseDown: PropTypes.func.isRequired,
-    onTrailMouseUp: PropTypes.func.isRequired,
-    trailLength: PropTypes.number.isRequired
+    getTestResults: PropTypes.func.isRequired
 };
 
 export default TestResultTabComponent;
