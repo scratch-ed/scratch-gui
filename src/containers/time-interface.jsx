@@ -3,7 +3,7 @@ import bindAll from 'lodash.bindall';
 import PropTypes from 'prop-types';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
-import {disableAnimation, enableAnimation, setTimeFrame} from '../reducers/debugger.js';
+import {disableAnimation, enableAnimation, setTimeFrame, setNumberOfFrames} from '../reducers/debugger.js';
 import TimeInterfaceComponent from '../components/time-interface/time-interface.jsx';
 import omit from 'lodash.omit';
 
@@ -38,7 +38,9 @@ class TimeInterface extends React.Component {
 
     handleToggleResumeClick (e) {
         e.preventDefault();
-        if (this.props.paused) {
+        // TODO
+        if (true || this.props.paused) {
+            this.props.setNumberOfFrames(this.props.timeFrame + 1);
             this.props.vm.runtime.resume();
         } else {
             this.props.vm.runtime.pause();
@@ -47,9 +49,11 @@ class TimeInterface extends React.Component {
 
     handleStepClick (e) {
         e.preventDefault();
-        if (this.props.running && this.props.paused) {
-            this.props.vm.runtime.step();
-        }
+        // TODO
+        // if (this.props.running && this.props.paused) {
+        this.props.setNumberOfFrames(this.props.timeFrame + 1);
+        this.props.vm.runtime.step();
+        // }
     }
 
     render () {
@@ -57,7 +61,8 @@ class TimeInterface extends React.Component {
             'vm',
             'disableAnimation',
             'enableAnimation',
-            'setTimeFrame'
+            'setTimeFrame',
+            'setNumberOfFrames'
         ]);
 
         return (
@@ -84,7 +89,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     disableAnimation: () => dispatch(disableAnimation()),
     enableAnimation: () => dispatch(enableAnimation()),
-    setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
+    setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
+    setNumberOfFrames: timeFrame => dispatch(setNumberOfFrames(timeFrame))
 });
 
 TimeInterface.propTypes = {
@@ -95,6 +101,7 @@ TimeInterface.propTypes = {
     disableAnimation: PropTypes.func.isRequired,
     enableAnimation: PropTypes.func.isRequired,
     setTimeFrame: PropTypes.func.isRequired,
+    setNumberOfFrames: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired
 };
 

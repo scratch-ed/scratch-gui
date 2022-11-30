@@ -86,6 +86,10 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                 if (prevProps.timeFrame !== this.props.timeFrame ||
                     prevProps.numberOfFrames !== this.props.numberOfFrames) {
 
+                    if (this.props.numberOfFrames < prevProps.numberOfFrames) {
+                        this.props.context.setLogRange(0, this.props.numberOfFrames);
+                    }
+
                     this.props.vm.runtime.indicateBlock(
                         this.props.context.log.ops[prevProps.timeFrame].data.blockId,
                         false
@@ -259,28 +263,26 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadRuntime () {
-            const toLoad = JSON.parse(this.props.context.advancedLog[this.props.timeFrame - 1]);
-            console.dir(toLoad);
-            // for (const key of Object.keys(toLoad)) {
-            //     this.vm.runtime[key] = toLoad[key];
-            // }
+            this.props.context.restoreRuntimeSnapshot(this.props.context.runtimeLog[this.props.timeFrame - 1]);
         }
 
         loadLogFrame () {
 
-            console.log(`timeFrame: ${this.props.timeFrame}`);
-            console.log(`numberOfFrames: ${this.props.numberOfFrames}`);
-            console.log(`numberOfLogs: ${this.props.context.log.ops.length}`);
-            console.log(`numberOfAdvancedLogs: ${this.props.context.advancedLog.length}`);
+            // console.log(`timeFrame: ${this.props.timeFrame}`);
+            // console.log(`number of threads: ${this.props.vm.runtime.threads.length}`);
+
+            if (this.props.timeFrame === this.props.numberOfFrames - 1) {
+                return;
+            }
 
             this.loadClones();
             this.loadSprites();
             this.loadBubbles();
             this.loadVariables();
 
-            if (this.props.timeFrame === 5) {
-                this.loadRuntime();
-            }
+            this.loadRuntime();
+            // console.log(`number of threads after load: ${this.props.vm.runtime.threads.length}`);
+            // console.log(this.props.vm.runtime.threads);
         }
 
         /**
