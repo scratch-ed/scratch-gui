@@ -4,6 +4,7 @@ const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
 const SET_PAUSED = 'scratch-gui/debugger/SET_PAUSED';
 const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
+const SET_LOG_RANGE = 'scratch-gui/debugger/SET_LOG_RANGE';
 const SET_TRAIL_LENGTH = 'scratch-gui/debugger/SET_TRAIL_LENGTH';
 
 const initialState = {
@@ -15,7 +16,7 @@ const initialState = {
     numberOfFrames: 0,
     paused: false,
     timeFrame: 0,
-    trailLength: 0
+    trailLength: 0,
 };
 
 const reducer = function (state, action) {

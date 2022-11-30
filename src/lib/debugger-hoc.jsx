@@ -113,8 +113,8 @@ const DebuggerHOC = function (WrappedComponent) {
             if (this.props.debugMode) {
                 const snapshot = snapshotFromVm(this.props.vm);
                 this.props.context.log.registerStartSnapshots(snapshot, snapshot);
-                this.props.context.clearAdvancedLog();
-                this.props.context.makeAdvancedSnapshot();
+                this.props.context.clearRuntimeLog();
+                this.props.context.makeRuntimeSnapshot();
 
                 this.props.setTimeFrame(0);
                 this.props.setNumberOfFrames(0);
@@ -145,8 +145,8 @@ const DebuggerHOC = function (WrappedComponent) {
                 context.log.started = true;
                 const snapshot = snapshotFromVm(this.props.vm);
                 context.log.registerStartSnapshots(snapshot, snapshot);
-                context.clearAdvancedLog();
-                context.makeAdvancedSnapshot();
+                context.clearRuntimeLog();
+                context.makeRuntimeSnapshot();
                 this.props.setContext(context);
 
                 this.proxyAddFrame(context);
