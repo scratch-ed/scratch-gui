@@ -5,6 +5,8 @@ import Box from '../box/box.jsx';
 
 import styles from './test-result-tab.css';
 import {FormattedMessage} from 'react-intl';
+import passed from './passed.png';
+import failed from './failed.png';
 
 const TestResultTabComponent = function (props) {
     const {
@@ -23,8 +25,9 @@ const TestResultTabComponent = function (props) {
                 </span>
                 <br />
                 <FeedbackTreeComponent
-                    feedbackTree={Object.values(getTestResults())[0] ?
-                        Object.values(getTestResults())[0] : {value: '', children: []}}
+                    // the first child of the feedback tree is the root node
+                    feedbackTree={Object.values(getTestResults())[0].children[0] ?
+                        Object.values(getTestResults())[0].children[0] : {value: '', children: []}}
                     depth={0}
                 />
             </label>
@@ -43,9 +46,21 @@ const FeedbackTreeComponent = function (props) {
     } = props;
 
     return (
-        <div>
-            <a>{(feedbackTree.groupPassed ? 'Passed: ' : 'Failed: ') + feedbackTree.value}</a>
-            <div className={styles.feedbackTree}>
+        <div className={styles.feedbackTree}>
+            <div>
+                {feedbackTree.groupPassed ?
+                    <img
+                        className={styles.feedbackIcon}
+                        src={passed}
+                    /> :
+                    <img
+                        className={styles.feedbackIcon}
+                        src={failed}
+                    />
+                }
+                <a>{feedbackTree.value}</a>
+            </div>
+            <div>
                 {feedbackTree.children.map((child => FeedbackTreeComponent({feedbackTree: child, depth: (depth + 1)})))}
             </div>
         </div>
