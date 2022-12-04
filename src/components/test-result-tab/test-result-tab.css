@@ -1,22 +1,14 @@
 @import "../../css/units.css";
 @import "../../css/colors.css";
 
-.debugger-tab {
-    border: 1px solid $ui-black-transparent;
-    background: white;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 0.85rem;
-    flex-grow: 1;
-    flex-shrink: 1;
-    overflow: visible;
+.testResultTab {
+    margin: 20px;
+    overflow: scroll;
+    height: 800px;
+    width: 100%;
 }
 
-[dir="ltr"] .debugger-tab {
-    border-top-right-radius: $space;
-    border-bottom-right-radius: $space;
-}
-
-[dir="rtl"] .debugger-tab {
-    border-top-left-radius: $space;
-    border-bottom-left-radius: $space;
+.feedbackTree {
+    margin: 10px;
+    margin-left: 20px;
 }
