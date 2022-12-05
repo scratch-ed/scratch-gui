@@ -16,4 +16,33 @@
     width: 15px;
     height: 15px;
     margin-right: 10px;
+    margin-left: 10px;
+}
+
+.feedbackRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.caret-open::before {
+    content: "\25B6";
+    color: black;
+    display: inline-block;
+    transform: rotate(90deg);
+}
+
+.caret-closed::before {
+    content: "\25B6";
+    color: black;
+    display: inline-block;
+}
+
+.hidden {
+    display: none;
+}
+
+.feedbackChildrenShown {
+    display: contents;
 }
