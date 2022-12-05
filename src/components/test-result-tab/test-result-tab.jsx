@@ -10,20 +10,16 @@ import styles from './test-result-tab.css';
 import {FormattedMessage} from 'react-intl';
 import passed from './passed.png';
 import failed from './failed.png';
+import maybe from './maybe.png';
 
 const TestResultTabComponent = function (props) {
     const {
         getTestResults
     } = props;
 
-    let feedbackTree;
     // TODO: use multiple of the feedback trees in the test results
     const testResults = Object.values(getTestResults())[0];
-    if (testResults && testResults.children[0]) {
-        feedbackTree = testResults.children[0];
-    } else {
-        feedbackTree = {value: '', children: []};
-    }
+    const feedbackTree = testResults ? testResults : {value: '', children: []};
 
     return (
         <Box className={styles.testResultTab}>
@@ -36,11 +32,17 @@ const TestResultTabComponent = function (props) {
                     />
                 </span>
                 <br />
-                <ConnectedFeedbackTreeComponent
-                    // the first child of the feedback tree is the root node
-                    feedbackTree={feedbackTree}
-                    id={feedbackTree.id}
-                />
+                {
+                    // only display children of the root element. The root element is just a placeholder
+                    feedbackTree.children.map(child =>
+                        (<ConnectedFeedbackTreeComponent
+                            // the first child of the feedback tree is the root node
+                            feedbackTree={child}
+                            id={child.id}
+                            key={child.id}
+                        />)
+                    )
+                }
             </label>
         </Box>
     );
@@ -64,6 +66,25 @@ const FeedbackTreeComponent = function (props) {
         caretStyle = opened ? styles.caretOpen : styles.caretClosed;
     }
 
+    // icon can be passed, failed or maybe
+    let icon;
+    if (feedbackTree.groupPassed) {
+        icon = (<img
+            className={styles.feedbackIcon}
+            src={passed}
+        />);
+    } else if (feedbackTree.children.filter(child => child.groupPassed).length > 0) {
+        icon = (<img
+            className={styles.feedbackIcon}
+            src={maybe}
+        />);
+    } else {
+        icon = (<img
+            className={styles.feedbackIcon}
+            src={failed}
+        />);
+    }
+
     return (
         <div
             className={styles.feedbackTree}
@@ -74,16 +95,7 @@ const FeedbackTreeComponent = function (props) {
                     className={caretStyle}
                     onClick={() => setOpened(!opened, id)}
                 />
-                {feedbackTree.groupPassed ?
-                    <img
-                        className={styles.feedbackIcon}
-                        src={passed}
-                    /> :
-                    <img
-                        className={styles.feedbackIcon}
-                        src={failed}
-                    />
-                }
+                {icon}
                 <a>{feedbackTree.value}</a>
             </div>
             <div className={opened ? '' : styles.hidden}>
@@ -100,9 +112,10 @@ const FeedbackTreeComponent = function (props) {
 };
 
 const mapStateToProps = (state, props) => ({
-    opened: state.scratchGui.testResults.openedMap[props.id] ?
+    // eslint-disable-next-line no-undefined
+    opened: state.scratchGui.testResults.openedMap[props.id] === undefined ?
         // open failed groups by default
-        state.scratchGui.testResults.openedMap[props.id] : !props.feedbackTree.groupPassed
+        !props.feedbackTree.groupPassed : state.scratchGui.testResults.openedMap[props.id]
 
 });
 
