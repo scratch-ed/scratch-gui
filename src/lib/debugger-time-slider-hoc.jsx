@@ -38,7 +38,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         componentDidMount () {
-            // this.props.vm.addListener('workspaceUpdate', this.handleWorkspaceUpdate);
+            this.props.vm.addListener('workspaceUpdate', this.handleWorkspaceUpdate);
 
             if (this.props.debugMode) {
                 // this.construct();
@@ -62,47 +62,22 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             if (prevProps.debugMode !== this.props.debugMode) {
                 if (this.props.debugMode) {
                     // this.construct();
-                    //
-                    // this.loadLogFrame();
-                    // this.redrawTrails();
-                    this.props.vm.runtime.indicateBlock(
-                        this.props.context.log.ops[this.props.timeFrame].data.blockId,
-                        true
-                    );
                 } else {
                     // this.destruct();
-                    //
-                    if (this.props.timeFrame < this.props.numberOfFrames) {
-                        this.props.vm.runtime.indicateBlock(
-                            this.props.context.log.ops[this.props.timeFrame].data.blockId,
-                            false
-                        );
-                    }
                 }
             }
 
 
             if (this.props.debugMode) {
-                if (prevProps.timeFrame !== this.props.timeFrame ||
-                    prevProps.numberOfFrames !== this.props.numberOfFrames) {
-
-                    if (this.props.numberOfFrames < prevProps.numberOfFrames) {
-                        this.props.context.setLogRange(0, this.props.numberOfFrames);
-                    }
-
-                    this.props.vm.runtime.indicateBlock(
-                        this.props.context.log.ops[prevProps.timeFrame].data.blockId,
-                        false
-                    );
-
+                if (this.props.numberOfFrames < prevProps.numberOfFrames) {
+                    this.props.context.setLogRange(0, this.props.numberOfFrames);
+                }
+                if (prevProps.timeFrame !== this.props.timeFrame) {
                     // If not running, load previous log frame
                     if (this.props.timeFrame < this.props.numberOfFrames) {
+                        // todo  moet dit in de if staan
                         this.loadLogFrame();
                         // this.redrawTrails();
-                        this.props.vm.runtime.indicateBlock(
-                            this.props.context.log.ops[this.props.timeFrame].data.blockId,
-                            true
-                        );
                     }
                 }
 
@@ -113,7 +88,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         componentWillUnmount () {
-            // this.props.vm.removeListener('workspaceUpdate', this.handleWorkspaceUpdate);
+            this.props.vm.removeListener('workspaceUpdate', this.handleWorkspaceUpdate);
 
             if (this.props.debugMode) {
                 // this.destruct();
@@ -135,8 +110,12 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         handleWorkspaceUpdate () {
+            // todo is this necessary?
+            console.log("workspace update")
             if (this.props.context && this.props.context.log && this.props.context.log.ops &&
                 this.props.context.log.ops[this.props.timeFrame]) {
+
+                console.log(`not indicating ${this.props.context.log.ops[this.props.timeFrame].data.blockId}`);
 
                 this.props.vm.runtime.indicateBlock(
                     this.props.context.log.ops[this.props.timeFrame].data.blockId,
@@ -263,26 +242,19 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadRuntime () {
-            this.props.context.restoreRuntimeSnapshot(this.props.context.runtimeLog[this.props.timeFrame - 1]);
+            // load runtime at timeFrame
+            this.props.context.log.ops[this.props.timeFrame].previous.restoreRuntime(this.props.vm.runtime);
         }
 
         loadLogFrame () {
-
-            // console.log(`timeFrame: ${this.props.timeFrame}`);
-            // console.log(`number of threads: ${this.props.vm.runtime.threads.length}`);
-
-            if (this.props.timeFrame === this.props.numberOfFrames - 1) {
-                return;
-            }
-
             this.loadClones();
             this.loadSprites();
             this.loadBubbles();
             this.loadVariables();
 
             this.loadRuntime();
-            // console.log(`number of threads after load: ${this.props.vm.runtime.threads.length}`);
-            // console.log(this.props.vm.runtime.threads);
+
+            // this.loadIndications();
         }
 
         /**

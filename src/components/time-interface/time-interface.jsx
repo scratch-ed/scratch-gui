@@ -38,6 +38,7 @@ const TimeInterfaceComponent = function (props) {
         running,
         paused,
         onToggleResumeClick,
+        onStepBackClick,
         onStepClick,
         intl
     } = props;
@@ -53,20 +54,18 @@ const TimeInterfaceComponent = function (props) {
             />
             <Step
                 className={styles.stepBack}
-                paused={paused}
-                running={running}
+                enabled={running && paused && timeFrame > 0}
                 title={intl.formatMessage(messages.stepTitle)}
-                onClick={onStepClick}
+                onClick={onStepBackClick}
             />
             <ResumePause
                 paused={paused}
                 running={running}
-                title={intl.formatMessage(messages.pauseTitle)}
+                title={paused ? intl.formatMessage(messages.pauseTitle) : intl.formatMessage(messages.resumeTitle)}
                 onClick={onToggleResumeClick}
             />
             <Step
-                paused={paused}
-                running={running}
+                enabled={running && paused}
                 title={intl.formatMessage(messages.stepTitle)}
                 onClick={onStepClick}
             />
@@ -88,6 +87,7 @@ TimeInterfaceComponent.propTypes = {
     running: PropTypes.bool.isRequired,
     paused: PropTypes.bool.isRequired,
     onToggleResumeClick: PropTypes.func.isRequired,
+    onStepBackClick: PropTypes.func.isRequired,
     onStepClick: PropTypes.func.isRequired,
     intl: intlShape.isRequired
 };

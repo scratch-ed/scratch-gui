@@ -56,6 +56,7 @@ class DebuggerTab extends React.Component {
 
 const mapStateToProps = state => ({
     running: state.scratchGui.vmStatus.running,
+    paused: state.scratchGui.debugger.paused,
     trailLength: state.scratchGui.debugger.trailLength
 });
 
@@ -67,6 +68,7 @@ const mapDispatchToProps = dispatch => ({
 
 DebuggerTab.propTypes = {
     running: PropTypes.bool.isRequired,
+    paused: PropTypes.bool.isRequired,
     trailLength: PropTypes.number.isRequired,
     vm: PropTypes.instanceOf(VM).isRequired,
     disableAnimation: PropTypes.func.isRequired,

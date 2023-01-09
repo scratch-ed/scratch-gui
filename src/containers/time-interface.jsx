@@ -16,6 +16,7 @@ class TimeInterface extends React.Component {
             'handleTimeMouseDown',
             'handleTimeMouseUp',
             'handleToggleResumeClick',
+            'handleStepBackClick',
             'handleStepClick'
         ]);
     }
@@ -28,6 +29,9 @@ class TimeInterface extends React.Component {
         if (!this.props.running) {
             this.props.disableAnimation();
         }
+        if (!this.props.paused) {
+            this.props.vm.runtime.pause();
+        }
     }
 
     handleTimeMouseUp () {
@@ -38,8 +42,7 @@ class TimeInterface extends React.Component {
 
     handleToggleResumeClick (e) {
         e.preventDefault();
-        // TODO
-        if (true || this.props.paused) {
+        if (this.props.paused) {
             this.props.setNumberOfFrames(this.props.timeFrame + 1);
             this.props.vm.runtime.resume();
         } else {
@@ -47,13 +50,17 @@ class TimeInterface extends React.Component {
         }
     }
 
+    handleStepBackClick (e) {
+        e.preventDefault();
+        if (this.props.timeFrame > 0) {
+            this.props.setTimeFrame(this.props.timeFrame - 1);
+        }
+    }
+
     handleStepClick (e) {
         e.preventDefault();
-        // TODO
-        // if (this.props.running && this.props.paused) {
         this.props.setNumberOfFrames(this.props.timeFrame + 1);
         this.props.vm.runtime.step();
-        // }
     }
 
     render () {
@@ -72,6 +79,7 @@ class TimeInterface extends React.Component {
                 onTimeMouseDown={this.handleTimeMouseDown}
                 onTimeMouseUp={this.handleTimeMouseUp}
                 onToggleResumeClick={this.handleToggleResumeClick}
+                onStepBackClick={this.handleStepBackClick}
                 onStepClick={this.handleStepClick}
             />
         );
