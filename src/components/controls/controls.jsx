@@ -89,42 +89,43 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.stopTitle)}
                 onClick={onStopAllClick}
             />
-            <DebugMode
-                debugMode={debugMode}
-                title={intl.formatMessage(messages.debugTitle)}
-                onClick={onDebugModeClick}
-            />
-            {debugMode ?
-                <>
-                    <RewindMode
-                        numberOfFrames={numberOfFrames}
-                        rewindMode={rewindMode}
-                        title={intl.formatMessage(messages.rewindTitle)}
-                        onClick={onRewindModeClick}
-                    />
-                    <Resume
-                        paused={paused}
-                        running={active}
-                        title={intl.formatMessage(messages.resumeTitle)}
-                        onClick={onResumeClick}
-                    />
-                    <Pause
-                        paused={paused}
-                        running={active}
-                        title={intl.formatMessage(messages.pauseTitle)}
-                        onClick={onPauseClick}
-                    />
-                    <Step
-                        paused={paused}
-                        running={active}
-                        title={intl.formatMessage(messages.stepTitle)}
-                        onClick={onStepClick}
-                    />
-                </> :
-                null}
-            {turbo ? (
-                <TurboMode />
-            ) : null}
+            {/* Temporary comment for dojocon demo to not show debug functionality */}
+            {/* <DebugMode */}
+            {/*     debugMode={debugMode} */}
+            {/*     title={intl.formatMessage(messages.debugTitle)} */}
+            {/*     onClick={onDebugModeClick} */}
+            {/* /> */}
+            {/* {debugMode ? */}
+            {/*     <> */}
+            {/*         <RewindMode */}
+            {/*             numberOfFrames={numberOfFrames} */}
+            {/*             rewindMode={rewindMode} */}
+            {/*             title={intl.formatMessage(messages.rewindTitle)} */}
+            {/*             onClick={onRewindModeClick} */}
+            {/*         /> */}
+            {/*         <Resume */}
+            {/*             paused={paused} */}
+            {/*             running={active} */}
+            {/*             title={intl.formatMessage(messages.resumeTitle)} */}
+            {/*             onClick={onResumeClick} */}
+            {/*         /> */}
+            {/*         <Pause */}
+            {/*             paused={paused} */}
+            {/*             running={active} */}
+            {/*             title={intl.formatMessage(messages.pauseTitle)} */}
+            {/*             onClick={onPauseClick} */}
+            {/*         /> */}
+            {/*         <Step */}
+            {/*             paused={paused} */}
+            {/*             running={active} */}
+            {/*             title={intl.formatMessage(messages.stepTitle)} */}
+            {/*             onClick={onStepClick} */}
+            {/*         /> */}
+            {/*     </> : */}
+            {/*     null} */}
+            {/* {turbo ? ( */}
+            {/*     <TurboMode /> */}
+            {/* ) : null} */}
             <TestFlag
                 active={active}
                 // todo change title
