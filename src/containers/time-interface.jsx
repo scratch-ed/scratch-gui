@@ -53,6 +53,9 @@ class TimeInterface extends React.Component {
     handleStepBackClick (e) {
         e.preventDefault();
         if (this.props.timeFrame > 0) {
+            if (!this.props.paused) {
+                this.props.vm.runtime.pause();
+            }
             this.props.setTimeFrame(this.props.timeFrame - 1);
         }
     }
