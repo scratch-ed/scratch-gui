@@ -8,7 +8,11 @@ import {
     positionsAreEqual,
     updateSpriteBubble,
     updateSpriteState,
-    updateSpriteVariables
+    updateStageState,
+    updateTargetVariables,
+    updateTargetMonitor,
+    updateGeneralMonitor,
+    updateAnswerMonitor
 } from './time-slider-utility.js';
 import VM from 'scratch-vm';
 import bindAll from 'lodash.bindall';
@@ -111,7 +115,6 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
 
         handleWorkspaceUpdate () {
             // todo is this necessary?
-            console.log("workspace update")
             if (this.props.context && this.props.context.log && this.props.context.log.ops &&
                 this.props.context.log.ops[this.props.timeFrame]) {
 
@@ -211,6 +214,11 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     updateSpriteState(sprite, spriteLog);
                 }
             }
+
+            const stageLog = this.props.context.log.ops[this.props.timeFrame].previous.stage;
+            if (stageLog) {
+                updateStageState(this.props.vm.runtime.getTargetForStage(), stageLog);
+            }
         }
 
         loadBubbles () {
@@ -234,11 +242,34 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         loadVariables () {
             for (const spriteLog of this.props.context.log.ops[this.props.timeFrame].previous.sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
-
                 if (sprite) {
-                    updateSpriteVariables(sprite, spriteLog.variables);
+                    updateTargetVariables(sprite, spriteLog.variables);
                 }
             }
+
+            const stageLog = this.props.context.log.ops[this.props.timeFrame].previous.stage;
+            const stage = this.props.vm.runtime.getTargetById(stageLog.id);
+            if (stage) {
+                updateTargetVariables(stage, stageLog.variables);
+            }
+        }
+
+        loadMonitors () {
+            const monitorState = this.props.context.vm.runtime.getMonitorState();
+            const snapshot = this.props.context.log.ops[this.props.timeFrame].previous;
+            for (const monitorId of monitorState.keys()) {
+                const loggedTarget = snapshot.findTargetById(monitorId.substring(0, 20));
+                if (loggedTarget) {
+                    updateTargetMonitor(this.props.context.vm.runtime, loggedTarget, monitorId);
+                } else {
+                    updateGeneralMonitor(this.props.context.vm.runtime, snapshot, monitorId);
+                }
+            }
+
+            // Restore answer
+            const answerEvents = this.props.context.log.events.filter(e => e.type === 'answer');
+            const timestamp = this.props.context.log.ops[this.props.timeFrame].timestamp;
+            updateAnswerMonitor(this.props.context.vm.runtime, answerEvents, timestamp);
         }
 
         loadRuntime () {
@@ -251,6 +282,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             this.loadSprites();
             this.loadBubbles();
             this.loadVariables();
+            this.loadMonitors();
 
             this.loadRuntime();
 
