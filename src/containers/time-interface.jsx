@@ -94,7 +94,8 @@ const mapStateToProps = state => ({
     numberOfFrames: state.scratchGui.debugger.numberOfFrames,
     running: state.scratchGui.vmStatus.running,
     timeFrame: state.scratchGui.debugger.timeFrame,
-    paused: state.scratchGui.debugger.paused
+    paused: state.scratchGui.debugger.paused,
+    changed: state.scratchGui.debugger.changed
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -113,7 +114,8 @@ TimeInterface.propTypes = {
     enableAnimation: PropTypes.func.isRequired,
     setTimeFrame: PropTypes.func.isRequired,
     setNumberOfFrames: PropTypes.func.isRequired,
-    paused: PropTypes.bool.isRequired
+    paused: PropTypes.bool.isRequired,
+    changed: PropTypes.bool.isRequired
 };
 
 export default connect(

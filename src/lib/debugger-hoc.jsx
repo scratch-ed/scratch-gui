@@ -7,6 +7,7 @@ import {
     setContext,
     setDebugMode,
     setPaused,
+    setChanged,
     setNumberOfFrames,
     setTimeFrame
 } from '../reducers/debugger.js';
@@ -26,7 +27,8 @@ const DebuggerHOC = function (WrappedComponent) {
                 'handleProjectLoaded',
                 'handleProjectPaused',
                 'handleProjectResumed',
-                'handleThreadsStarted'
+                'handleThreadsStarted',
+                'handleProjectChanged'
             ]);
         }
 
@@ -69,6 +71,7 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
+            this.props.vm.runtime.addListener('PROJECT_CHANGED', this.handleProjectChanged);
 
             this.props.vm.runtime.addListener('THREADS_STARTED', this.handleThreadsStarted);
         }
@@ -80,6 +83,7 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.removeListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.removeListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.removeListener('PROJECT_RESUMED', this.handleProjectResumed);
+            this.props.vm.runtime.removeListener('PROJECT_CHANGED', this.handleProjectChanged);
 
             this.props.vm.runtime.removeListener('THREADS_STARTED', this.handleThreadsStarted);
         }
@@ -105,6 +109,10 @@ const DebuggerHOC = function (WrappedComponent) {
 
         handleProjectResumed () {
             this.props.setPaused(false);
+        }
+
+        handleProjectChanged () {
+            this.props.setChanged(true);
         }
 
         handleThreadsStarted () {
@@ -167,6 +175,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'setDebugMode',
                 'setNumberOfFrames',
                 'setPaused',
+                'setChanged',
                 'setTimeFrame'
             ]);
 
@@ -188,6 +197,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setDebugMode: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
+        setChanged: PropTypes.func.isRequired,
         setTimeFrame: PropTypes.func.isRequired
     };
 
@@ -206,6 +216,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setDebugMode: debugMode => dispatch(setDebugMode(debugMode)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setPaused: paused => dispatch(setPaused(paused)),
+        setChanged: changed => dispatch(setChanged(changed)),
         setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
     });
 

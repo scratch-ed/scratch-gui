@@ -3,8 +3,8 @@ const SET_CONTEXT = 'scratch-gui/debugger/SET_CONTEXT';
 const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
 const SET_PAUSED = 'scratch-gui/debugger/SET_PAUSED';
+const SET_CHANGED = 'scratch-gui/debugger/SET_CHANGED';
 const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
-const SET_LOG_RANGE = 'scratch-gui/debugger/SET_LOG_RANGE';
 const SET_TRAIL_LENGTH = 'scratch-gui/debugger/SET_TRAIL_LENGTH';
 
 const initialState = {
@@ -15,8 +15,9 @@ const initialState = {
     debugMode: false,
     numberOfFrames: 0,
     paused: false,
+    changed: false,
     timeFrame: 0,
-    trailLength: 0,
+    trailLength: 0
 };
 
 const reducer = function (state, action) {
@@ -39,8 +40,19 @@ const reducer = function (state, action) {
             numberOfFrames: action.numberOfFrames
         });
     case SET_PAUSED:
+        if (action.paused) {
+            return Object.assign({}, state, {
+                paused: true
+            });
+        }
+        // When a program starts (again), nothing has changed yet
         return Object.assign({}, state, {
-            paused: action.paused
+            paused: false,
+            changed: false
+        });
+    case SET_CHANGED:
+        return Object.assign({}, state, {
+            changed: action.changed
         });
     case SET_TIME_FRAME:
         return Object.assign({}, state, {
@@ -91,10 +103,25 @@ const setNumberOfFrames = function (numberOfFrames) {
     };
 };
 
+const setChanged = function (changed) {
+    console.log(`CHANGED: ${changed}`);
+    return {
+        type: SET_CHANGED,
+        changed: changed
+    };
+};
+
 const setPaused = function (paused) {
+    if (!paused) {
+        return {
+            type: SET_PAUSED,
+            paused: false,
+            changed: false
+        };
+    }
     return {
         type: SET_PAUSED,
-        paused: paused
+        paused: true
     };
 };
 
@@ -121,6 +148,7 @@ export {
     setDebugMode,
     setNumberOfFrames,
     setPaused,
+    setChanged,
     setTimeFrame,
     setTrailLength
 };

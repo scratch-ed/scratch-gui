@@ -283,7 +283,6 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             this.loadBubbles();
             this.loadVariables();
             this.loadMonitors();
-
             this.loadRuntime();
 
             // this.loadIndications();
