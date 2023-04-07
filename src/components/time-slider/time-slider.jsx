@@ -7,6 +7,7 @@ const TimeSliderComponent = function (props) {
     const {
         numberOfFrames,
         timeFrame,
+        disabled,
         ...componentProps
     } = props;
 
@@ -18,13 +19,15 @@ const TimeSliderComponent = function (props) {
             min={'0'}
             max={Math.max(0, numberOfFrames - 1)}
             value={timeFrame}
+            disabled={disabled}
         />
     );
 };
 
 TimeSliderComponent.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
-    timeFrame: PropTypes.number.isRequired
+    timeFrame: PropTypes.number.isRequired,
+    disabled: PropTypes.bool.isRequired
 };
 
 export default TimeSliderComponent;
