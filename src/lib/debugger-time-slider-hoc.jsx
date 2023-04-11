@@ -3,7 +3,13 @@ import {connect} from 'react-redux';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import {Context} from '@ftrprf/judge-core';
-import {disableAnimation, enableAnimation} from '../reducers/debugger.js';
+import {
+    disableAnimation,
+    enableAnimation,
+    setNumberOfFrames,
+    setOnlyKeepTimeFrame,
+    setTimeFrame
+} from '../reducers/debugger.js';
 import {
     positionsAreEqual,
     updateSpriteBubble,
@@ -55,6 +61,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             return this.props.debugMode !== nextProps.debugMode ||
                    this.props.timeFrame !== nextProps.timeFrame ||
                    this.props.numberOfFrames !== nextProps.numberOfFrames ||
+                   this.props.onlyKeepTimeFrame !== nextProps.onlyKeepTimeFrame ||
                    this.props.trailLength !== nextProps.trailLength;
         }
 
@@ -71,10 +78,14 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                 }
             }
 
-
             if (this.props.debugMode) {
-                if (this.props.numberOfFrames < prevProps.numberOfFrames) {
-                    this.props.context.setLogRange(0, this.props.numberOfFrames);
+                if (this.props.onlyKeepTimeFrame !== prevProps.onlyKeepTimeFrame &&
+                    this.props.onlyKeepTimeFrame !== -1) {
+                    this.props.context.setLogRange(this.props.onlyKeepTimeFrame - 1, this.props.onlyKeepTimeFrame);
+                    // Reset onlyKeepTimeFrame
+                    this.props.setOnlyKeepTimeFrame(-1);
+                    this.props.setNumberOfFrames(1);
+                    this.props.setTimeFrame(0);
                 }
                 if (prevProps.timeFrame !== this.props.timeFrame) {
                     // If not running, load previous log frame
@@ -408,10 +419,14 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         debugMode: PropTypes.bool.isRequired,
         numberOfFrames: PropTypes.number.isRequired,
         timeFrame: PropTypes.number.isRequired,
+        onlyKeepTimeFrame: PropTypes.number.isRequired,
+        setOnlyKeepTimeFrame: PropTypes.func.isRequired,
         trailLength: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         disableAnimation: PropTypes.func.isRequired,
-        enableAnimation: PropTypes.func.isRequired
+        enableAnimation: PropTypes.func.isRequired,
+        setNumberOfFrames: PropTypes.func.isRequired,
+        setTimeFrame: PropTypes.func.isRequired
     };
 
     const mapStateToProps = state => ({
@@ -419,6 +434,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
+        onlyKeepTimeFrame: state.scratchGui.debugger.onlyKeepTimeFrame,
         timeFrame: state.scratchGui.debugger.timeFrame,
         trailLength: state.scratchGui.debugger.trailLength,
         vm: state.scratchGui.vm
@@ -426,7 +442,10 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
 
     const mapDispatchToProps = dispatch => ({
         disableAnimation: () => dispatch(disableAnimation()),
-        enableAnimation: () => dispatch(enableAnimation())
+        enableAnimation: () => dispatch(enableAnimation()),
+        setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
+        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
+        setOnlyKeepTimeFrame: timeFrame => dispatch(setOnlyKeepTimeFrame(timeFrame))
     });
 
     return connect(
