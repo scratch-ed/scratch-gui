@@ -2,6 +2,7 @@ const SET_ANIMATION = 'scratch-gui/debugger/SET_ANIMATION';
 const SET_CONTEXT = 'scratch-gui/debugger/SET_CONTEXT';
 const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
+const SET_ONLY_KEEP_TIME_FRAME = 'scratch-gui/debugger/SET_ONLY_KEEP_TIME_FRAME';
 const SET_PAUSED = 'scratch-gui/debugger/SET_PAUSED';
 const SET_CHANGED = 'scratch-gui/debugger/SET_CHANGED';
 const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
@@ -14,6 +15,7 @@ const initialState = {
     context: null,
     debugMode: false,
     numberOfFrames: 0,
+    onlyKeepTimeFrame: -1,
     paused: false,
     changed: false,
     timeFrame: 0,
@@ -38,6 +40,10 @@ const reducer = function (state, action) {
     case SET_NUMBER_OF_FRAMES:
         return Object.assign({}, state, {
             numberOfFrames: action.numberOfFrames
+        });
+    case SET_ONLY_KEEP_TIME_FRAME:
+        return Object.assign({}, state, {
+            onlyKeepTimeFrame: action.onlyKeepTimeFrame
         });
     case SET_PAUSED:
         if (action.paused) {
@@ -103,8 +109,15 @@ const setNumberOfFrames = function (numberOfFrames) {
     };
 };
 
+const setOnlyKeepTimeFrame = function (onlyKeepTimeFrame) {
+    return {
+        type: SET_ONLY_KEEP_TIME_FRAME,
+        onlyKeepTimeFrame: onlyKeepTimeFrame
+    };
+};
+
+
 const setChanged = function (changed) {
-    console.log(`CHANGED: ${changed}`);
     return {
         type: SET_CHANGED,
         changed: changed
@@ -147,6 +160,7 @@ export {
     setContext,
     setDebugMode,
     setNumberOfFrames,
+    setOnlyKeepTimeFrame,
     setPaused,
     setChanged,
     setTimeFrame,

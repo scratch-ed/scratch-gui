@@ -3,7 +3,13 @@ import bindAll from 'lodash.bindall';
 import PropTypes from 'prop-types';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
-import {disableAnimation, enableAnimation, setTimeFrame, setNumberOfFrames} from '../reducers/debugger.js';
+import {
+    disableAnimation,
+    enableAnimation,
+    setTimeFrame,
+    setNumberOfFrames,
+    setOnlyKeepTimeFrame
+} from '../reducers/debugger.js';
 import TimeInterfaceComponent from '../components/time-interface/time-interface.jsx';
 import omit from 'lodash.omit';
 
@@ -43,7 +49,9 @@ class TimeInterface extends React.Component {
     handleToggleResumeClick (e) {
         e.preventDefault();
         if (this.props.paused) {
-            this.props.setNumberOfFrames(this.props.timeFrame + 1);
+            if (this.props.timeFrame < this.props.numberOfFrames - 1) {
+                this.props.setOnlyKeepTimeFrame(this.props.timeFrame + 1);
+            }
             this.props.vm.runtime.resume();
         } else {
             this.props.vm.runtime.pause();
@@ -62,7 +70,9 @@ class TimeInterface extends React.Component {
 
     handleStepClick (e) {
         e.preventDefault();
-        this.props.setNumberOfFrames(this.props.timeFrame + 1);
+        if (this.props.timeFrame < this.props.numberOfFrames - 1) {
+            this.props.setOnlyKeepTimeFrame(this.props.timeFrame + 1);
+        }
         this.props.vm.runtime.step();
     }
 
@@ -102,7 +112,8 @@ const mapDispatchToProps = dispatch => ({
     disableAnimation: () => dispatch(disableAnimation()),
     enableAnimation: () => dispatch(enableAnimation()),
     setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
-    setNumberOfFrames: timeFrame => dispatch(setNumberOfFrames(timeFrame))
+    setNumberOfFrames: timeFrame => dispatch(setNumberOfFrames(timeFrame)),
+    setOnlyKeepTimeFrame: timeFrame => dispatch(setOnlyKeepTimeFrame(timeFrame))
 });
 
 TimeInterface.propTypes = {
@@ -114,6 +125,7 @@ TimeInterface.propTypes = {
     enableAnimation: PropTypes.func.isRequired,
     setTimeFrame: PropTypes.func.isRequired,
     setNumberOfFrames: PropTypes.func.isRequired,
+    setOnlyKeepTimeFrame: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
     changed: PropTypes.bool.isRequired
 };
