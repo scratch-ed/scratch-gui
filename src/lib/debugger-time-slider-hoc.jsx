@@ -41,13 +41,11 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             this.animationSkinId = null;
 
             bindAll(this, [
-                'handleWorkspaceUpdate',
                 'updateAnimation'
             ]);
         }
 
         componentDidMount () {
-            this.props.vm.addListener('workspaceUpdate', this.handleWorkspaceUpdate);
 
             if (this.props.debugMode) {
                 // this.construct();
@@ -93,8 +91,6 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         componentWillUnmount () {
-            this.props.vm.removeListener('workspaceUpdate', this.handleWorkspaceUpdate);
-
             if (this.props.debugMode) {
                 // this.destruct();
             }
@@ -112,20 +108,6 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             clearInterval(this.intervalIndex);
 
             this.destroySkins();
-        }
-
-        handleWorkspaceUpdate () {
-            // todo is this necessary?
-            if (this.props.context && this.props.context.log && this.props.context.log.ops &&
-                this.props.context.log.ops[this.props.timeFrame]) {
-
-                console.log(`not indicating ${this.props.context.log.ops[this.props.timeFrame].data.blockId}`);
-
-                this.props.vm.runtime.indicateBlock(
-                    this.props.context.log.ops[this.props.timeFrame].data.blockId,
-                    true
-                );
-            }
         }
 
         /**
