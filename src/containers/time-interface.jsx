@@ -7,8 +7,7 @@ import {
     disableAnimation,
     enableAnimation,
     setTimeFrame,
-    setNumberOfFrames,
-    setOnlyKeepTimeFrame
+    setNumberOfFrames
 } from '../reducers/debugger.js';
 import TimeInterfaceComponent from '../components/time-interface/time-interface.jsx';
 import omit from 'lodash.omit';
@@ -49,9 +48,6 @@ class TimeInterface extends React.Component {
     handleToggleResumeClick (e) {
         e.preventDefault();
         if (this.props.paused) {
-            if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-                this.props.setOnlyKeepTimeFrame(this.props.timeFrame + 1);
-            }
             this.props.vm.runtime.resume();
         } else {
             this.props.vm.runtime.pause();
@@ -61,18 +57,12 @@ class TimeInterface extends React.Component {
     handleStepBackClick (e) {
         e.preventDefault();
         if (this.props.timeFrame > 0) {
-            if (!this.props.paused) {
-                this.props.vm.runtime.pause();
-            }
             this.props.setTimeFrame(this.props.timeFrame - 1);
         }
     }
 
     handleStepClick (e) {
         e.preventDefault();
-        if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-            this.props.setOnlyKeepTimeFrame(this.props.timeFrame + 1);
-        }
         this.props.vm.runtime.step();
     }
 
@@ -97,7 +87,6 @@ class TimeInterface extends React.Component {
             />
         );
     }
-
 }
 
 const mapStateToProps = state => ({
@@ -105,15 +94,13 @@ const mapStateToProps = state => ({
     running: state.scratchGui.vmStatus.running,
     timeFrame: state.scratchGui.debugger.timeFrame,
     paused: state.scratchGui.debugger.paused,
-    changed: state.scratchGui.debugger.changed
 });
 
 const mapDispatchToProps = dispatch => ({
     disableAnimation: () => dispatch(disableAnimation()),
     enableAnimation: () => dispatch(enableAnimation()),
     setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
-    setNumberOfFrames: timeFrame => dispatch(setNumberOfFrames(timeFrame)),
-    setOnlyKeepTimeFrame: timeFrame => dispatch(setOnlyKeepTimeFrame(timeFrame))
+    setNumberOfFrames: timeFrame => dispatch(setNumberOfFrames(timeFrame))
 });
 
 TimeInterface.propTypes = {
@@ -125,9 +112,7 @@ TimeInterface.propTypes = {
     enableAnimation: PropTypes.func.isRequired,
     setTimeFrame: PropTypes.func.isRequired,
     setNumberOfFrames: PropTypes.func.isRequired,
-    setOnlyKeepTimeFrame: PropTypes.func.isRequired,
-    paused: PropTypes.bool.isRequired,
-    changed: PropTypes.bool.isRequired
+    paused: PropTypes.bool.isRequired
 };
 
 export default connect(

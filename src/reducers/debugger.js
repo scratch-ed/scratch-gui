@@ -15,7 +15,6 @@ const initialState = {
     context: null,
     debugMode: false,
     numberOfFrames: 0,
-    onlyKeepTimeFrame: -1,
     paused: false,
     changed: false,
     timeFrame: 0,
@@ -41,20 +40,9 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             numberOfFrames: action.numberOfFrames
         });
-    case SET_ONLY_KEEP_TIME_FRAME:
-        return Object.assign({}, state, {
-            onlyKeepTimeFrame: action.onlyKeepTimeFrame
-        });
     case SET_PAUSED:
-        if (action.paused) {
-            return Object.assign({}, state, {
-                paused: true
-            });
-        }
-        // When a program starts (again), nothing has changed yet
         return Object.assign({}, state, {
-            paused: false,
-            changed: false
+            paused: action.paused
         });
     case SET_CHANGED:
         return Object.assign({}, state, {
@@ -109,32 +97,10 @@ const setNumberOfFrames = function (numberOfFrames) {
     };
 };
 
-const setOnlyKeepTimeFrame = function (onlyKeepTimeFrame) {
-    return {
-        type: SET_ONLY_KEEP_TIME_FRAME,
-        onlyKeepTimeFrame: onlyKeepTimeFrame
-    };
-};
-
-
-const setChanged = function (changed) {
-    return {
-        type: SET_CHANGED,
-        changed: changed
-    };
-};
-
 const setPaused = function (paused) {
-    if (!paused) {
-        return {
-            type: SET_PAUSED,
-            paused: false,
-            changed: false
-        };
-    }
     return {
         type: SET_PAUSED,
-        paused: true
+        paused: paused,
     };
 };
 
@@ -160,9 +126,7 @@ export {
     setContext,
     setDebugMode,
     setNumberOfFrames,
-    setOnlyKeepTimeFrame,
     setPaused,
-    setChanged,
     setTimeFrame,
     setTrailLength
 };
