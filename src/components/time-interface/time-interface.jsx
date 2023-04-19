@@ -37,7 +37,6 @@ const TimeInterfaceComponent = function (props) {
         timeFrame,
         running,
         paused,
-        changed,
         onToggleResumeClick,
         onStepBackClick,
         onStepClick,
@@ -52,7 +51,6 @@ const TimeInterfaceComponent = function (props) {
                 onMouseDown={onTimeMouseDown}
                 onMouseUp={onTimeMouseUp}
                 timeFrame={timeFrame}
-                disabled={changed}
             />
             <Step
                 className={styles.stepBack}
@@ -88,7 +86,6 @@ TimeInterfaceComponent.propTypes = {
     timeFrame: PropTypes.number.isRequired,
     running: PropTypes.bool.isRequired,
     paused: PropTypes.bool.isRequired,
-    changed: PropTypes.bool.isRequired,
     onToggleResumeClick: PropTypes.func.isRequired,
     onStepBackClick: PropTypes.func.isRequired,
     onStepClick: PropTypes.func.isRequired,
