@@ -109,29 +109,29 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.setPaused(true);
         }
 
+        onlyKeepCurrentTimeFrame () {
+            if (this.props.context && this.props.context.log.started) {
+                this.props.setNumberOfFrames(1);
+                this.props.setTimeFrame(0);
+                this.props.context.setLogRange(this.props.timeFrame, this.props.timeFrame + 1);
+            }
+        }
+
         handleProjectResumed () {
             this.props.setPaused(false);
             if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-                this.props.context.setLogRange(this.props.timeFrame, this.props.timeFrame + 1);
-                this.props.setNumberOfFrames(1);
-                this.props.setTimeFrame(0);
+                this.onlyKeepCurrentTimeFrame();
             }
         }
 
         handleProjectStepped () {
             if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-                this.props.context.setLogRange(this.props.timeFrame, this.props.timeFrame + 1);
-                this.props.setNumberOfFrames(1);
-                this.props.setTimeFrame(0);
+                this.onlyKeepCurrentTimeFrame();
             }
         }
 
         handleProjectChanged () {
-            if (this.props.context && this.props.context.log && this.props.context.log.started) {
-                this.props.context.setLogRange(this.props.timeFrame, this.props.timeFrame + 1);
-                this.props.setNumberOfFrames(1);
-                this.props.setTimeFrame(0);
-            }
+            this.onlyKeepCurrentTimeFrame();
         }
 
         handleThreadsStarted () {
@@ -140,7 +140,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 this.props.context.log.registerStartSnapshots(snapshot, snapshot);
 
                 this.props.setTimeFrame(0);
-                this.props.setNumberOfFrames(0);
+                this.props.setNumberOfFrames(1);
             }
         }
 
