@@ -25,6 +25,12 @@ cd scratch-judge
 npm install
 npm run build
 ```
+Next link this local `npm` package. Run this command in the `scratch-judge`-folder:
+
+```bash
+npm link --workspace @ftrprf/judge-core
+```
+
 
 Every change in the `scratch-judge` package needs a rebuild with `npm run build` for the changes to take effect in `scratch-debugger-gui`.
 
