@@ -52,7 +52,6 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             timeFrame: action.timeFrame
         });
-
     case SET_TRAIL_LENGTH:
         return Object.assign({}, state, {
             trailLength: action.trailLength

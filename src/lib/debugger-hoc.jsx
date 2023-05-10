@@ -119,15 +119,10 @@ const DebuggerHOC = function (WrappedComponent) {
 
         handleProjectResumed () {
             this.props.setPaused(false);
-            if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-                this.onlyKeepCurrentTimeFrame();
-            }
         }
 
         handleProjectStepped () {
-            if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-                this.onlyKeepCurrentTimeFrame();
-            }
+
         }
 
         handleProjectChanged () {
@@ -135,13 +130,13 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         handleThreadsStarted () {
-            if (this.props.debugMode) {
-                const snapshot = snapshotFromVm(this.props.vm);
-                this.props.context.log.registerStartSnapshots(snapshot, snapshot);
-
-                this.props.setTimeFrame(0);
-                this.props.setNumberOfFrames(1);
-            }
+            // if (this.props.debugMode) {
+            //     const snapshot = snapshotFromVm(this.props.vm);
+            //     this.props.context.log.registerStartSnapshots(snapshot, snapshot);
+            //
+            //     this.props.setTimeFrame(0);
+            //     this.props.setNumberOfFrames(1);
+            // }
         }
 
         proxyAddFrame (context) {
