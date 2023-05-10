@@ -7,7 +7,10 @@ import styles from './time-interface.css';
 import ResumePause from '../debugger-buttons/resume-pause/resume-pause.jsx';
 import Step from '../debugger-buttons/step/step.jsx';
 
+import recordingIcon from '../../debugger-icons/icon--recording.svg';
+
 import {defineMessages, injectIntl, intlShape} from 'react-intl';
+import classnames from 'classnames';
 
 
 const messages = defineMessages({
@@ -44,13 +47,20 @@ const TimeInterfaceComponent = function (props) {
     } = props;
 
     return (
-        <Box className={styles.timeInterface}>
+        <Box>
             <TimeSliderComponent
                 numberOfFrames={numberOfFrames}
                 onChange={onTimeChange}
                 onMouseDown={onTimeMouseDown}
                 onMouseUp={onTimeMouseUp}
                 timeFrame={timeFrame}
+            />
+            <img
+                className={running ?
+                    (paused ? styles.recordingIcon : classnames(styles.recordingIcon, styles.blinking)) :
+                    classnames(styles.recordingIcon, styles.grey)}
+                src={recordingIcon}
+                draggable={false}
             />
             <Step
                 className={styles.stepBack}
@@ -69,11 +79,6 @@ const TimeInterfaceComponent = function (props) {
                 title={intl.formatMessage(messages.stepTitle)}
                 onClick={onStepClick}
             />
-            <output
-                name={'rangeValue'}
-            >
-                {numberOfFrames > 0 ? `${timeFrame + 1}/${numberOfFrames}` : '0/0'}
-            </output>
         </Box>
     );
 };

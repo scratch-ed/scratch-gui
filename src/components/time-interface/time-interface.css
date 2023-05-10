@@ -1,11 +1,25 @@
-.time-interface {
-}
-
 .step-back {
     transform: scaleX(-1);
 }
 
-.time-interface output {
-    float: right;
-    font-size: larger;
+.recording-icon {
+    max-height: 1rem;
+    margin-bottom: 7px;
+    margin-left: 5px;
+    margin-right: 4px;
+}
+
+.recording-icon.grey {
+    /* The following filter makes the image grey (#d3d3d3) */
+    filter: brightness(0) saturate(100%) invert(98%) sepia(1%) saturate(6215%) hue-rotate(285deg) brightness(117%) contrast(65%);
+}
+
+.blinking {
+    animation: blinker 1.5s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
 }
