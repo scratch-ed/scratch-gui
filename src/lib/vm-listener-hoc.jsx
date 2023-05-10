@@ -127,7 +127,7 @@ const vmListenerHOC = function (WrappedComponent) {
                 onMonitorsUpdate,
                 onTargetsUpdate,
                 onProjectChanged,
-                onProjectRunStart,
+                uonProjectRunStart,
                 onProjectRunStop,
                 onProjectSaved,
                 onRuntimeStarted,

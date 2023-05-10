@@ -7,6 +7,7 @@ import {
     setContext,
     setDebugMode,
     setPaused,
+    setChanged,
     setNumberOfFrames,
     setTimeFrame
 } from '../reducers/debugger.js';
@@ -122,11 +123,10 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         handleProjectStepped () {
-
         }
 
         handleProjectChanged () {
-            this.onlyKeepCurrentTimeFrame();
+            this.props.setChanged(true);
         }
 
         handleThreadsStarted () {
@@ -189,6 +189,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'setDebugMode',
                 'setNumberOfFrames',
                 'setPaused',
+                'setChanged',
                 'setTimeFrame'
             ]);
 
@@ -210,6 +211,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setDebugMode: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
+        setChanged: PropTypes.func.isRequired,
         setTimeFrame: PropTypes.func.isRequired
     };
 
@@ -228,6 +230,7 @@ const DebuggerHOC = function (WrappedComponent) {
         setDebugMode: debugMode => dispatch(setDebugMode(debugMode)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setPaused: paused => dispatch(setPaused(paused)),
+        setChanged: changed => dispatch(setChanged(changed)),
         setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
     });
 

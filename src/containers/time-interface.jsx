@@ -16,6 +16,8 @@ class TimeInterface extends React.Component {
     constructor (props) {
         super(props);
 
+        this.playHistoryInterval = undefined;
+
         bindAll(this, [
             'handleTimeChange',
             'handleTimeMouseDown',
@@ -47,9 +49,25 @@ class TimeInterface extends React.Component {
 
     handleToggleResumeClick (e) {
         e.preventDefault();
-        if (this.props.paused) {
+        if (this.props.timeFrame < this.props.numberOfFrames - 1) {
+            // In history
+            if (this.props.paused && !this.playHistoryInterval) {
+                this.playHistoryInterval = setInterval(() => {
+                    if (this.props.timeFrame < this.props.numberOfFrames - 1) {
+                        this.props.setTimeFrame(this.props.timeFrame + 1);
+                    } else {
+                        clearInterval(this.playHistoryInterval);
+                    }
+                },
+                1000 / 60);
+            } else if (this.playHistoryInterval) {
+                clearInterval(this.playHistoryInterval);
+            }
+        } else if (this.props.paused) {
+            // Not in history, paused
             this.props.vm.runtime.resume();
         } else {
+            // Not in history, running
             this.props.vm.runtime.pause();
         }
     }
@@ -63,7 +81,11 @@ class TimeInterface extends React.Component {
 
     handleStepClick (e) {
         e.preventDefault();
-        this.props.vm.runtime.step();
+        if (this.props.timeFrame < this.props.numberOfFrames - 1) {
+            this.props.setTimeFrame(this.props.timeFrame + 1);
+        } else {
+            this.props.vm.runtime.step();
+        }
     }
 
     render () {
@@ -94,6 +116,7 @@ const mapStateToProps = state => ({
     running: state.scratchGui.vmStatus.running,
     timeFrame: state.scratchGui.debugger.timeFrame,
     paused: state.scratchGui.debugger.paused,
+    changed: state.scratchGui.debugger.changed
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -112,7 +135,8 @@ TimeInterface.propTypes = {
     enableAnimation: PropTypes.func.isRequired,
     setTimeFrame: PropTypes.func.isRequired,
     setNumberOfFrames: PropTypes.func.isRequired,
-    paused: PropTypes.bool.isRequired
+    paused: PropTypes.bool.isRequired,
+    changed: PropTypes.bool.isRequired
 };
 
 export default connect(

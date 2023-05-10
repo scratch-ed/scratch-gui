@@ -37,8 +37,11 @@ const reducer = function (state, action) {
             debugMode: action.debugMode
         });
     case SET_NUMBER_OF_FRAMES:
+        console.log(`NUMBER_OF_FRAMES: ${action.numberOfFrames}`);
         return Object.assign({}, state, {
-            numberOfFrames: action.numberOfFrames
+            numberOfFrames: action.numberOfFrames,
+            // When a frame gets added or frames are thrown away, project is not changed anymore
+            changed: false
         });
     case SET_PAUSED:
         return Object.assign({}, state, {
@@ -49,6 +52,7 @@ const reducer = function (state, action) {
             changed: action.changed
         });
     case SET_TIME_FRAME:
+        console.log(`TIME_FRAME:       ${action.timeFrame}`);
         return Object.assign({}, state, {
             timeFrame: action.timeFrame
         });
@@ -96,10 +100,17 @@ const setNumberOfFrames = function (numberOfFrames) {
     };
 };
 
+const setChanged = function (changed) {
+    return {
+        type: SET_CHANGED,
+        changed: changed
+    };
+};
+
 const setPaused = function (paused) {
     return {
         type: SET_PAUSED,
-        paused: paused,
+        paused: paused
     };
 };
 
@@ -126,6 +137,7 @@ export {
     setDebugMode,
     setNumberOfFrames,
     setPaused,
+    setChanged,
     setTimeFrame,
     setTrailLength
 };
