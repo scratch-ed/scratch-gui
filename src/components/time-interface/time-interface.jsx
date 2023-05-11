@@ -28,6 +28,11 @@ const messages = defineMessages({
         id: 'gui.controls.step',
         defaultMessage: 'Step',
         description: 'Step button title'
+    },
+    stepBackTitle: {
+        id: 'gui.controls.stepBack',
+        defaultMessage: 'Step back',
+        description: 'Step back button title'
     }
 });
 
@@ -55,7 +60,7 @@ const TimeInterfaceComponent = function (props) {
                 onMouseDown={onTimeMouseDown}
                 onMouseUp={onTimeMouseUp}
                 timeFrame={timeFrame}
-                disabled={changed}
+                enabled={!changed}
             />
             <img
                 className={running ?
@@ -66,8 +71,8 @@ const TimeInterfaceComponent = function (props) {
             />
             <Step
                 className={styles.stepBack}
-                enabled={running && paused && timeFrame > 0}
-                title={intl.formatMessage(messages.stepTitle)}
+                enabled={running && paused && !changed && timeFrame > 0}
+                title={intl.formatMessage(messages.stepBackTitle)}
                 onClick={onStepBackClick}
             />
             <ResumePause

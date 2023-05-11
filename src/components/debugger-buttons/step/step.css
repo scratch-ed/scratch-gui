@@ -15,6 +15,7 @@
 
 .step {
     opacity: 0.5;
+    cursor: default;
 }
 
 .step.is-enabled {
