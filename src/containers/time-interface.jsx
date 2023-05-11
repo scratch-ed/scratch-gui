@@ -16,7 +16,9 @@ class TimeInterface extends React.Component {
     constructor (props) {
         super(props);
 
-        this.playHistoryInterval = undefined;
+        this.state = {
+            historyPlayingInterval: null
+        }
 
         bindAll(this, [
             'handleTimeChange',
@@ -49,40 +51,61 @@ class TimeInterface extends React.Component {
 
     handleToggleResumeClick (e) {
         e.preventDefault();
+        // In history
         if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-            // In history
-            if (this.props.paused && !this.playHistoryInterval) {
-                this.playHistoryInterval = setInterval(() => {
-                    if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-                        this.props.setTimeFrame(this.props.timeFrame + 1);
-                    } else {
-                        clearInterval(this.playHistoryInterval);
-                    }
-                },
-                1000 / 60);
-            } else if (this.playHistoryInterval) {
-                clearInterval(this.playHistoryInterval);
+            if (this.state.historyPlayingInterval) {
+                // Stop playing history
+                clearInterval(this.state.historyPlayingInterval);
+                this.setState({
+                    historyPlayingInterval: null
+                });
+            } else if (this.props.changed) {
+                // Run code because project changed
+                this.props.vm.runtime.resume();
+            } else {
+                // Play history
+                this.setState({
+                    historyPlayingInterval: setInterval(() => {
+                        if (this.props.timeFrame < this.props.numberOfFrames - 1) {
+                            this.props.setTimeFrame(this.props.timeFrame + 1);
+                        } else {
+                            clearInterval(this.state.historyPlayingInterval);
+                            this.setState({
+                                historyPlayingInterval: null
+                            });
+                            this.props.vm.runtime.resume();
+                        }
+                    },
+                    this.props.vm.runtime.THREAD_STEP_INTERVAL)
+                });
             }
         } else if (this.props.paused) {
-            // Not in history, paused
+            // Not in history
             this.props.vm.runtime.resume();
         } else {
-            // Not in history, running
+            // Not in history
             this.props.vm.runtime.pause();
         }
     }
 
     handleStepBackClick (e) {
         e.preventDefault();
-        if (this.props.timeFrame > 0) {
+        if (this.props.paused && !this.props.changed && this.props.timeFrame > 0) {
             this.props.setTimeFrame(this.props.timeFrame - 1);
         }
     }
 
     handleStepClick (e) {
         e.preventDefault();
+        if (!this.props.paused) {
+            return;
+        }
         if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-            this.props.setTimeFrame(this.props.timeFrame + 1);
+            if (this.props.changed) {
+                this.props.vm.runtime.step();
+            } else {
+                this.props.setTimeFrame(this.props.timeFrame + 1);
+            }
         } else {
             this.props.vm.runtime.step();
         }
@@ -100,6 +123,7 @@ class TimeInterface extends React.Component {
         return (
             <TimeInterfaceComponent
                 {...componentProps}
+                paused={componentProps.paused && !this.state.historyPlayingInterval}
                 onTimeChange={this.handleTimeChange}
                 onTimeMouseDown={this.handleTimeMouseDown}
                 onTimeMouseUp={this.handleTimeMouseUp}

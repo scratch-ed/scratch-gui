@@ -39,9 +39,7 @@ const reducer = function (state, action) {
     case SET_NUMBER_OF_FRAMES:
         console.log(`NUMBER_OF_FRAMES: ${action.numberOfFrames}`);
         return Object.assign({}, state, {
-            numberOfFrames: action.numberOfFrames,
-            // When a frame gets added or frames are thrown away, project is not changed anymore
-            changed: false
+            numberOfFrames: action.numberOfFrames
         });
     case SET_PAUSED:
         return Object.assign({}, state, {
