@@ -64,19 +64,20 @@ class TimeInterface extends React.Component {
                 this.props.vm.runtime.resume();
             } else {
                 // Play history
+                const historyPlayingInterval = setInterval(() => {
+                    if (this.props.timeFrame < this.props.numberOfFrames - 1) {
+                        this.props.setTimeFrame(this.props.timeFrame + 1);
+                    } else {
+                        clearInterval(this.state.historyPlayingInterval);
+                        this.setState({
+                            historyPlayingInterval: null
+                        });
+                        this.props.vm.runtime.resume();
+                    }
+                },
+                this.props.vm.runtime.THREAD_STEP_INTERVAL);
                 this.setState({
-                    historyPlayingInterval: setInterval(() => {
-                        if (this.props.timeFrame < this.props.numberOfFrames - 1) {
-                            this.props.setTimeFrame(this.props.timeFrame + 1);
-                        } else {
-                            clearInterval(this.state.historyPlayingInterval);
-                            this.setState({
-                                historyPlayingInterval: null
-                            });
-                            this.props.vm.runtime.resume();
-                        }
-                    },
-                    this.props.vm.runtime.THREAD_STEP_INTERVAL)
+                    historyPlayingInterval
                 });
             }
         } else if (this.props.paused) {
