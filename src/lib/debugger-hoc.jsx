@@ -27,7 +27,6 @@ const DebuggerHOC = function (WrappedComponent) {
                 'handleProjectLoaded',
                 'handleProjectPaused',
                 'handleProjectResumed',
-                'handleThreadsStarted',
                 'handleProjectChanged'
             ]);
         }
@@ -72,8 +71,6 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
             this.props.vm.runtime.addListener('PROJECT_CHANGED', this.handleProjectChanged);
-
-            this.props.vm.runtime.addListener('THREADS_STARTED', this.handleThreadsStarted);
         }
 
         removeListeners () {
@@ -84,8 +81,6 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.removeListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.removeListener('PROJECT_RESUMED', this.handleProjectResumed);
             this.props.vm.runtime.removeListener('PROJECT_CHANGED', this.handleProjectChanged);
-
-            this.props.vm.runtime.removeListener('THREADS_STARTED', this.handleThreadsStarted);
         }
 
         handleDebugModeDisabled () {
@@ -124,16 +119,6 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.setChanged(true);
         }
 
-        handleThreadsStarted () {
-            // if (this.props.debugMode) {
-            //     const snapshot = snapshotFromVm(this.props.vm);
-            //     this.props.context.log.registerStartSnapshots(snapshot, snapshot);
-            //
-            //     this.props.setTimeFrame(0);
-            //     this.props.setNumberOfFrames(1);
-            // }
-        }
-
         proxyAddFrame (context) {
             // Increase the length of the time slider every time a new frame gets added to the log.
             this.oldAddFrame = context.log.registerEvent;
@@ -141,9 +126,13 @@ const DebuggerHOC = function (WrappedComponent) {
                 apply: (target, thisArg, argArray) => {
                     const added = target.apply(thisArg, argArray);
                     if (added && argArray[0].type === 'ops') {
-                        this.props.setTimeFrame(this.props.numberOfFrames);
-                        this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
-                        this.props.setChanged(false);
+                        if (this.props.changed) {
+                            this.onlyKeepCurrentTimeFrame();
+                            this.props.setChanged(false);
+                        } else {
+                            this.props.setTimeFrame(this.props.numberOfFrames);
+                            this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
+                        }
                     }
                     return added;
                 }
@@ -186,7 +175,8 @@ const DebuggerHOC = function (WrappedComponent) {
                 'setNumberOfFrames',
                 'setPaused',
                 'setChanged',
-                'setTimeFrame'
+                'setTimeFrame',
+                'changed'
             ]);
 
             return (
@@ -208,7 +198,8 @@ const DebuggerHOC = function (WrappedComponent) {
         setNumberOfFrames: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setChanged: PropTypes.func.isRequired,
-        setTimeFrame: PropTypes.func.isRequired
+        setTimeFrame: PropTypes.func.isRequired,
+        changed: PropTypes.bool.isRequired
     };
 
     const mapStateToProps = state => ({
@@ -217,6 +208,7 @@ const DebuggerHOC = function (WrappedComponent) {
         debugMode: state.scratchGui.debugger.debugMode,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
         timeFrame: state.scratchGui.debugger.timeFrame,
+        changed: state.scratchGui.debugger.changed,
         vm: state.scratchGui.vm
     });
 
