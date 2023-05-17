@@ -6,7 +6,6 @@
     padding: 0.375rem;
     border-radius: 0.25rem;
     user-select: none;
-    cursor: pointer;
 }
 
 .pause:hover {
@@ -19,6 +18,7 @@
 
 .pause.is-enabled {
     opacity: 1;
+    cursor: pointer;
 }
 
 .pause.is-active {

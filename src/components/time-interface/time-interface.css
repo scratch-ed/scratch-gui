@@ -1,3 +1,10 @@
+.remove-history-button {
+    max-height: 1rem;
+    margin-bottom: 8px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
 .step-back {
     transform: scaleX(-1);
 }
@@ -10,12 +17,11 @@
 }
 
 .recording-icon.grey {
-    /* The following filter makes the image grey (#d3d3d3) */
-    filter: brightness(0) saturate(100%) invert(98%) sepia(1%) saturate(6215%) hue-rotate(285deg) brightness(117%) contrast(65%);
+    opacity: 0.15;
 }
 
 .blinking {
-    animation: blinker 1.5s linear infinite;
+    animation: blinker 1s linear infinite;
 }
 
 @keyframes blinker {

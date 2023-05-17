@@ -6,7 +6,6 @@
     padding: 0.375rem;
     border-radius: 0.25rem;
     user-select: none;
-    cursor: pointer;
 }
 
 .step:hover {
@@ -15,9 +14,9 @@
 
 .step {
     opacity: 0.5;
-    cursor: default;
 }
 
 .step.is-enabled {
     opacity: 1;
+    cursor: pointer;
 }

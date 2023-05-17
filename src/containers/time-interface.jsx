@@ -7,7 +7,8 @@ import {
     disableAnimation,
     enableAnimation,
     setTimeFrame,
-    setNumberOfFrames
+    setNumberOfFrames,
+    setChanged
 } from '../reducers/debugger.js';
 import TimeInterfaceComponent from '../components/time-interface/time-interface.jsx';
 import omit from 'lodash.omit';
@@ -18,7 +19,7 @@ class TimeInterface extends React.Component {
 
         this.state = {
             historyPlayingInterval: null
-        }
+        };
 
         bindAll(this, [
             'handleTimeChange',
@@ -26,7 +27,8 @@ class TimeInterface extends React.Component {
             'handleTimeMouseUp',
             'handleToggleResumeClick',
             'handleStepBackClick',
-            'handleStepClick'
+            'handleStepClick',
+            'handleRemoveHistoryClick'
         ]);
     }
 
@@ -112,6 +114,11 @@ class TimeInterface extends React.Component {
         }
     }
 
+    handleRemoveHistoryClick (e) {
+        e.preventDefault();
+        this.props.setChanged(true);
+    }
+
     render () {
         const componentProps = omit(this.props, [
             'vm',
@@ -131,6 +138,7 @@ class TimeInterface extends React.Component {
                 onToggleResumeClick={this.handleToggleResumeClick}
                 onStepBackClick={this.handleStepBackClick}
                 onStepClick={this.handleStepClick}
+                onRemoveHistoryClick={this.handleRemoveHistoryClick}
             />
         );
     }
@@ -148,7 +156,8 @@ const mapDispatchToProps = dispatch => ({
     disableAnimation: () => dispatch(disableAnimation()),
     enableAnimation: () => dispatch(enableAnimation()),
     setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
-    setNumberOfFrames: timeFrame => dispatch(setNumberOfFrames(timeFrame))
+    setNumberOfFrames: timeFrame => dispatch(setNumberOfFrames(timeFrame)),
+    setChanged: timeFrame => dispatch(setChanged(timeFrame))
 });
 
 TimeInterface.propTypes = {
@@ -160,6 +169,7 @@ TimeInterface.propTypes = {
     enableAnimation: PropTypes.func.isRequired,
     setTimeFrame: PropTypes.func.isRequired,
     setNumberOfFrames: PropTypes.func.isRequired,
+    setChanged: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
     changed: PropTypes.bool.isRequired
 };
