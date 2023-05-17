@@ -49,6 +49,7 @@ const TimeInterfaceComponent = function (props) {
         onToggleResumeClick,
         onStepBackClick,
         onStepClick,
+        onRemoveHistoryClick,
         intl
     } = props;
 
@@ -60,12 +61,14 @@ const TimeInterfaceComponent = function (props) {
                 onMouseDown={onTimeMouseDown}
                 onMouseUp={onTimeMouseUp}
                 timeFrame={timeFrame}
-                enabled={!changed}
+                enabled={!changed && numberOfFrames > 0}
+                onRemoveHistoryClick={onRemoveHistoryClick}
             />
+            {/* Recording icon is grey when not running, paused or (replaying) in history */}
             <img
-                className={running ?
-                    (paused ? styles.recordingIcon : classnames(styles.recordingIcon, styles.blinking)) :
-                    classnames(styles.recordingIcon, styles.grey)}
+                className={classnames(styles.recordingIcon, (!running || paused || timeFrame < numberOfFrames - 1) ?
+                    styles.grey :
+                    styles.blinking)}
                 src={recordingIcon}
                 draggable={false}
             />
@@ -78,7 +81,9 @@ const TimeInterfaceComponent = function (props) {
             <ResumePause
                 paused={paused}
                 running={running}
-                title={paused ? intl.formatMessage(messages.pauseTitle) : intl.formatMessage(messages.resumeTitle)}
+                title={(!running || paused) ?
+                    intl.formatMessage(messages.resumeTitle) :
+                    intl.formatMessage(messages.pauseTitle)}
                 onClick={onToggleResumeClick}
             />
             <Step
@@ -102,6 +107,7 @@ TimeInterfaceComponent.propTypes = {
     onToggleResumeClick: PropTypes.func.isRequired,
     onStepBackClick: PropTypes.func.isRequired,
     onStepClick: PropTypes.func.isRequired,
+    onRemoveHistoryClick: PropTypes.func.isRequired,
     intl: intlShape.isRequired
 };
 

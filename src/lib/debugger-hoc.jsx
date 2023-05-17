@@ -104,9 +104,9 @@ const DebuggerHOC = function (WrappedComponent) {
 
         onlyKeepCurrentTimeFrame () {
             if (this.props.context && this.props.context.log.started) {
+                this.props.context.setLogRange(this.props.timeFrame + 1, this.props.timeFrame + 2);
                 this.props.setNumberOfFrames(1);
                 this.props.setTimeFrame(0);
-                this.props.context.setLogRange(this.props.timeFrame, this.props.timeFrame + 1);
             }
         }
 
@@ -126,12 +126,14 @@ const DebuggerHOC = function (WrappedComponent) {
                 apply: (target, thisArg, argArray) => {
                     const added = target.apply(thisArg, argArray);
                     if (added && argArray[0].type === 'ops') {
+                        // The debugger UI needs to reflect the new log entry
                         if (this.props.changed) {
+                            // If changed, remove full history
                             this.onlyKeepCurrentTimeFrame();
                             this.props.setChanged(false);
                         } else {
-                            this.props.setTimeFrame(this.props.numberOfFrames);
-                            this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
+                            this.props.setNumberOfFrames(this.props.context.log.ops.length);
+                            this.props.setTimeFrame(this.props.context.log.ops.length - 1);
                         }
                     }
                     return added;
@@ -156,8 +158,8 @@ const DebuggerHOC = function (WrappedComponent) {
                 await this.props.context.deinstrumentVm();
                 this.props.setContext(null);
 
-                this.props.setTimeFrame(0);
                 this.props.setNumberOfFrames(0);
+                this.props.setTimeFrame(0);
             }
         }
 
