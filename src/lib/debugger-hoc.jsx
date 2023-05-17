@@ -102,14 +102,6 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.setPaused(true);
         }
 
-        onlyKeepCurrentTimeFrame () {
-            if (this.props.context && this.props.context.log.started) {
-                this.props.context.setLogRange(this.props.timeFrame + 1, this.props.timeFrame + 2);
-                this.props.setNumberOfFrames(1);
-                this.props.setTimeFrame(0);
-            }
-        }
-
         handleProjectResumed () {
             this.props.setPaused(false);
         }
@@ -117,6 +109,12 @@ const DebuggerHOC = function (WrappedComponent) {
         handleProjectChanged () {
             this.props.vm.runtime.pause();
             this.props.setChanged(true);
+        }
+
+        removeHistory () {
+            if (this.props.numberOfFrames > 1) {
+                this.props.context.setLogRange(this.props.timeFrame, this.props.timeFrame + 2);
+            }
         }
 
         proxyAddFrame (context) {
@@ -129,12 +127,11 @@ const DebuggerHOC = function (WrappedComponent) {
                         // The debugger UI needs to reflect the new log entry
                         if (this.props.changed) {
                             // If changed, remove full history
-                            this.onlyKeepCurrentTimeFrame();
+                            this.removeHistory();
                             this.props.setChanged(false);
-                        } else {
-                            this.props.setNumberOfFrames(this.props.context.log.ops.length);
-                            this.props.setTimeFrame(this.props.context.log.ops.length - 1);
                         }
+                        this.props.setNumberOfFrames(this.props.context.log.ops.length);
+                        this.props.setTimeFrame(this.props.context.log.ops.length - 1);
                     }
                     return added;
                 }

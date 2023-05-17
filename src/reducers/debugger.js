@@ -37,7 +37,6 @@ const reducer = function (state, action) {
             debugMode: action.debugMode
         });
     case SET_NUMBER_OF_FRAMES:
-        console.log(`NUMBER_OF_FRAMES: ${action.numberOfFrames}`);
         return Object.assign({}, state, {
             numberOfFrames: action.numberOfFrames
         });
@@ -50,7 +49,6 @@ const reducer = function (state, action) {
             changed: action.changed
         });
     case SET_TIME_FRAME:
-        console.log(`TIME_FRAME:       ${action.timeFrame}`);
         return Object.assign({}, state, {
             timeFrame: action.timeFrame
         });
