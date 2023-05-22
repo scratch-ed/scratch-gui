@@ -77,7 +77,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             if (this.props.debugMode) {
                 if (prevProps.timeFrame !== this.props.timeFrame) {
                     // If not running, load previous log frame
-                    if (this.props.timeFrame < this.props.numberOfFrames) {
+                    if (this.props.timeFrame < this.props.numberOfFrames - 1) {
                         // todo  moet dit in de if staan
                         this.loadLogFrame();
                         // this.redrawTrails();

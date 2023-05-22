@@ -116,7 +116,9 @@ class TimeInterface extends React.Component {
 
     handleRemoveHistoryClick (e) {
         e.preventDefault();
-        this.props.setChanged(true);
+        if (this.props.paused) {
+            this.props.setChanged(true);
+        }
     }
 
     render () {
