@@ -61,7 +61,8 @@ const TimeInterfaceComponent = function (props) {
                 onMouseDown={onTimeMouseDown}
                 onMouseUp={onTimeMouseUp}
                 timeFrame={timeFrame}
-                enabled={!changed && numberOfFrames > 0}
+                sliderEnabled={!changed && numberOfFrames > 0}
+                paused={paused}
                 onRemoveHistoryClick={onRemoveHistoryClick}
             />
             {/* Recording icon is grey when not running, paused or (replaying) in history */}

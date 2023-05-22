@@ -10,7 +10,8 @@ const TimeSliderComponent = function (props) {
     const {
         numberOfFrames,
         timeFrame,
-        enabled,
+        sliderEnabled,
+        paused,
         onRemoveHistoryClick,
         ...componentProps
     } = props;
@@ -24,13 +25,13 @@ const TimeSliderComponent = function (props) {
                 min={0}
                 max={numberOfFrames === 1 ? 1 : Math.max(0, numberOfFrames - 1)}
                 value={numberOfFrames === 1 ? 1 : timeFrame}
-                disabled={!enabled}
+                disabled={!sliderEnabled}
             />
             <img
                 className={classNames(
                     styles.removeHistoryButton,
                     {
-                        [styles.isEnabled]: enabled
+                        [styles.isEnabled]: sliderEnabled && paused
                     })}
                 src={removeHistoryIcon}
                 draggable={false}
@@ -43,7 +44,8 @@ const TimeSliderComponent = function (props) {
 TimeSliderComponent.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
     timeFrame: PropTypes.number.isRequired,
-    enabled: PropTypes.bool.isRequired,
+    sliderEnabled: PropTypes.bool.isRequired,
+    paused: PropTypes.bool.isRequired,
     onRemoveHistoryClick: PropTypes.func.isRequired
 };
 
