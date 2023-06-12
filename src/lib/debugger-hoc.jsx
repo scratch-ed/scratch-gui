@@ -107,8 +107,10 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         handleProjectChanged () {
-            this.props.vm.runtime.pause();
-            this.props.setChanged(true);
+            if (this.props.debugMode) {
+                this.props.vm.runtime.pause();
+                this.props.setChanged(true);
+            }
         }
 
         removeHistory () {
@@ -139,8 +141,6 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         async changeDebugMode () {
-            this.props.vm.stopAll();
-
             if (this.props.debugMode) {
                 const context = await createContextWithVm(this.props.vm);
                 context.instrumentVm('debugger');

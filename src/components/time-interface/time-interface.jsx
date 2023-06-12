@@ -41,9 +41,7 @@ const TimeInterfaceComponent = function (props) {
         numberOfFrames,
         onTimeChange,
         onTimeMouseDown,
-        onTimeMouseUp,
         timeFrame,
-        running,
         paused,
         changed,
         onToggleResumeClick,
@@ -59,15 +57,14 @@ const TimeInterfaceComponent = function (props) {
                 numberOfFrames={numberOfFrames}
                 onChange={onTimeChange}
                 onMouseDown={onTimeMouseDown}
-                onMouseUp={onTimeMouseUp}
                 timeFrame={timeFrame}
                 sliderEnabled={!changed && numberOfFrames > 0}
                 paused={paused}
                 onRemoveHistoryClick={onRemoveHistoryClick}
             />
-            {/* Recording icon is grey when not running, paused or (replaying) in history */}
+            {/* Recording icon is grey when paused or (replaying) in history */}
             <img
-                className={classnames(styles.recordingIcon, (!running || paused || timeFrame < numberOfFrames - 1) ?
+                className={classnames(styles.recordingIcon, (paused || timeFrame < numberOfFrames - 1) ?
                     styles.grey :
                     styles.blinking)}
                 src={recordingIcon}
@@ -75,20 +72,19 @@ const TimeInterfaceComponent = function (props) {
             />
             <Step
                 className={styles.stepBack}
-                enabled={running && paused && !changed && timeFrame > 0}
+                enabled={paused && !changed && timeFrame > 0}
                 title={intl.formatMessage(messages.stepBackTitle)}
                 onClick={onStepBackClick}
             />
             <ResumePause
                 paused={paused}
-                running={running}
-                title={(!running || paused) ?
+                title={paused ?
                     intl.formatMessage(messages.resumeTitle) :
                     intl.formatMessage(messages.pauseTitle)}
                 onClick={onToggleResumeClick}
             />
             <Step
-                enabled={running && paused}
+                enabled={paused}
                 title={intl.formatMessage(messages.stepTitle)}
                 onClick={onStepClick}
             />
@@ -100,9 +96,7 @@ TimeInterfaceComponent.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
     onTimeChange: PropTypes.func.isRequired,
     onTimeMouseDown: PropTypes.func.isRequired,
-    onTimeMouseUp: PropTypes.func.isRequired,
     timeFrame: PropTypes.number.isRequired,
-    running: PropTypes.bool.isRequired,
     paused: PropTypes.bool.isRequired,
     changed: PropTypes.bool.isRequired,
     onToggleResumeClick: PropTypes.func.isRequired,

@@ -12,43 +12,32 @@ const ResumePauseComponent = function (props) {
         className,
         onClick,
         paused,
-        running,
         title,
         ...componentProps
     } = props;
 
     return (
-        (running && !paused) ?
-            (<img
-                className={classNames(
-                    className,
-                    pauseStyles.pause,
-                    {
-                        [pauseStyles.isEnabled]: running,
-                        [pauseStyles.isActive]: running && paused
-
-                    }
-                )}
-                draggable={false}
-                src={pauseIcon}
-                title={title}
-                onClick={onClick}
-                {...componentProps}
-            />) :
-            (<img
-                className={classNames(
-                    className,
-                    resumeStyles.resume,
-                    {
-                        [resumeStyles.isEnabled]: running && paused
-                    }
-                )}
-                draggable={false}
-                src={resumeIcon}
-                title={title}
-                onClick={onClick}
-                {...componentProps}
-            />)
+        paused ? (<img
+            className={classNames(
+                className,
+                resumeStyles.resume
+            )}
+            draggable={false}
+            src={resumeIcon}
+            title={title}
+            onClick={onClick}
+            {...componentProps}
+        />) : (<img
+            className={classNames(
+                className,
+                pauseStyles.pause
+            )}
+            draggable={false}
+            src={pauseIcon}
+            title={title}
+            onClick={onClick}
+            {...componentProps}
+        />)
     );
 };
 
@@ -56,7 +45,6 @@ ResumePauseComponent.propTypes = {
     className: PropTypes.string,
     onClick: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
-    running: PropTypes.bool.isRequired,
     title: PropTypes.string
 };
 

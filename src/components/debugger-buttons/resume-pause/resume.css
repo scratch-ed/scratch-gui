@@ -13,10 +13,6 @@
 }
 
 .resume {
-    opacity: 0.5;
-}
-
-.resume.is-enabled {
     opacity: 1;
     cursor: pointer;
 }

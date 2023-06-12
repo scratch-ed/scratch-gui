@@ -4,8 +4,6 @@ import PropTypes from 'prop-types';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
 import {
-    disableAnimation,
-    enableAnimation,
     setTimeFrame,
     setNumberOfFrames,
     setChanged
@@ -24,7 +22,6 @@ class TimeInterface extends React.Component {
         bindAll(this, [
             'handleTimeChange',
             'handleTimeMouseDown',
-            'handleTimeMouseUp',
             'handleToggleResumeClick',
             'handleStepBackClick',
             'handleStepClick',
@@ -37,17 +34,8 @@ class TimeInterface extends React.Component {
     }
 
     handleTimeMouseDown () {
-        if (!this.props.running) {
-            this.props.disableAnimation();
-        }
         if (!this.props.paused) {
             this.props.vm.runtime.pause();
-        }
-    }
-
-    handleTimeMouseUp () {
-        if (!this.props.running) {
-            this.props.enableAnimation();
         }
     }
 
@@ -67,7 +55,7 @@ class TimeInterface extends React.Component {
             } else {
                 // Play history
                 const historyPlayingInterval = setInterval(() => {
-                    if (this.props.timeFrame < this.props.numberOfFrames - 1) {
+                    if (this.props.debugMode && this.props.timeFrame < this.props.numberOfFrames - 1) {
                         this.props.setTimeFrame(this.props.timeFrame + 1);
                     } else {
                         clearInterval(this.state.historyPlayingInterval);
@@ -136,7 +124,6 @@ class TimeInterface extends React.Component {
                 paused={componentProps.paused && !this.state.historyPlayingInterval}
                 onTimeChange={this.handleTimeChange}
                 onTimeMouseDown={this.handleTimeMouseDown}
-                onTimeMouseUp={this.handleTimeMouseUp}
                 onToggleResumeClick={this.handleToggleResumeClick}
                 onStepBackClick={this.handleStepBackClick}
                 onStepClick={this.handleStepClick}
@@ -147,28 +134,24 @@ class TimeInterface extends React.Component {
 }
 
 const mapStateToProps = state => ({
+    debugMode: state.scratchGui.debugger.debugMode,
     numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-    running: state.scratchGui.vmStatus.running,
     timeFrame: state.scratchGui.debugger.timeFrame,
     paused: state.scratchGui.debugger.paused,
     changed: state.scratchGui.debugger.changed
 });
 
 const mapDispatchToProps = dispatch => ({
-    disableAnimation: () => dispatch(disableAnimation()),
-    enableAnimation: () => dispatch(enableAnimation()),
     setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
     setNumberOfFrames: timeFrame => dispatch(setNumberOfFrames(timeFrame)),
     setChanged: timeFrame => dispatch(setChanged(timeFrame))
 });
 
 TimeInterface.propTypes = {
+    debugMode: PropTypes.bool.isRequired,
     numberOfFrames: PropTypes.number.isRequired,
-    running: PropTypes.bool.isRequired,
     timeFrame: PropTypes.number.isRequired,
     vm: PropTypes.instanceOf(VM).isRequired,
-    disableAnimation: PropTypes.func.isRequired,
-    enableAnimation: PropTypes.func.isRequired,
     setTimeFrame: PropTypes.func.isRequired,
     setNumberOfFrames: PropTypes.func.isRequired,
     setChanged: PropTypes.func.isRequired,

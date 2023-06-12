@@ -13,14 +13,6 @@
 }
 
 .pause {
-    opacity: 0.5;
-}
-
-.pause.is-enabled {
     opacity: 1;
     cursor: pointer;
-}
-
-.pause.is-active {
-    background-color: $motion-transparent;
 }
