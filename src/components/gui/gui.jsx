@@ -40,7 +40,6 @@ import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
 import debuggerIcon from '../../debugger-icons/icon--debugger.svg';
-import DebuggerTab from '../../containers/debugger-tab.jsx';
 import TimeInterface from '../../containers/time-interface.jsx';
 
 const messages = defineMessages({
@@ -302,21 +301,6 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
-                                    {debugMode ?
-                                        <Tab
-                                            className={tabClassNames.tab}
-                                            onClick={onActivateDebuggerTab}
-                                        >
-                                            <img
-                                                draggable={false}
-                                                src={debuggerIcon}
-                                            />
-                                            <FormattedMessage
-                                                defaultMessage="Debugger"
-                                                description="Button to get to the debugger panel"
-                                                id="gui.gui.debuggerTab"
-                                            />
-                                        </Tab> : null }
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
@@ -354,10 +338,6 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
-                                {debugMode ?
-                                    <TabPanel className={tabClassNames.tabPanel}>
-                                        {debuggerTabVisible ? <DebuggerTab vm={vm} /> : null}
-                                    </TabPanel> : null}
                             </Tabs>
                             {backpackVisible ? (
                                 <Backpack host={backpackHost} />

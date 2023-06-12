@@ -20,8 +20,6 @@ class Controls extends React.Component {
     handleDebugModeClick (e) {
         e.preventDefault();
 
-        this.props.vm.stopAll();
-
         if (this.props.debugMode) {
             this.props.vm.runtime.disableDebugMode();
         } else {
@@ -50,7 +48,6 @@ class Controls extends React.Component {
     render () {
         const {
             vm, // eslint-disable-line no-unused-vars
-            isStarted, // eslint-disable-line no-unused-vars
             projectRunning,
             turbo,
             ...props
@@ -71,7 +68,6 @@ class Controls extends React.Component {
 
 Controls.propTypes = {
     debugMode: PropTypes.bool.isRequired,
-    isStarted: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM)
@@ -79,7 +75,6 @@ Controls.propTypes = {
 
 const mapStateToProps = state => ({
     debugMode: state.scratchGui.debugger.debugMode,
-    isStarted: state.scratchGui.vmStatus.running,
     projectRunning: state.scratchGui.vmStatus.running,
     turbo: state.scratchGui.vmStatus.turbo
 });
