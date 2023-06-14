@@ -47,7 +47,7 @@ const TimeInterfaceComponent = function (props) {
         onToggleResumeClick,
         onStepBackClick,
         onStepClick,
-        onRemoveHistoryClick,
+        onremoveFutureClick,
         intl
     } = props;
 
@@ -60,7 +60,7 @@ const TimeInterfaceComponent = function (props) {
                 timeFrame={timeFrame}
                 sliderEnabled={!changed && numberOfFrames > 0}
                 paused={paused}
-                onRemoveHistoryClick={onRemoveHistoryClick}
+                onremoveFutureClick={onremoveFutureClick}
             />
             {/* Recording icon is grey when paused or (replaying) in history */}
             <img
@@ -102,7 +102,7 @@ TimeInterfaceComponent.propTypes = {
     onToggleResumeClick: PropTypes.func.isRequired,
     onStepBackClick: PropTypes.func.isRequired,
     onStepClick: PropTypes.func.isRequired,
-    onRemoveHistoryClick: PropTypes.func.isRequired,
+    onremoveFutureClick: PropTypes.func.isRequired,
     intl: intlShape.isRequired
 };
 

@@ -3,6 +3,7 @@ const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
 const SET_PAUSED = 'scratch-gui/debugger/SET_PAUSED';
 const SET_CHANGED = 'scratch-gui/debugger/SET_CHANGED';
+const SET_REMOVE_FUTURE = 'scratch-gui/debugger/SET_REMOVE_FUTURE';
 const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
 
 const initialState = {
@@ -12,6 +13,7 @@ const initialState = {
     numberOfFrames: 0,
     paused: false,
     changed: false,
+    removeFuture: false,
     timeFrame: 0
 };
 
@@ -37,6 +39,10 @@ const reducer = function (state, action) {
     case SET_CHANGED:
         return Object.assign({}, state, {
             changed: action.changed
+        });
+    case SET_REMOVE_FUTURE:
+        return Object.assign({}, state, {
+            removeFuture: action.removeFuture
         });
     case SET_TIME_FRAME:
         return Object.assign({}, state, {
@@ -68,6 +74,13 @@ const setNumberOfFrames = function (numberOfFrames) {
     };
 };
 
+const setPaused = function (paused) {
+    return {
+        type: SET_PAUSED,
+        paused: paused
+    };
+};
+
 const setChanged = function (changed) {
     return {
         type: SET_CHANGED,
@@ -75,10 +88,10 @@ const setChanged = function (changed) {
     };
 };
 
-const setPaused = function (paused) {
+const setRemoveFuture = function (removeFuture) {
     return {
-        type: SET_PAUSED,
-        paused: paused
+        type: SET_REMOVE_FUTURE,
+        removeFuture: removeFuture
     };
 };
 
@@ -97,5 +110,6 @@ export {
     setNumberOfFrames,
     setPaused,
     setChanged,
+    setRemoveFuture,
     setTimeFrame
 };

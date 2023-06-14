@@ -6,7 +6,8 @@ import {connect} from 'react-redux';
 import {
     setTimeFrame,
     setNumberOfFrames,
-    setChanged
+    setChanged,
+    setRemoveFuture
 } from '../reducers/debugger.js';
 import TimeInterfaceComponent from '../components/time-interface/time-interface.jsx';
 import omit from 'lodash.omit';
@@ -25,7 +26,7 @@ class TimeInterface extends React.Component {
             'handleToggleResumeClick',
             'handleStepBackClick',
             'handleStepClick',
-            'handleRemoveHistoryClick'
+            'handleremoveFutureClick'
         ]);
     }
 
@@ -102,10 +103,10 @@ class TimeInterface extends React.Component {
         }
     }
 
-    handleRemoveHistoryClick (e) {
+    handleremoveFutureClick (e) {
         e.preventDefault();
-        if (this.props.paused) {
-            this.props.setChanged(true);
+        if (this.props.paused && !this.props.changed && this.props.timeFrame < this.props.numberOfFrames - 1) {
+            this.props.setRemoveFuture(true);
         }
     }
 
@@ -127,7 +128,7 @@ class TimeInterface extends React.Component {
                 onToggleResumeClick={this.handleToggleResumeClick}
                 onStepBackClick={this.handleStepBackClick}
                 onStepClick={this.handleStepClick}
-                onRemoveHistoryClick={this.handleRemoveHistoryClick}
+                onremoveFutureClick={this.handleremoveFutureClick}
             />
         );
     }
@@ -144,7 +145,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
     setNumberOfFrames: timeFrame => dispatch(setNumberOfFrames(timeFrame)),
-    setChanged: timeFrame => dispatch(setChanged(timeFrame))
+    setChanged: timeFrame => dispatch(setChanged(timeFrame)),
+    setRemoveFuture: removeFuture => dispatch(setRemoveFuture(removeFuture))
 });
 
 TimeInterface.propTypes = {
@@ -155,6 +157,7 @@ TimeInterface.propTypes = {
     setTimeFrame: PropTypes.func.isRequired,
     setNumberOfFrames: PropTypes.func.isRequired,
     setChanged: PropTypes.func.isRequired,
+    setRemoveFuture: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
     changed: PropTypes.bool.isRequired
 };

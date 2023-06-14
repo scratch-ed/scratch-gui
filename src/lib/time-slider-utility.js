@@ -1,24 +1,6 @@
 import {Map} from 'immutable';
 
 /**
- * Helper function to check if 2 positions are equal.
- *
- * @param {[number, number]} position1 - Base position.
- * @param {[number, number]} position2 - Position to compare with.
- * @returns {boolean} - True if positions are equal, else false
- */
-export const positionsAreEqual = function (position1, position2) {
-    if (!position1 || !position2 || position1.length !== 2 || position2.length !== 2) {
-        return false;
-    }
-
-    const [x1, y1] = position1;
-    const [x2, y2] = position2;
-
-    return x1 === x2 && y1 === y2;
-};
-
-/**
  * Update the sprite's position, direction and costume based on the information
  * stored in the logged sprite.
  *
