@@ -8,18 +8,18 @@
     width: calc(100% - 1.5rem);
 }
 
-.remove-history-button {
+.remove-future-button {
     max-height: 1rem;
     margin-bottom: 0.25rem;
     margin-left: 0.15rem;
     opacity: 0.5;
 }
 
-.remove-history-button:hover {
+.remove-future-button:hover {
     background-color: $motion-light-transparent;
 }
 
-.remove-history-button.is-enabled {
+.remove-future-button.is-enabled {
     opacity: 1;
     cursor: pointer;
 }

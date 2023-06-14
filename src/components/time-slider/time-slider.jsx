@@ -3,7 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import styles from './time-slider.css';
-import removeHistoryIcon from '../../debugger-icons/icon--remove-history.svg';
+import removeFutureIcon from '../../debugger-icons/icon--remove-future.svg';
 import Box from '../box/box.jsx';
 
 const TimeSliderComponent = function (props) {
@@ -12,7 +12,7 @@ const TimeSliderComponent = function (props) {
         timeFrame,
         sliderEnabled,
         paused,
-        onRemoveHistoryClick,
+        onremoveFutureClick,
         ...componentProps
     } = props;
 
@@ -29,13 +29,13 @@ const TimeSliderComponent = function (props) {
             />
             <img
                 className={classNames(
-                    styles.removeHistoryButton,
+                    styles.removeFutureButton,
                     {
-                        [styles.isEnabled]: sliderEnabled && paused
+                        [styles.isEnabled]: sliderEnabled && paused && timeFrame < numberOfFrames - 1
                     })}
-                src={removeHistoryIcon}
+                src={removeFutureIcon}
                 draggable={false}
-                onClick={onRemoveHistoryClick}
+                onClick={onremoveFutureClick}
             />
         </Box>
     );
@@ -46,7 +46,7 @@ TimeSliderComponent.propTypes = {
     timeFrame: PropTypes.number.isRequired,
     sliderEnabled: PropTypes.bool.isRequired,
     paused: PropTypes.bool.isRequired,
-    onRemoveHistoryClick: PropTypes.func.isRequired
+    onremoveFutureClick: PropTypes.func.isRequired
 };
 
 export default TimeSliderComponent;

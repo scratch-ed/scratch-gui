@@ -8,7 +8,6 @@ import {
     setTimeFrame
 } from '../reducers/debugger.js';
 import {
-    positionsAreEqual,
     updateSpriteBubble,
     updateSpriteState,
     updateStageState,
@@ -38,14 +37,6 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     this.loadLogFrame();
                 }
             }
-        }
-
-        construct () {
-            this.createSkins();
-        }
-
-        destruct () {
-            this.destroySkins();
         }
 
         loadClones () {
