@@ -209,7 +209,7 @@ class Blocks extends React.Component {
         this.props.vm.clearFlyoutBlocks();
     }
     overrideBlocklyMethods () {
-        this.ScratchBlocks.WorkspaceSvg.prototype.indicateBlock = function (id, isIndicated) {
+        this.ScratchBlocks.WorkspaceSvg.prototype.indicateBlock = function (id, isIndicated, color) {
             if (id) {
                 const block = this.getBlockById(id);
                 if (!block) {
@@ -218,16 +218,21 @@ class Blocks extends React.Component {
 
                 if (isIndicated) {
                     block.oldSecondary = block.getColourSecondary();
+                    block.oldTertiary = block.getColourTertiary();
                     block.oldShadow = block.getShadowColour();
 
-                    block.colourSecondary_ = '#FF0000';
-                    block.shadowColour_ = '#FF0000';
+                    block.colourSecondary_ = color;
+                    block.shadowColour_ = color;
+                    block.colourTertiary_ = color;
                 } else {
                     if (block.oldSecondary) {
                         block.colourSecondary_ = block.oldSecondary;
                     }
                     if (block.oldShadow) {
                         block.shadowColour_ = block.oldShadow;
+                    }
+                    if (block.oldTertiary) {
+                        block.colourTertiary_ = block.oldTertiary;
                     }
                 }
 
@@ -374,7 +379,7 @@ class Blocks extends React.Component {
         this.workspace.glowBlock(data.id, false);
     }
     onBlockIndicateOn (data) {
-        this.workspace.indicateBlock(data.id, true);
+        this.workspace.indicateBlock(data.id, true, data.color);
     }
     onBlockIndicateOff (data) {
         this.workspace.indicateBlock(data.id, false);
