@@ -72,7 +72,7 @@ const TimeInterfaceComponent = function (props) {
             />
             <Step
                 className={styles.stepBack}
-                enabled={paused && !changed && timeFrame > 0}
+                enabled={!changed && timeFrame > 0}
                 title={intl.formatMessage(messages.stepBackTitle)}
                 onClick={onStepBackClick}
             />
