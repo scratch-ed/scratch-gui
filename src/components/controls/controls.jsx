@@ -13,6 +13,7 @@ import Step from '../debugger-buttons/step/step.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
 
 import styles from './controls.css';
+import TestFlag from '../test-flag/test-flag.jsx';
 
 const messages = defineMessages({
     goTitle: {
@@ -61,6 +62,7 @@ const Controls = function (props) {
         numberOfFrames,
         onDebugModeClick,
         onGreenFlagClick,
+        onTestFlagClick,
         onPauseClick,
         onResumeClick,
         onRewindModeClick,
@@ -87,42 +89,49 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.stopTitle)}
                 onClick={onStopAllClick}
             />
-            <DebugMode
-                debugMode={debugMode}
-                title={intl.formatMessage(messages.debugTitle)}
-                onClick={onDebugModeClick}
+            {/* Temporary comment for dojocon demo to not show debug functionality */}
+            {/* <DebugMode */}
+            {/*     debugMode={debugMode} */}
+            {/*     title={intl.formatMessage(messages.debugTitle)} */}
+            {/*     onClick={onDebugModeClick} */}
+            {/* /> */}
+            {/* {debugMode ? */}
+            {/*     <> */}
+            {/*         <RewindMode */}
+            {/*             numberOfFrames={numberOfFrames} */}
+            {/*             rewindMode={rewindMode} */}
+            {/*             title={intl.formatMessage(messages.rewindTitle)} */}
+            {/*             onClick={onRewindModeClick} */}
+            {/*         /> */}
+            {/*         <Resume */}
+            {/*             paused={paused} */}
+            {/*             running={active} */}
+            {/*             title={intl.formatMessage(messages.resumeTitle)} */}
+            {/*             onClick={onResumeClick} */}
+            {/*         /> */}
+            {/*         <Pause */}
+            {/*             paused={paused} */}
+            {/*             running={active} */}
+            {/*             title={intl.formatMessage(messages.pauseTitle)} */}
+            {/*             onClick={onPauseClick} */}
+            {/*         /> */}
+            {/*         <Step */}
+            {/*             paused={paused} */}
+            {/*             running={active} */}
+            {/*             title={intl.formatMessage(messages.stepTitle)} */}
+            {/*             onClick={onStepClick} */}
+            {/*         /> */}
+            {/*     </> : */}
+            {/*     null} */}
+            {/* {turbo ? ( */}
+            {/*     <TurboMode /> */}
+            {/* ) : null} */}
+            <TestFlag
+                active={active}
+                // todo change title
+                title="Test flag"
+                onClick={onTestFlagClick}
             />
-            {debugMode ?
-                <>
-                    <RewindMode
-                        numberOfFrames={numberOfFrames}
-                        rewindMode={rewindMode}
-                        title={intl.formatMessage(messages.rewindTitle)}
-                        onClick={onRewindModeClick}
-                    />
-                    <Resume
-                        paused={paused}
-                        running={active}
-                        title={intl.formatMessage(messages.resumeTitle)}
-                        onClick={onResumeClick}
-                    />
-                    <Pause
-                        paused={paused}
-                        running={active}
-                        title={intl.formatMessage(messages.pauseTitle)}
-                        onClick={onPauseClick}
-                    />
-                    <Step
-                        paused={paused}
-                        running={active}
-                        title={intl.formatMessage(messages.stepTitle)}
-                        onClick={onStepClick}
-                    />
-                </> :
-                null}
-            {turbo ? (
-                <TurboMode />
-            ) : null}
         </div>
     );
 };
@@ -135,6 +144,7 @@ Controls.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
+    onTestFlagClick: PropTypes.func.isRequired,
     onPauseClick: PropTypes.func.isRequired,
     onResumeClick: PropTypes.func.isRequired,
     onRewindModeClick: PropTypes.func.isRequired,

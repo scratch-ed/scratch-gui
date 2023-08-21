@@ -49,6 +49,9 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import debuggerIconURL from './debugger/debugger.png';
 import debuggerInsetIconURL from './debugger/debugger-small.svg';
 
+import batsIconURL from './bats/bats.png';
+import batsInsetIconURL from './bats/icon--test-flag.svg';
+
 export default [
     {
         name: (
@@ -337,6 +340,26 @@ export default [
                 defaultMessage="Debug your Scratch program."
                 description="Description for the 'Debugger' extension"
                 id="gui.extension.debugger.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Testing"
+                description="Name of the BATS extension"
+                id="gui.extension.itch.name"
+            />
+        ),
+        extensionId: 'itch',
+        iconURL: batsIconURL,
+        insetIconURL: batsInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Test Scratch code in Scratch!"
+                description="Description for the Itch extension"
+                id="gui.extension.itch.description"
             />
         ),
         featured: true
