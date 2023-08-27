@@ -28,7 +28,7 @@ npm run build
 Next link this local `npm` package. Run this command in the `scratch-judge`-folder:
 
 ```bash
-npm link --workspace @ftrprf/judge-core
+npm link --workspace itch-core
 ```
 
 

@@ -106,8 +106,8 @@ const base = {
             to: 'externals/scratch/scratch-vm'
         }]),
         new CopyWebpackPlugin([{
-            from: 'node_modules/@ftrprf/judge-core/dist',
-            to: 'externals/judge-core'
+            from: 'node_modules/itch-core/dist',
+            to: 'externals/itch-core'
         }])
     ]
 };
