@@ -78,9 +78,6 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             let projectUrl = new URLSearchParams(location.search).get('project');
             let loadingPromise;
             if (projectUrl) {
-                if (!projectUrl.startsWith('http:') && !projectUrl.startsWith('https:')) {
-                    projectUrl = `https://${projectUrl}`;
-                }
                 loadingPromise = fetch(projectUrl)
                     .then(r => {
                         if (!r.ok) {
