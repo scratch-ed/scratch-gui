@@ -67,9 +67,29 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 this.props.onActivateTab(BLOCKS_TAB_INDEX);
             }
         }
-        fetchProject (projectId, loadingState) {
-            return storage
-                .load(storage.AssetType.Project, projectId, storage.DataFormat.JSON)
+
+        fetchProject(projectId, loadingState) {
+            // The following code is adapted from turbowrap
+            // https://github.com/TurboWarp/scratch-gui/blob/92f8e79ef0d739d8c23fd26ba85ab98a65468f78/src/lib/project-fetcher-hoc.jsx#L103
+            let projectUrl = new URLSearchParams(location.search).get('project');
+            let loadingPromise;
+            if (projectUrl) {
+                if (!projectUrl.startsWith('http:') && !projectUrl.startsWith('https:')) {
+                    projectUrl = `https://${projectUrl}`;
+                }
+                loadingPromise = fetch(projectUrl)
+                    .then(r => {
+                        if (!r.ok) {
+                            throw new Error(`Request returned status ${r.status}`);
+                        }
+                        return r.arrayBuffer();
+                    })
+                    .then(buffer => ({data: buffer}));
+            } else {
+                loadingPromise = storage
+                    .load(storage.AssetType.Project, projectId, storage.DataFormat.JSON)
+            }
+            return loadingPromise
                 .then(projectAsset => {
                     if (projectAsset) {
                         this.props.onFetchedProjectData(projectAsset.data, loadingState);
