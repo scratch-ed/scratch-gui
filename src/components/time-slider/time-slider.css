@@ -15,7 +15,7 @@
 }
 
 .remove-future-button:hover {
-    background-color: $motion-light-transparent;
+    background-color: $looks-light-transparent;
 }
 
 .remove-future-button.is-enabled {
