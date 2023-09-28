@@ -9,7 +9,7 @@
 }
 
 .resume:hover {
-    background-color: $motion-light-transparent;
+    background-color: $looks-light-transparent;
 }
 
 .resume {
