@@ -22,7 +22,9 @@ class SeleniumHelper {
             'clickBlocksCategory',
             'elementIsVisible',
             'findByText',
+            'textToXpath',
             'findByXpath',
+            'textExists',
             'getDriver',
             'getSauceDriver',
             'getLogs',
@@ -46,7 +48,9 @@ class SeleniumHelper {
             reportedValue: '*[@class="blocklyDropDownContent"]',
             soundsTab: "*[@id='react-tabs-5']",
             spriteTile: '*[starts-with(@class,"react-contextmenu-wrapper")]',
-            monitors: '*[starts-with(@class,"stage_monitor-wrapper")]'
+            menuBar: '*[contains(@class,"menu-bar_menu-bar_")]',
+            monitors: '*[starts-with(@class,"stage_monitor-wrapper")]',
+            contextMenu: '*[starts-with(@class,"react-contextmenu")]'
         };
     }
 
@@ -98,8 +102,17 @@ class SeleniumHelper {
             ));
     }
 
+    textToXpath (text, scope) {
+        return `//body//${scope || '*'}//*[contains(text(), '${text}')]`;
+    }
+
     findByText (text, scope) {
-        return this.findByXpath(`//body//${scope || '*'}//*[contains(text(), '${text}')]`);
+        return this.findByXpath(this.textToXpath(text, scope));
+    }
+
+    textExists (text, scope) {
+        return this.driver.findElements(By.xpath(this.textToXpath(text, scope)))
+            .then(elements => elements.length > 0);
     }
 
     loadUri (uri) {
