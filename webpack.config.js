@@ -141,7 +141,7 @@ const base = {
         }),
         new CopyWebpackPlugin({
             patterns: [{
-                from: 'node_modules/itch-core/dist',
+                from: 'node_modules/itch-core/packages/core/dist/js',
                 to: 'externals/itch-core'
             }]
         }),
