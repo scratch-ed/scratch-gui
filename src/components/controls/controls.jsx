@@ -6,8 +6,6 @@ import {defineMessages, injectIntl, intlShape} from 'react-intl';
 import GreenFlag from '../green-flag/green-flag.jsx';
 import StopAll from '../stop-all/stop-all.jsx';
 import DebugMode from '../debugger-buttons/debug-mode/debug-mode.jsx';
-import ResumePause from '../debugger-buttons/resume-pause/resume-pause.jsx';
-import Step from '../debugger-buttons/step/step.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
 
 import styles from './controls.css';

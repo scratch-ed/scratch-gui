@@ -70,7 +70,8 @@ Controls.propTypes = {
     debugMode: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
-    vm: PropTypes.instanceOf(VM)
+    vm: PropTypes.instanceOf(VM),
+    isStarted: PropTypes.bool
 };
 
 const mapStateToProps = state => ({

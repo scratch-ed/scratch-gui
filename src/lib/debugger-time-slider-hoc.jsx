@@ -185,7 +185,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
 
     const mapDispatchToProps = dispatch => ({
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
-        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
+        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
     });
 
     return connect(

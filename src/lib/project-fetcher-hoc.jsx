@@ -72,10 +72,10 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             }
         }
 
-        fetchProject(projectId, loadingState) {
+        fetchProject (projectId, loadingState) {
             // The following code is adapted from turbowrap
             // https://github.com/TurboWarp/scratch-gui/blob/92f8e79ef0d739d8c23fd26ba85ab98a65468f78/src/lib/project-fetcher-hoc.jsx#L103
-            let projectUrl = new URLSearchParams(location.search).get('project');
+            const projectUrl = new URLSearchParams(location.search).get('project');
             let loadingPromise;
             if (projectUrl) {
                 loadingPromise = fetch(projectUrl)
@@ -88,7 +88,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                     .then(buffer => ({data: buffer}));
             } else {
                 loadingPromise = storage
-                    .load(storage.AssetType.Project, projectId, storage.DataFormat.JSON)
+                    .load(storage.AssetType.Project, projectId, storage.DataFormat.JSON);
             }
             return loadingPromise
                 .then(projectAsset => {

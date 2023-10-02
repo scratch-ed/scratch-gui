@@ -40,7 +40,6 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
-import debuggerIcon from '../../debugger-icons/icon--debugger.svg';
 import TimeInterface from '../../containers/time-interface.jsx';
 
 const messages = defineMessages({
@@ -84,7 +83,6 @@ const GUIComponent = props => {
         connectionModalVisible,
         costumeLibraryVisible,
         costumesTabVisible,
-        debuggerTabVisible,
         debugMode,
         enableCommunity,
         intl,
@@ -105,7 +103,6 @@ const GUIComponent = props => {
         onOpenRegistration,
         onToggleLoginOpen,
         onActivateCostumesTab,
-        onActivateDebuggerTab,
         onActivateSoundsTab,
         onActivateTab,
         onClickLogo,

@@ -26,7 +26,7 @@ export const updateSpriteState = function (sprite, spriteLog) {
  * stored in the logged stage.
  *
  * @param {RenderedTarget} stage - Stage object
- * @param {ScratchStage} spriteLog - Logged stage
+ * @param {ScratchStage} stageLog - Logged stage
  */
 export const updateStageState = function (stage, stageLog) {
     // Get the costume by name so indices don't break it

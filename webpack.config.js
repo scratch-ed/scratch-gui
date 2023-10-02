@@ -144,7 +144,7 @@ const base = {
                 from: 'node_modules/itch-core/packages/core/dist/js',
                 to: 'externals/itch-core'
             }]
-        }),
+        })
     ]
 };
 
