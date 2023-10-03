@@ -21,14 +21,14 @@ git clone git@github.ugent.be:scratch4d/scratch-judge.git
 
 Install its dependencies and build the `scratch-judge` package.
 ```bash
-cd scratch-judge
+cd itch
 npm install
 npm run build
 ```
 Next link this local `npm` package. Run this command in the `scratch-judge`-folder:
 
 ```bash
-npm link --workspace itch-core
+npm link
 ```
 
 

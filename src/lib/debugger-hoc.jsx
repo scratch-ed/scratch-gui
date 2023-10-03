@@ -12,7 +12,7 @@ import {
     setTimeFrame,
     setRemoveFuture
 } from '../reducers/debugger.js';
-import {createContextWithVm, Context, snapshotFromVm} from 'itch-core';
+import {createContextWithVm, Context, snapshotFromVm} from 'itch';
 import omit from 'lodash.omit';
 import bindAll from 'lodash.bindall';
 

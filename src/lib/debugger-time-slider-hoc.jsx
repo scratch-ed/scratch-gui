@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
-import {Context} from 'itch-core';
+import {Context} from 'itch';
 import {
     setNumberOfFrames,
     setTimeFrame
