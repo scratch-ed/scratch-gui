@@ -10,9 +10,9 @@
 }
 
 .debug-mode:hover {
-    background-color: $motion-light-transparent;
+    background-color: $looks-light-transparent;
 }
 
 .debug-mode.in-debug-mode {
-    background-color: $motion-transparent;
+    background-color: $looks-transparent;
 }

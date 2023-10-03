@@ -40,8 +40,6 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
-import debuggerIcon from '../../debugger-icons/icon--debugger.svg';
-import DebuggerTab from '../../containers/debugger-tab.jsx';
 import TimeInterface from '../../containers/time-interface.jsx';
 
 const messages = defineMessages({
@@ -85,7 +83,6 @@ const GUIComponent = props => {
         connectionModalVisible,
         costumeLibraryVisible,
         costumesTabVisible,
-        debuggerTabVisible,
         debugMode,
         enableCommunity,
         intl,
@@ -106,7 +103,6 @@ const GUIComponent = props => {
         onOpenRegistration,
         onToggleLoginOpen,
         onActivateCostumesTab,
-        onActivateDebuggerTab,
         onActivateSoundsTab,
         onActivateTab,
         onClickLogo,
@@ -122,7 +118,6 @@ const GUIComponent = props => {
         onTelemetryModalCancel,
         onTelemetryModalOptIn,
         onTelemetryModalOptOut,
-        rewindMode,
         showComingSoon,
         soundsTabVisible,
         stageSizeMode,
@@ -310,21 +305,6 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
-                                    {debugMode ?
-                                        <Tab
-                                            className={tabClassNames.tab}
-                                            onClick={onActivateDebuggerTab}
-                                        >
-                                            <img
-                                                draggable={false}
-                                                src={debuggerIcon}
-                                            />
-                                            <FormattedMessage
-                                                defaultMessage="Debugger"
-                                                description="Button to get to the debugger panel"
-                                                id="gui.gui.debuggerTab"
-                                            />
-                                        </Tab> : null }
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
@@ -364,10 +344,6 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
-                                {debugMode ?
-                                    <TabPanel className={tabClassNames.tabPanel}>
-                                        {debuggerTabVisible ? <DebuggerTab vm={vm} /> : null}
-                                    </TabPanel> : null}
                             </Tabs>
                             {backpackVisible ? (
                                 <Backpack host={backpackHost} />
@@ -381,7 +357,7 @@ const GUIComponent = props => {
                                 stageSize={stageSize}
                                 vm={vm}
                             />
-                            {rewindMode ? <TimeInterface vm={vm} /> : null}
+                            {debugMode ? <TimeInterface vm={vm} /> : null}
                             <Box className={styles.targetWrapper}>
                                 <TargetPane
                                     stageSize={stageSize}
@@ -458,7 +434,6 @@ GUIComponent.propTypes = {
     onTelemetryModalOptOut: PropTypes.func,
     onToggleLoginOpen: PropTypes.func,
     renderLogin: PropTypes.func,
-    rewindMode: PropTypes.bool,
     showComingSoon: PropTypes.bool,
     soundsTabVisible: PropTypes.bool,
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
@@ -495,7 +470,6 @@ GUIComponent.defaultProps = {
 
 const mapStateToProps = state => ({
     debugMode: state.scratchGui.debugger.debugMode,
-    rewindMode: state.scratchGui.debugger.rewindMode,
     // This is the button's mode, as opposed to the actual current state
     blocksId: state.scratchGui.timeTravel.year.toString(),
     stageSizeMode: state.scratchGui.stageSize.stageSize,

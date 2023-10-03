@@ -1,3 +1,24 @@
-.time-slider {
+@import "../../css/colors.css";
+
+.time-slider-wrapper {
     width: 100%;
+}
+
+.time-slider {
+    width: calc(100% - 1.5rem);
+}
+
+.remove-future-button {
+    max-height: 1rem;
+    margin-left: 0.15rem;
+    opacity: 0.5;
+}
+
+.remove-future-button:hover {
+    background-color: $looks-light-transparent;
+}
+
+.remove-future-button.is-enabled {
+    opacity: 1;
+    cursor: pointer;
 }

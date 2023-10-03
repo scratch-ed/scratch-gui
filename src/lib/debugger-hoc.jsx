@@ -7,14 +7,14 @@ import {
     setContext,
     setDebugMode,
     setPaused,
+    setChanged,
     setNumberOfFrames,
-    setRewindMode,
-    setTimeFrame
+    setTimeFrame,
+    setRemoveFuture
 } from '../reducers/debugger.js';
-import {createContextWithVm, Context, snapshotFromVm} from '@ftrprf/judge-core';
+import {createContextWithVm, Context, snapshotFromVm} from 'itch-core';
 import omit from 'lodash.omit';
 import bindAll from 'lodash.bindall';
-import {activateTab, BLOCKS_TAB_INDEX, DEBUGGER_TAB_INDEX} from '../reducers/editor-tab.js';
 
 const DebuggerHOC = function (WrappedComponent) {
     class DebuggerWrapper extends React.Component {
@@ -27,9 +27,7 @@ const DebuggerHOC = function (WrappedComponent) {
                 'handleProjectLoaded',
                 'handleProjectPaused',
                 'handleProjectResumed',
-                'handleRewindModeDisabled',
-                'handleRewindModeEnabled',
-                'handleThreadsStarted'
+                'handleProjectChanged'
             ]);
         }
 
@@ -37,23 +35,22 @@ const DebuggerHOC = function (WrappedComponent) {
             this.addListeners();
 
             if (this.props.debugMode) {
-                this.proxyAddFrame(this.props.context);
+                this.proxyRegisterEvent(this.props.context);
             }
         }
 
         shouldComponentUpdate (nextProps) {
-            return this.props.debugMode !== nextProps.debugMode;
+            return this.props.debugMode !== nextProps.debugMode || this.props.removeFuture !== nextProps.removeFuture;
         }
 
         async componentDidUpdate (prevProps) {
             if (prevProps.debugMode !== this.props.debugMode) {
-                // If the debugger tab is selected when debug mode gets disabled,
-                // switch the active tab to the blocks tab.
-                if (!this.props.debugMode && this.props.activeTab === DEBUGGER_TAB_INDEX) {
-                    this.props.activateTab(BLOCKS_TAB_INDEX);
-                }
-
                 await this.changeDebugMode();
+            }
+            if (this.props.debugMode && this.props.removeFuture && !prevProps.removeFuture) {
+                // If changed, remove full history
+                this.removeFuture();
+                this.props.setRemoveFuture(false);
             }
         }
 
@@ -61,7 +58,7 @@ const DebuggerHOC = function (WrappedComponent) {
             this.removeListeners();
 
             if (this.props.debugMode) {
-                this.props.context.log.registerSnapshot = this.oldAddFrame;
+                this.props.context.log.registerSnapshot = this.oldRegisterEvent;
             }
         }
 
@@ -69,28 +66,20 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.vm.runtime.addListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
             this.props.vm.runtime.addListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
 
-            this.props.vm.runtime.addListener('REWIND_MODE_DISABLED', this.handleRewindModeDisabled);
-            this.props.vm.runtime.addListener('REWIND_MODE_ENABLED', this.handleRewindModeEnabled);
-
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.addListener('PROJECT_RESUMED', this.handleProjectResumed);
-
-            this.props.vm.runtime.addListener('THREADS_STARTED', this.handleThreadsStarted);
+            this.props.vm.runtime.addListener('PROJECT_CHANGED', this.handleProjectChanged);
         }
 
         removeListeners () {
             this.props.vm.runtime.removeListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
             this.props.vm.runtime.removeListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
 
-            this.props.vm.runtime.removeListener('REWIND_MODE_DISABLED', this.handleRewindModeDisabled);
-            this.props.vm.runtime.removeListener('REWIND_MODE_ENABLED', this.handleRewindModeEnabled);
-
             this.props.vm.runtime.removeListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.removeListener('PROJECT_PAUSED', this.handleProjectPaused);
             this.props.vm.runtime.removeListener('PROJECT_RESUMED', this.handleProjectResumed);
-
-            this.props.vm.runtime.removeListener('THREADS_STARTED', this.handleThreadsStarted);
+            this.props.vm.runtime.removeListener('PROJECT_CHANGED', this.handleProjectChanged);
         }
 
         handleDebugModeDisabled () {
@@ -116,36 +105,45 @@ const DebuggerHOC = function (WrappedComponent) {
             this.props.setPaused(false);
         }
 
-        handleRewindModeDisabled () {
-            this.props.setRewindMode(false);
-            this.props.context.log.started = true;
-        }
-
-        handleRewindModeEnabled () {
-            this.props.setRewindMode(true);
-            this.props.context.log.started = false;
-        }
-
-        handleThreadsStarted () {
+        handleProjectChanged () {
             if (this.props.debugMode) {
-                this.props.context.log.reset();
-                const snapshot = snapshotFromVm(this.props.vm);
-                this.props.context.log.registerStartSnapshots(snapshot, snapshot);
-
-                this.props.setTimeFrame(0);
-                this.props.setNumberOfFrames(0);
+                this.props.vm.runtime.pause();
+                this.props.setChanged(true);
             }
         }
 
-        proxyAddFrame (context) {
+        removeFuture () {
+            if (this.props.numberOfFrames > 1) {
+                this.props.context.setLogRange(0, this.props.timeFrame + 1);
+                this.props.setNumberOfFrames(this.props.context.log.ops.length);
+            }
+        }
+
+        /*
+         * Removes everything except for the current and next frame
+         */
+        removeFullHistory () {
+            if (this.props.numberOfFrames > 1) {
+                this.props.context.setLogRange(this.props.timeFrame, this.props.timeFrame + 2);
+                this.props.setNumberOfFrames(this.props.context.log.ops.length);
+            }
+        }
+
+        proxyRegisterEvent (context) {
             // Increase the length of the time slider every time a new frame gets added to the log.
-            this.oldAddFrame = context.log.registerEvent;
-            context.log.registerEvent = new Proxy(this.oldAddFrame, {
+            this.oldRegisterEvent = context.log.registerEvent;
+            context.log.registerEvent = new Proxy(this.oldRegisterEvent, {
                 apply: (target, thisArg, argArray) => {
                     const added = target.apply(thisArg, argArray);
                     if (added && argArray[0].type === 'ops') {
-                        this.props.setTimeFrame(this.props.numberOfFrames);
-                        this.props.setNumberOfFrames(this.props.numberOfFrames + 1);
+                        // The debugger UI needs to reflect the new log entry
+                        if (this.props.changed) {
+                            // If changed, remove full history
+                            this.removeFullHistory();
+                            this.props.setChanged(false);
+                        }
+                        this.props.setNumberOfFrames(this.props.context.log.ops.length);
+                        this.props.setTimeFrame(this.props.context.log.ops.length - 1);
                     }
                     return added;
                 }
@@ -153,8 +151,6 @@ const DebuggerHOC = function (WrappedComponent) {
         }
 
         async changeDebugMode () {
-            this.props.vm.stopAll();
-
             if (this.props.debugMode) {
                 const context = await createContextWithVm(this.props.vm);
                 context.instrumentVm('debugger');
@@ -163,16 +159,14 @@ const DebuggerHOC = function (WrappedComponent) {
                 context.log.registerStartSnapshots(snapshot, snapshot);
                 this.props.setContext(context);
 
-                this.proxyAddFrame(context);
+                this.proxyRegisterEvent(context);
             } else {
-                this.props.vm.runtime.disableRewindMode();
-
                 // Restore the VM to the state before the creation of the current context.
                 await this.props.context.deinstrumentVm();
                 this.props.setContext(null);
 
-                this.props.setTimeFrame(0);
                 this.props.setNumberOfFrames(0);
+                this.props.setTimeFrame(0);
             }
         }
 
@@ -182,16 +176,17 @@ const DebuggerHOC = function (WrappedComponent) {
                 'context',
                 'debugMode',
                 'numberOfFrames',
-                'rewindMode',
                 'timeFrame',
                 'vm',
-                'activateTab',
                 'setContext',
                 'setDebugMode',
                 'setNumberOfFrames',
                 'setPaused',
-                'setRewindMode',
-                'setTimeFrame'
+                'setChanged',
+                'setRemoveFuture',
+                'setTimeFrame',
+                'changed',
+                'removeFuture'
             ]);
 
             return (
@@ -205,16 +200,17 @@ const DebuggerHOC = function (WrappedComponent) {
         context: PropTypes.instanceOf(Context),
         debugMode: PropTypes.bool.isRequired,
         numberOfFrames: PropTypes.number.isRequired,
-        rewindMode: PropTypes.bool.isRequired,
         timeFrame: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
-        activateTab: PropTypes.func.isRequired,
         setContext: PropTypes.func.isRequired,
         setDebugMode: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
-        setRewindMode: PropTypes.func.isRequired,
-        setTimeFrame: PropTypes.func.isRequired
+        setChanged: PropTypes.func.isRequired,
+        setRemoveFuture: PropTypes.func.isRequired,
+        setTimeFrame: PropTypes.func.isRequired,
+        changed: PropTypes.bool.isRequired,
+        removeFuture: PropTypes.bool.isRequired
     };
 
     const mapStateToProps = state => ({
@@ -222,18 +218,19 @@ const DebuggerHOC = function (WrappedComponent) {
         context: state.scratchGui.debugger.context,
         debugMode: state.scratchGui.debugger.debugMode,
         numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-        rewindMode: state.scratchGui.debugger.rewindMode,
         timeFrame: state.scratchGui.debugger.timeFrame,
+        changed: state.scratchGui.debugger.changed,
+        removeFuture: state.scratchGui.debugger.removeFuture,
         vm: state.scratchGui.vm
     });
 
     const mapDispatchToProps = dispatch => ({
-        activateTab: tab => dispatch(activateTab(tab)),
         setContext: context => dispatch(setContext(context)),
         setDebugMode: debugMode => dispatch(setDebugMode(debugMode)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setPaused: paused => dispatch(setPaused(paused)),
-        setRewindMode: rewindMode => dispatch(setRewindMode(rewindMode)),
+        setChanged: changed => dispatch(setChanged(changed)),
+        setRemoveFuture: removeFuture => dispatch(setRemoveFuture(removeFuture)),
         setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
     });
 

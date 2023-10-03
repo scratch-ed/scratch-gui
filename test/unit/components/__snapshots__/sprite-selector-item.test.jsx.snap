@@ -3,7 +3,7 @@
 exports[`SpriteSelectorItemComponent matches snapshot when given a number and details to show 1`] = `
 <div
   className="react-contextmenu-wrapper ponies undefined"
-  onClick={[Function]}
+  onClick={[MockFunction]}
   onContextMenu={[Function]}
   onMouseDown={[Function]}
   onMouseEnter={undefined}
@@ -48,7 +48,7 @@ exports[`SpriteSelectorItemComponent matches snapshot when given a number and de
   <div
     aria-label="Delete"
     className=""
-    onClick={[Function]}
+    onClick={[MockFunction]}
     role="button"
     tabIndex={0}
   >
@@ -97,7 +97,7 @@ exports[`SpriteSelectorItemComponent matches snapshot when given a number and de
 exports[`SpriteSelectorItemComponent matches snapshot when selected 1`] = `
 <div
   className="react-contextmenu-wrapper ponies undefined"
-  onClick={[Function]}
+  onClick={[MockFunction]}
   onContextMenu={[Function]}
   onMouseDown={[Function]}
   onMouseEnter={undefined}
@@ -132,7 +132,7 @@ exports[`SpriteSelectorItemComponent matches snapshot when selected 1`] = `
   <div
     aria-label="Delete"
     className=""
-    onClick={[Function]}
+    onClick={[MockFunction]}
     role="button"
     tabIndex={0}
   >

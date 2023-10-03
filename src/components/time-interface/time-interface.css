@@ -1,1 +1,31 @@
-.time-interface {}
+.remove-history-button {
+    max-height: 1rem;
+    margin-bottom: 8px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.step-back {
+    transform: scaleX(-1);
+}
+
+.recording-icon {
+    max-height: 1rem;
+    margin-bottom: 8px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.recording-icon.grey {
+    opacity: 0.15;
+}
+
+.blinking {
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}

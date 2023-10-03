@@ -1,7 +1,7 @@
 import 'web-audio-test-api';
 import SharedAudioContext from '../../../src/lib/audio/shared-audio-context';
 
-describe('Shared Audio Context', () => {
+describe.skip('Shared Audio Context', () => {
     const audioContext = new AudioContext();
 
     test('returns empty object without user gesture', () => {

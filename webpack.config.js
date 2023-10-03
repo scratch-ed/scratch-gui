@@ -115,26 +115,36 @@ const base = {
                 }
             ]
         }),
-        new CopyWebpackPlugin([{
-            from: 'node_modules/scratch-storage/dist/web',
-            to: 'externals/scratch/scratch-storage'
-        }]),
-        new CopyWebpackPlugin([{
-            from: 'node_modules/scratch-render/dist/web',
-            to: 'externals/scratch/scratch-render'
-        }]),
-        new CopyWebpackPlugin([{
-            from: 'node_modules/scratch-svg-renderer/dist/web',
-            to: 'externals/scratch/scratch-svg-renderer'
-        }]),
-        new CopyWebpackPlugin([{
-            from: 'node_modules/scratch-vm/dist/web',
-            to: 'externals/scratch/scratch-vm'
-        }]),
-        new CopyWebpackPlugin([{
-            from: 'node_modules/@ftrprf/judge-core/dist',
-            to: 'externals/judge-core'
-        }])
+        new CopyWebpackPlugin({
+            patterns: [{
+                from: 'node_modules/scratch-storage/dist/web',
+                to: 'externals/scratch/scratch-storage'
+            }]
+        }),
+        new CopyWebpackPlugin({
+            patterns: [{
+                from: 'node_modules/scratch-render/dist/web',
+                to: 'externals/scratch/scratch-render'
+            }]
+        }),
+        new CopyWebpackPlugin({
+            patterns: [{
+                from: 'node_modules/scratch-svg-renderer/dist/web',
+                to: 'externals/scratch/scratch-svg-renderer'
+            }]
+        }),
+        new CopyWebpackPlugin({
+            patterns: [{
+                from: 'node_modules/scratch-vm/dist/web',
+                to: 'externals/scratch/scratch-vm'
+            }]
+        }),
+        new CopyWebpackPlugin({
+            patterns: [{
+                from: 'node_modules/itch-core/packages/core/dist/js',
+                to: 'externals/itch-core'
+            }]
+        })
     ]
 };
 

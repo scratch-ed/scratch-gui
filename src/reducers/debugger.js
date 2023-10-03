@@ -1,32 +1,25 @@
-const SET_ANIMATION = 'scratch-gui/debugger/SET_ANIMATION';
 const SET_CONTEXT = 'scratch-gui/debugger/SET_CONTEXT';
 const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
 const SET_PAUSED = 'scratch-gui/debugger/SET_PAUSED';
-const SET_REWIND_MODE = 'scratch-gui/debugger/SET_REWIND_MODE';
+const SET_CHANGED = 'scratch-gui/debugger/SET_CHANGED';
+const SET_REMOVE_FUTURE = 'scratch-gui/debugger/SET_REMOVE_FUTURE';
 const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
-const SET_TRAIL_LENGTH = 'scratch-gui/debugger/SET_TRAIL_LENGTH';
 
 const initialState = {
-    // State related to the trail animation.
-    animate: false,
     // State related to the debugger GUI.
     context: null,
     debugMode: false,
     numberOfFrames: 0,
     paused: false,
-    rewindMode: false,
-    timeFrame: 0,
-    trailLength: 0
+    changed: false,
+    removeFuture: false,
+    timeFrame: 0
 };
 
 const reducer = function (state, action) {
     if (typeof state === 'undefined') state = initialState;
     switch (action.type) {
-    case SET_ANIMATION:
-        return Object.assign({}, state, {
-            animate: action.animate
-        });
     case SET_CONTEXT:
         return Object.assign({}, state, {
             context: action.context
@@ -43,36 +36,21 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             paused: action.paused
         });
-    case SET_REWIND_MODE:
+    case SET_CHANGED:
         return Object.assign({}, state, {
-            rewindMode: action.rewindMode
+            changed: action.changed
+        });
+    case SET_REMOVE_FUTURE:
+        return Object.assign({}, state, {
+            removeFuture: action.removeFuture
         });
     case SET_TIME_FRAME:
         return Object.assign({}, state, {
             timeFrame: action.timeFrame
         });
-
-    case SET_TRAIL_LENGTH:
-        return Object.assign({}, state, {
-            trailLength: action.trailLength
-        });
     default:
         return state;
     }
-};
-
-const enableAnimation = function () {
-    return {
-        type: SET_ANIMATION,
-        animate: true
-    };
-};
-
-const disableAnimation = function () {
-    return {
-        type: SET_ANIMATION,
-        animate: false
-    };
 };
 
 const setContext = function (context) {
@@ -103,10 +81,17 @@ const setPaused = function (paused) {
     };
 };
 
-const setRewindMode = function (rewindMode) {
+const setChanged = function (changed) {
     return {
-        type: SET_REWIND_MODE,
-        rewindMode: rewindMode
+        type: SET_CHANGED,
+        changed: changed
+    };
+};
+
+const setRemoveFuture = function (removeFuture) {
+    return {
+        type: SET_REMOVE_FUTURE,
+        removeFuture: removeFuture
     };
 };
 
@@ -117,23 +102,14 @@ const setTimeFrame = function (timeFrame) {
     };
 };
 
-const setTrailLength = function (trailLength) {
-    return {
-        type: SET_TRAIL_LENGTH,
-        trailLength: trailLength
-    };
-};
-
 export {
     reducer as default,
     initialState as debuggerInitialState,
-    enableAnimation,
-    disableAnimation,
     setContext,
     setDebugMode,
     setNumberOfFrames,
     setPaused,
-    setRewindMode,
-    setTimeFrame,
-    setTrailLength
+    setChanged,
+    setRemoveFuture,
+    setTimeFrame
 };

@@ -9,8 +9,7 @@ const StepComponent = function (props) {
     const {
         className,
         onClick,
-        paused,
-        running,
+        enabled,
         title,
         ...componentProps
     } = props;
@@ -21,7 +20,7 @@ const StepComponent = function (props) {
                 className,
                 styles.step,
                 {
-                    [styles.isEnabled]: running && paused
+                    [styles.isEnabled]: enabled
                 }
             )}
             draggable={false}
@@ -36,8 +35,7 @@ const StepComponent = function (props) {
 StepComponent.propTypes = {
     className: PropTypes.string,
     onClick: PropTypes.func.isRequired,
-    paused: PropTypes.bool.isRequired,
-    running: PropTypes.bool.isRequired,
+    enabled: PropTypes.bool.isRequired,
     title: PropTypes.string
 };
 

@@ -3,48 +3,53 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import pauseIcon from '../../../debugger-icons/icon--pause.svg';
-import styles from './pause.css';
+import pauseStyles from './pause.css';
+import resumeStyles from './resume.css';
+import resumeIcon from '../../../debugger-icons/icon--resume.svg';
 
-const PauseComponent = function (props) {
+const ResumePauseComponent = function (props) {
     const {
         className,
         onClick,
         paused,
-        running,
         title,
         ...componentProps
     } = props;
 
     return (
-        <img
+        paused ? (<img
             className={classNames(
                 className,
-                styles.pause,
-                {
-                    [styles.isEnabled]: running,
-                    [styles.isActive]: running && paused
-
-                }
+                resumeStyles.resume
+            )}
+            draggable={false}
+            src={resumeIcon}
+            title={title}
+            onClick={onClick}
+            {...componentProps}
+        />) : (<img
+            className={classNames(
+                className,
+                pauseStyles.pause
             )}
             draggable={false}
             src={pauseIcon}
             title={title}
             onClick={onClick}
             {...componentProps}
-        />
+        />)
     );
 };
 
-PauseComponent.propTypes = {
+ResumePauseComponent.propTypes = {
     className: PropTypes.string,
     onClick: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
-    running: PropTypes.bool.isRequired,
     title: PropTypes.string
 };
 
-PauseComponent.defaultProps = {
-    title: 'Pause'
+ResumePauseComponent.defaultProps = {
+    title: 'ResumePause'
 };
 
-export default PauseComponent;
+export default ResumePauseComponent;
