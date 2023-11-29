@@ -41,11 +41,11 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
 
         loadClones () {
             for (const spriteLog of this.props.context.log.ops[this.props.timeFrame].previous.sprites) {
-                const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
+                const target = this.props.vm.runtime.getTargetById(spriteLog.id);
 
-                if (sprite) {
+                if (target && target.isOriginal) {
                     // Copy the list of clones in order to correctly remove all clones from the original list.
-                    const currentClones = [...sprite.sprite.clones];
+                    const currentClones = [...target.sprite.clones];
 
                     // Remove all clones of the current sprite that is not the sprite itself.
                     for (const clone of currentClones) {
@@ -56,15 +56,13 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     }
 
                     // Initialize all clones of the current sprite.
-                    for (const cloneLog of spriteLog.clones) {
-                        const clone = sprite.makeClone();
-                        // Store the most recent id of the clone in the log.
-                        cloneLog.id = clone.id;
+                    for (const cloneFromLog of spriteLog.clones) {
+                        const clone = target.makeClone(cloneFromLog.id);
 
                         this.props.vm.runtime.addTarget(clone);
-                        clone.goBehindOther(sprite);
+                        clone.goBehindOther(target);
 
-                        updateSpriteState(clone, cloneLog);
+                        updateSpriteState(clone, cloneFromLog);
                     }
                 }
             }
@@ -185,7 +183,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
 
     const mapDispatchToProps = dispatch => ({
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
-        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
+        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
     });
 
     return connect(
