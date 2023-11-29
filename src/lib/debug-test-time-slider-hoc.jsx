@@ -42,30 +42,38 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
 
         loadClones (snapshot) {
             for (const spriteLog of snapshot.sprites) {
-                const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
+                const target = this.props.vm.runtime.getTargetById(spriteLog.id);
 
-                if (sprite) {
-                    // Copy the list of clones in order to correctly remove all clones from the original list.
-                    const currentClones = [...sprite.sprite.clones];
-
-                    // Remove all clones of the current sprite that is not the sprite itself.
-                    for (const clone of currentClones) {
-                        if (!clone.isOriginal) {
+                if (target && target.isOriginal) {
+                    // Remove all clones of the current sprite that is not the sprite itself
+                    // and are not present in the log. If they are in the log, save their id (1).
+                    const clonesOnCanvas = new Set();
+                    for (const clone of target.sprite.clones) {
+                        if (clone.isOriginal) {
+                            continue;
+                        }
+                        const loggedClone = spriteLog.clones.find(c => c.id === clone.id);
+                        if (loggedClone) {
+                            clonesOnCanvas.add(loggedClone.id);
+                        } else {
                             this.props.vm.runtime.disposeTarget(clone);
                             this.props.vm.runtime.stopForTarget(clone);
                         }
                     }
 
-                    // Initialize all clones of the current sprite.
-                    for (const cloneLog of spriteLog.clones) {
-                        const clone = sprite.makeClone();
-                        // Store the most recent id of the clone in the log.
-                        cloneLog.id = clone.id;
+                    // Update the state of all clones in the log.
+                    for (const loggedClone of spriteLog.clones) {
+                        let clone;
+                        // Only create new clone if clone was not yet on the canvas.
+                        if (clonesOnCanvas.has(loggedClone.id)) {
+                            clone = this.props.vm.runtime.getTargetById(spriteLog.id);
+                        } else {
+                            clone = target.makeClone(loggedClone.id);
+                            this.props.vm.runtime.addTarget(clone);
+                            clone.goBehindOther(target);
+                        }
 
-                        this.props.vm.runtime.addTarget(clone);
-                        clone.goBehindOther(sprite);
-
-                        updateSpriteState(clone, cloneLog);
+                        updateSpriteState(clone, loggedClone);
                     }
                 }
             }
