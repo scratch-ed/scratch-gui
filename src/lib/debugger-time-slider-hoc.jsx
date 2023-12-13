@@ -40,29 +40,39 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadClones () {
-            for (const spriteLog of this.props.context.log.ops[this.props.timeFrame].previous.sprites) {
-                const target = this.props.vm.runtime.getTargetById(spriteLog.id);
+            for (const slog of this.props.context.log.ops[this.props.timeFrame].previous.sprites) {
+                const target = this.props.vm.runtime.getTargetById(slog.id);
 
                 if (target && target.isOriginal) {
-                    // Copy the list of clones in order to correctly remove all clones from the original list.
-                    const currentClones = [...target.sprite.clones];
-
-                    // Remove all clones of the current sprite that is not the sprite itself.
-                    for (const clone of currentClones) {
-                        if (!clone.isOriginal) {
+                    // Remove all clones of the current sprite that is not the sprite itself
+                    // and are not present in the log. If they are in the log, save their id (1).
+                    const clonesOnCanvas = new Set();
+                    for (const clone of target.sprite.clones) {
+                        if (clone.isOriginal) {
+                            continue;
+                        }
+                        const loggedClone = slog.clones.find(c => c.id === clone.id);
+                        if (loggedClone) {
+                            clonesOnCanvas.add(loggedClone.id);
+                        } else {
                             this.props.vm.runtime.disposeTarget(clone);
                             this.props.vm.runtime.stopForTarget(clone);
                         }
                     }
 
-                    // Initialize all clones of the current sprite.
-                    for (const cloneFromLog of spriteLog.clones) {
-                        const clone = target.makeClone(cloneFromLog.id);
+                    // Update the state of all clones in the log.
+                    for (const loggedClone of slog.clones) {
+                        let clone;
+                        // Only create new clone if clone was not yet on the canvas.
+                        if (clonesOnCanvas.has(loggedClone.id)) {
+                            clone = this.props.vm.runtime.getTargetById(slog.id);
+                        } else {
+                            clone = target.makeClone(loggedClone.id);
+                            this.props.vm.runtime.addTarget(clone);
+                            clone.goBehindOther(target);
+                        }
 
-                        this.props.vm.runtime.addTarget(clone);
-                        clone.goBehindOther(target);
-
-                        updateSpriteState(clone, cloneFromLog);
+                        updateSpriteState(clone, loggedClone);
                     }
                 }
             }
