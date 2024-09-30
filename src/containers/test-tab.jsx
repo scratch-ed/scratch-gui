@@ -5,11 +5,11 @@ import {init} from '../components/test-tab/test-output.js';
 import {connect} from 'react-redux';
 
 const TestTab = ({saveProjectSb3}) => {
-
     const [filesUploaded, setFilesUploaded] = useState(false);
     const [config, setConfig] = useState(null);
     const [template, setTemplate] = useState(null);
     const [scriptText, setScriptText] = useState(null);
+    const [testFailed, setTestFailed] = useState(false);
 
     let failureMessage = null;
     if (filesUploaded) {
@@ -23,6 +23,10 @@ const TestTab = ({saveProjectSb3}) => {
     }
 
     const handleFileChange = async e => {
+        if (testFailed) {
+            setTestFailed(false);
+        }
+
         if (e.target.files) {
             setFilesUploaded(true);
             const files = e.target.files;
@@ -59,6 +63,10 @@ const TestTab = ({saveProjectSb3}) => {
     };
 
     const handleUpload = async () => {
+        if (testFailed) {
+            setTestFailed(false);
+        }
+
         if (config) {
             const submission = await new Response(await saveProjectSb3()).arrayBuffer();
 
@@ -79,7 +87,11 @@ const TestTab = ({saveProjectSb3}) => {
                     canvas: document.getElementById('scratch-stage')
                 });
             } catch (error) {
-                console.error(error.message);
+                if (error.name === 'TypeError' && error.message === 'runtime.getSpriteTargetByName(...) is undefined') {
+                    setTestFailed(true);
+                } else {
+                    console.error(error);
+                }
             } finally {
                 document.head.removeChild(script);
             }
@@ -88,7 +100,7 @@ const TestTab = ({saveProjectSb3}) => {
 
     return (
         <div>
-            <h1>Runner Environment</h1>
+            <h1>{'Runner Environment'}</h1>
 
             <div className="run-form">
                 <input
@@ -103,13 +115,16 @@ const TestTab = ({saveProjectSb3}) => {
                 <button
                     onClick={handleUpload}
                     className="submit"
-                >Upload test</button>
+                >{'Upload test'}</button>
             )}
             <span>{failureMessage}</span>
 
             <canvas id="scratch-stage" />
 
-            <h2 id="out">Output</h2>
+            <h2 id="out">{'Output'}</h2>
+            {testFailed && (
+                <span>{'Sprites in submission don\'t match sprites in template'}</span>
+            )}
             <div
                 id="output"
                 style={{maxHeight: '200px', overflowY: 'auto'}}
