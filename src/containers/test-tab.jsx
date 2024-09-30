@@ -1,143 +1,132 @@
-import PropTypes from 'prop-types';
 import React, {useState} from 'react';
-import bindAll from 'lodash.bindall';
-import {defineMessages, intlShape, injectIntl} from 'react-intl';
-import VM from 'scratch-vm';
-
-import TestingTab from '../components/test-tab/test-tab.jsx';
-import AssetPanel from '../components/asset-panel/asset-panel.jsx';
-import soundIcon from '../components/asset-panel/icon--sound.svg';
-import soundIconRtl from '../components/asset-panel/icon--sound-rtl.svg';
-import addSoundFromLibraryIcon from '../components/asset-panel/icon--add-sound-lib.svg';
-import addSoundFromRecordingIcon from '../components/asset-panel/icon--add-sound-record.svg';
-import fileUploadIcon from '../components/action-menu/icon--file-upload.svg';
-import surpriseIcon from '../components/action-menu/icon--surprise.svg';
-import searchIcon from '../components/action-menu/icon--search.svg';
-
-import RecordModal from './record-modal.jsx';
-import SoundEditor from './sound-editor.jsx';
-import SoundLibrary from './sound-library.jsx';
-
-import soundLibraryContent from '../lib/libraries/sounds.json';
-import {handleFileUpload, soundUpload} from '../lib/file-uploader.js';
-import errorBoundaryHOC from '../lib/error-boundary-hoc.jsx';
-import DragConstants from '../lib/drag-constants';
-import downloadBlob from '../lib/download-blob';
-
+import PropTypes from 'prop-types';
+import {run} from 'itch';
+import {init} from '../components/test-tab/test-output.js';
 import {connect} from 'react-redux';
 
-import * as Itch from 'itch';
+const TestTab = ({saveProjectSb3}) => {
 
-import {
-    closeSoundLibrary,
-    openSoundLibrary,
-    openSoundRecorder
-} from '../reducers/modals';
+    const [filesUploaded, setFilesUploaded] = useState(false);
+    const [config, setConfig] = useState(null);
+    const [template, setTemplate] = useState(null);
+    const [scriptText, setScriptText] = useState(null);
 
-import {
-    activateTab,
-    COSTUMES_TAB_INDEX
-} from '../reducers/editor-tab';
-
-import {setRestore} from '../reducers/restore-deletion';
-import {showStandardAlert, closeAlertWithId} from '../reducers/alerts';
-
-class TestTab extends React.Component {
-
-    constructor (props) {
-        super(props);
-        bindAll(this, [
-            'handleFileUpload',
-            'setFileInput',
-            'setFileInput'
-        ]);
-        this.state = {files: null};
+    let failureMessage = null;
+    if (filesUploaded) {
+        if (config === null) {
+            failureMessage = 'Config file not found';
+        } else if (template === null) {
+            failureMessage = 'Template project not found';
+        } else if (scriptText === null) {
+            failureMessage = 'Testplan not found';
+        }
     }
 
-    handleFileChange = e => {
+    const handleFileChange = async e => {
         if (e.target.files) {
-            this.setState({ files: e.target.files })
+            setFilesUploaded(true);
+            const files = e.target.files;
+            let conf;
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].name === 'config.json') {
+                    conf = await new Response(files[i]).json();
+                    setConfig(conf);
+                    break;
+                }
+            }
+
+            if (conf) {
+                let found = false;
+                for (let i = 0; i < files.length; i++) {
+                    // webkitRelativePath contains the folder name that was uploaded
+                    const webkitPath = files[i].webkitRelativePath;
+                    // strip first part of path to get rid of folder name
+                    const filePath = webkitPath.substring(webkitPath.indexOf('/') + 1);
+
+                    if (filePath === conf.template) {
+                        setTemplate(await new Response(files[i]).arrayBuffer());
+                        if (found) return;
+                        found = true;
+                    }
+                    if (filePath === conf.testplan) {
+                        setScriptText(await new Response(files[i]).text());
+                        if (found) return;
+                        found = true;
+                    }
+                }
+            }
         }
     };
 
-    handleFileUpload = async () => {
+    const handleUpload = async () => {
+        if (config) {
+            const submission = await new Response(await saveProjectSb3()).arrayBuffer();
+
+            const script = document.createElement('script');
+            script.className = 'test-script';
+            script.type = 'text/javascript';
+            script.async = false;
+            script.innerHTML = scriptText;
+            document.head.appendChild(script);
+
+            init(document.getElementById('output'));
+
+            try {
+                await run({
+                    ...config,
+                    template,
+                    submission,
+                    canvas: document.getElementById('scratch-stage')
+                });
+            } catch (error) {
+                console.error(error.message);
+            } finally {
+                document.head.removeChild(script);
+            }
+        }
     };
 
-    handleTestSubmissionUpload (e) {
-    }
+    return (
+        <div>
+            <h1>Runner Environment</h1>
 
-    setFileInput (input) {
-        this.fileInput = input;
-    }
+            <div className="run-form">
+                <input
+                    type="file"
+                    id="submission"
+                    webkitdirectory=""
+                    directory=""
+                    onChange={handleFileChange}
+                />
+            </div>
+            {(filesUploaded && failureMessage === null) && (
+                <button
+                    onClick={handleUpload}
+                    className="submit"
+                >Upload test</button>
+            )}
+            <span>{failureMessage}</span>
 
-    render () {
-        const {
-            dispatchUpdateRestore, // eslint-disable-line no-unused-vars
-            vm
-        } = this.props;
+            <canvas id="scratch-stage" />
 
-        if (!vm.editingTarget) {
-            return null;
-        }
-
-        return (<TestingTab/>);
-    }
-}
+            <h2 id="out">Output</h2>
+            <div
+                id="output"
+                style={{maxHeight: '200px', overflowY: 'auto'}}
+            />
+        </div>
+    );
+};
 
 TestTab.propTypes = {
-    dispatchUpdateRestore: PropTypes.func,
-    editingTarget: PropTypes.string,
-    onActivateCostumesTab: PropTypes.func.isRequired,
-    onCloseImporting: PropTypes.func.isRequired,
-    onShowImporting: PropTypes.func.isRequired,
-    sprites: PropTypes.shape({
-        id: PropTypes.shape({
-            sounds: PropTypes.arrayOf(PropTypes.shape({
-                name: PropTypes.string.isRequired
-            }))
-        })
-    }),
-    stage: PropTypes.shape({
-        sounds: PropTypes.arrayOf(PropTypes.shape({
-            name: PropTypes.string.isRequired
-        }))
-    }),
-    vm: PropTypes.instanceOf(VM).isRequired
+    saveProjectSb3: PropTypes.func
 };
 
 const mapStateToProps = state => ({
-    editingTarget: state.scratchGui.targets.editingTarget,
-    isRtl: state.locales.isRtl,
-    sprites: state.scratchGui.targets.sprites,
-    stage: state.scratchGui.targets.stage,
-    soundLibraryVisible: state.scratchGui.modals.soundLibrary,
-    soundRecorderVisible: state.scratchGui.modals.soundRecorder
+    saveProjectSb3: state.scratchGui.vm.saveProjectSb3.bind(state.scratchGui.vm)
 });
 
-const mapDispatchToProps = dispatch => ({
-    onActivateCostumesTab: () => dispatch(activateTab(COSTUMES_TAB_INDEX)),
-    onNewSoundFromLibraryClick: e => {
-        e.preventDefault();
-        // testLog();
-        console.log(Object.keys(Itch));
-        // dispatch(openSoundLibrary());
-    },
-    onNewSoundFromRecordingClick: () => {
-        dispatch(openSoundRecorder());
-    },
-    onRequestCloseSoundLibrary: () => {
-        dispatch(closeSoundLibrary());
-    },
-    dispatchUpdateRestore: restoreState => {
-        dispatch(setRestore(restoreState));
-    },
-    onCloseImporting: () => dispatch(closeAlertWithId('importingAsset')),
-    onShowImporting: () => dispatch(showStandardAlert('importingAsset'))
-});
-
-export default errorBoundaryHOC('Test Tab')(
-    injectIntl(connect(
-        mapStateToProps,
-        mapDispatchToProps
-    )(TestTab))
-);
+export default connect(
+    mapStateToProps,
+    () => ({}) // omit dispatch prop
+)(TestTab);
