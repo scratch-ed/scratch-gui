@@ -363,9 +363,7 @@ const GUIComponent = props => {
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
                                 <TabPanel className={tabClassNames.tabPanel}>
-                                    <div style={{ display: testTabVisible ? 'block': 'none'}}>
-                                        <TestTab />
-                                    </div>
+                                    {testTabVisible ? <TestTab vm={vm} /> : null}
                                 </TabPanel>
                             </Tabs>
                             {backpackVisible ? (

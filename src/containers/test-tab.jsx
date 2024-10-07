@@ -1,10 +1,11 @@
 import React, {useState} from 'react';
 import PropTypes from 'prop-types';
-import {run} from 'itch';
-import {init} from '../components/test-tab/test-output.js';
+import {runInVM} from 'itch';
+import TestResultComponent from '../components/test-results/test-results.jsx';
 import {connect} from 'react-redux';
+import {VM} from 'scratch-vm';
 
-const TestTab = ({saveProjectSb3}) => {
+const TestTab = ({vm, getTestResults, testCallback}) => {
     const [filesUploaded, setFilesUploaded] = useState(false);
     const [config, setConfig] = useState(null);
     const [template, setTemplate] = useState(null);
@@ -68,8 +69,6 @@ const TestTab = ({saveProjectSb3}) => {
         }
 
         if (config) {
-            const submission = await new Response(await saveProjectSb3()).arrayBuffer();
-
             const script = document.createElement('script');
             script.className = 'test-script';
             script.type = 'text/javascript';
@@ -77,15 +76,15 @@ const TestTab = ({saveProjectSb3}) => {
             script.innerHTML = scriptText;
             document.head.appendChild(script);
 
-            init(document.getElementById('output'));
+            const callback = testCallback;
 
             try {
-                await run({
+                await runInVM({
                     ...config,
                     template,
-                    submission,
+                    callback,
                     canvas: document.getElementById('scratch-stage')
-                });
+                }, vm);
             } catch (error) {
                 if (error.name === 'TypeError' && error.message === 'runtime.getSpriteTargetByName(...) is undefined') {
                     setTestFailed(true);
@@ -125,6 +124,7 @@ const TestTab = ({saveProjectSb3}) => {
             {testFailed && (
                 <span>{'Sprites in submission don\'t match sprites in template'}</span>
             )}
+            <div><TestResultComponent testResults={getTestResults()} /></div>
             <div
                 id="output"
                 style={{maxHeight: '200px', overflowY: 'auto'}}
@@ -134,11 +134,14 @@ const TestTab = ({saveProjectSb3}) => {
 };
 
 TestTab.propTypes = {
-    saveProjectSb3: PropTypes.func
+    getTestResults: PropTypes.func,
+    testCallback: PropTypes.func,
+    vm: PropTypes.instanceOf(VM).isRequired
 };
 
 const mapStateToProps = state => ({
-    saveProjectSb3: state.scratchGui.vm.saveProjectSb3.bind(state.scratchGui.vm)
+    testCallback: state.scratchGui.vm.processTestFeedback.bind(state.scratchGui.vm),
+    getTestResults: state.scratchGui.vm.getTestResults.bind(state.scratchGui.vm)
 });
 
 export default connect(
