@@ -5,6 +5,7 @@ import {defineMessages, injectIntl, intlShape} from 'react-intl';
 
 import GreenFlag from '../green-flag/green-flag.jsx';
 import StopAll from '../stop-all/stop-all.jsx';
+import TestFlag from '../test-flag/test-flag.jsx';
 import DebugMode from '../debugger-buttons/debug-mode/debug-mode.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
 
@@ -25,6 +26,11 @@ const messages = defineMessages({
         id: 'gui.controls.debug',
         defaultMessage: 'Debug mode',
         description: 'Debug mode button title'
+    },
+    testTitle: {
+        id: 'gui.controls.test',
+        defaultMessage: 'Test',
+        description: 'Test button title'
     }
 });
 
@@ -37,6 +43,7 @@ const Controls = function (props) {
         onDebugModeClick,
         onGreenFlagClick,
         onStopAllClick,
+        onTestFlagClick,
         turbo,
         ...componentProps
     } = props;
@@ -61,6 +68,11 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.debugTitle)}
                 onClick={onDebugModeClick}
             />
+            <TestFlag
+                active={active}
+                title="Test flag"
+                onClick={onTestFlagClick}
+            />
             {turbo ? (
                 <TurboMode />
             ) : null}
@@ -76,6 +88,7 @@ Controls.propTypes = {
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
+    onTestFlagClick: PropTypes.func.isRequired,
     turbo: PropTypes.bool
 };
 

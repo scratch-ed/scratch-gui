@@ -13,7 +13,8 @@ class Controls extends React.Component {
         bindAll(this, [
             'handleDebugModeClick',
             'handleGreenFlagClick',
-            'handleStopAllClick'
+            'handleStopAllClick',
+            'handleTestFlagClick'
         ]);
     }
 
@@ -39,6 +40,10 @@ class Controls extends React.Component {
         }
     }
 
+    handleTestFlagClick (e) {
+        e.preventDefault();
+    }
+
     handleStopAllClick (e) {
         e.preventDefault();
 
@@ -61,6 +66,7 @@ class Controls extends React.Component {
                 onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onStopAllClick={this.handleStopAllClick}
+                onTestFlagClick={this.handleTestFlagClick}
             />
         );
     }
