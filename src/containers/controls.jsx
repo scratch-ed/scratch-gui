@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
+import {runInVM} from 'itch';
 
 import ControlsComponent from '../components/controls/controls.jsx';
 
@@ -42,6 +43,11 @@ class Controls extends React.Component {
 
     handleTestFlagClick (e) {
         e.preventDefault();
+        runInVM({
+            ...this.props.vm.testConfig,
+            template: this.props.vm.testTemplate,
+            callback: this.props.testCallback
+        }, this.props.vm);
     }
 
     handleStopAllClick (e) {
@@ -77,13 +83,15 @@ Controls.propTypes = {
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM),
+    testCallback: PropTypes.func,
     isStarted: PropTypes.bool
 };
 
 const mapStateToProps = state => ({
     debugMode: state.scratchGui.debugger.debugMode,
     projectRunning: state.scratchGui.vmStatus.running,
-    turbo: state.scratchGui.vmStatus.turbo
+    turbo: state.scratchGui.vmStatus.turbo,
+    testCallback: state.scratchGui.vm.processTestFeedback.bind(state.scratchGui.vm)
 });
 
 // no-op function to prevent dispatch prop being passed to component

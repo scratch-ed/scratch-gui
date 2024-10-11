@@ -70,7 +70,7 @@ const Controls = function (props) {
             />
             <TestFlag
                 active={active}
-                title="Test flag"
+                title={intl.formatMessage(messages.testTitle)}
                 onClick={onTestFlagClick}
             />
             {turbo ? (

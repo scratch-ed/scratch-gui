@@ -40,7 +40,7 @@ TestFlagComponent.propTypes = {
 
 TestFlagComponent.defaultProps = {
     active: false,
-    title: 'Go'
+    title: 'Test'
 };
 
 export default TestFlagComponent;
