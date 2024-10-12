@@ -6,40 +6,29 @@ import passedIcon from './passed.png';
 import failedIcon from './failed.png';
 
 import styles from './test-results.css';
-import {FormattedMessage} from 'react-intl';
 
 import {TestGroup} from 'scratch-vm';
 
-const TestResultComponent = ({testResults}) => {
-    return (
-        <Box className={styles.testResults}>
-            <label>
-                <span>
-                    <FormattedMessage
-                        defaultMessage="Test Results"
-                        description="head of test result tab"
-                        id="gui.testResultTab.header"
-                    />
-                </span>
-                <br />
-                {
-                    testResults.map(result => {
-                        if ('children' in result) {
-                            return (<TestGroupComponent
-                                testGroup={result}
-                                key={result.id}
-                            />);
-                        }
-                        return (<TestComponent
-                            {...result}
+const TestResultComponent = ({testResults}) => (
+    <Box className={styles.wrapper}>
+        <Box className={styles.testDetails}>
+            {
+                testResults.map(result => {
+                    if ('children' in result) {
+                        return (<TestGroupComponent
+                            testGroup={result}
                             key={result.id}
                         />);
-                    })
-                }
-            </label>
+                    }
+                    return (<TestComponent
+                        {...result}
+                        key={result.id}
+                    />);
+                })
+            }
         </Box>
-    );
-};
+    </Box>
+);
 
 TestResultComponent.propTypes = {
     testResults: PropTypes.arrayOf(PropTypes.oneOfType([

@@ -1,25 +1,58 @@
 @import "../../css/units.css";
 @import "../../css/colors.css";
 
-.testResults {
-    margin: 20px;
-    overflow: scroll;
-    height: 800px;
+.wrapper {
+    display: flex;
+    flex-grow: 1;
+    flex-direction:column;
+    border: 1px solid $ui-black-transparent;
+    background: white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.95rem;
+    color: $text-primary;
+    font-weight: bold;
+}
+
+[dir="ltr"] .wrapper {
+    border-top-right-radius: $space;
+    border-bottom-right-radius: $space;
+}
+
+[dir="rtl"] .wrapper {
+    border-top-left-radius: $space;
+    border-bottom-left-radius: $space;
+}
+
+.test-details {
+    /* Must have some height (recalculated by flex-grow) in order to scroll */
+    height: 0;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    overflow-y: scroll;
+}
+
+.test-details:after {
+    /* Make sure there is room to scroll beyond the last tile */
+    content: '';
+    display: block;
     width: 100%;
+    flex-shrink: 0;
+    order: 99999999;
 }
 
-.feedbackTree {
-    margin: 10px 10px 10px 20px;
+.feedback-tree {
+    margin: 10px 10px 0px 20px;
 }
 
-.feedbackIcon {
+.feedback-icon {
     width: 15px;
     height: 15px;
     margin-right: 10px;
     margin-left: 10px;
 }
 
-.feedbackRow {
+.feedback-row {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -28,14 +61,12 @@
 
 .caret-open::before {
     content: "\25B6";
-    color: black;
     display: inline-block;
     transform: rotate(90deg);
 }
 
 .caret-closed::before {
     content: "\25B6";
-    color: black;
     display: inline-block;
 }
 
