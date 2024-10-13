@@ -32,15 +32,6 @@
     overflow-y: scroll;
 }
 
-.test-details:after {
-    /* Make sure there is room to scroll beyond the last tile */
-    content: '';
-    display: block;
-    width: 100%;
-    flex-shrink: 0;
-    order: 99999999;
-}
-
 .feedback-tree {
     margin: 10px 10px 0px 20px;
 }
@@ -68,6 +59,10 @@
 .caret-closed::before {
     content: "\25B6";
     display: inline-block;
+}
+
+[dir="rtl"] .caret-closed::before {
+    transform: rotate(180deg);
 }
 
 .hidden {
