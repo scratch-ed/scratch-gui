@@ -8,7 +8,7 @@ import {
     setNumberOfFrames,
     setChanged,
     setRemoveFuture
-} from '../reducers/debugger.js';
+} from '../reducers/time-slider.js';
 import TimeInterfaceComponent from '../components/time-interface/time-interface.jsx';
 import omit from 'lodash.omit';
 
@@ -56,7 +56,7 @@ class TimeInterface extends React.Component {
             } else {
                 // Play history
                 const historyPlayingInterval = setInterval(() => {
-                    if (this.props.debugMode && this.props.timeFrame < this.props.numberOfFrames - 1) {
+                    if ((this.props.debugMode || this.props.testMode) && this.props.timeFrame < this.props.numberOfFrames - 1) {
                         this.props.setTimeFrame(this.props.timeFrame + 1);
                     } else {
                         clearInterval(this.state.historyPlayingInterval);
@@ -138,11 +138,12 @@ class TimeInterface extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.debugger.debugMode,
-    numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-    timeFrame: state.scratchGui.debugger.timeFrame,
-    paused: state.scratchGui.debugger.paused,
-    changed: state.scratchGui.debugger.changed
+    debugMode: state.scratchGui.timeSlider.debugMode,
+    testMode: state.scratchGui.timeSlider.testMode,
+    numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
+    timeFrame: state.scratchGui.timeSlider.timeFrame,
+    paused: state.scratchGui.timeSlider.paused,
+    changed: state.scratchGui.timeSlider.changed
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -154,6 +155,7 @@ const mapDispatchToProps = dispatch => ({
 
 TimeInterface.propTypes = {
     debugMode: PropTypes.bool.isRequired,
+    testMode: PropTypes.bool.isRequired,
     numberOfFrames: PropTypes.number.isRequired,
     timeFrame: PropTypes.number.isRequired,
     vm: PropTypes.instanceOf(VM).isRequired,

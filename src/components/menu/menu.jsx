@@ -39,7 +39,7 @@ MenuComponent.propTypes = {
 };
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.debugger.debugMode
+    debugMode: state.scratchGui.timeSlider.debugMode
 });
 
 const Submenu = ({children, className, place, ...props}) => (

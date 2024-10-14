@@ -941,7 +941,7 @@ const mapStateToProps = (state, ownProps) => {
         aboutMenuOpen: aboutMenuOpen(state),
         accountMenuOpen: accountMenuOpen(state),
         currentLocale: state.locales.locale,
-        debugMode: state.scratchGui.debugger.debugMode,
+        debugMode: state.scratchGui.timeSlider.debugMode,
         fileMenuOpen: fileMenuOpen(state),
         editMenuOpen: editMenuOpen(state),
         isRtl: state.locales.isRtl,

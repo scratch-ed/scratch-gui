@@ -24,7 +24,8 @@ describe('MenuBar Component', () => {
                 theme: DEFAULT_THEME
             },
             debugger: {
-                debugMode: false
+                debugMode: false,
+                testMode: false
             },
             timeTravel: {
                 year: 'NOW'

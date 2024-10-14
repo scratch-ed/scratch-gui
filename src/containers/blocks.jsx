@@ -720,7 +720,7 @@ const mapStateToProps = state => ({
         Object.keys(state.scratchGui.modals).some(key => state.scratchGui.modals[key]) ||
         state.scratchGui.mode.isFullScreen
     ),
-    debugMode: state.scratchGui.debugger.debugMode,
+    debugMode: state.scratchGui.timeSlider.debugMode,
     extensionLibraryVisible: state.scratchGui.modals.extensionLibrary,
     isRtl: state.locales.isRtl,
     locale: state.locales.locale,

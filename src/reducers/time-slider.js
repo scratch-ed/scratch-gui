@@ -1,15 +1,17 @@
-const SET_CONTEXT = 'scratch-gui/debugger/SET_CONTEXT';
-const SET_DEBUG_MODE = 'scratch-gui/debugger/SET_DEBUG_MODE';
-const SET_NUMBER_OF_FRAMES = 'scratch-gui/debugger/SET_NUMBER_OF_FRAMES';
-const SET_PAUSED = 'scratch-gui/debugger/SET_PAUSED';
-const SET_CHANGED = 'scratch-gui/debugger/SET_CHANGED';
-const SET_REMOVE_FUTURE = 'scratch-gui/debugger/SET_REMOVE_FUTURE';
-const SET_TIME_FRAME = 'scratch-gui/debugger/SET_TIME_FRAME';
+const SET_CONTEXT = 'scratch-gui/time-slider/SET_CONTEXT';
+const SET_DEBUG_MODE = 'scratch-gui/time-slider/SET_DEBUG_MODE';
+const SET_TEST_MODE = 'scratch-gui/time-slider/SET_TEST_MODE';
+const SET_NUMBER_OF_FRAMES = 'scratch-gui/time-slider/SET_NUMBER_OF_FRAMES';
+const SET_PAUSED = 'scratch-gui/time-slider/SET_PAUSED';
+const SET_CHANGED = 'scratch-gui/time-slider/SET_CHANGED';
+const SET_REMOVE_FUTURE = 'scratch-gui/time-slider/SET_REMOVE_FUTURE';
+const SET_TIME_FRAME = 'scratch-gui/time-slider/SET_TIME_FRAME';
 
 const initialState = {
-    // State related to the debugger GUI.
+    // State related to the debugger and tester time slider.
     context: null,
     debugMode: false,
+    testMode: false,
     numberOfFrames: 0,
     paused: false,
     changed: false,
@@ -27,6 +29,10 @@ const reducer = function (state, action) {
     case SET_DEBUG_MODE:
         return Object.assign({}, state, {
             debugMode: action.debugMode
+        });
+    case SET_TEST_MODE:
+        return Object.assign({}, state, {
+            testMode: action.testMode
         });
     case SET_NUMBER_OF_FRAMES:
         return Object.assign({}, state, {
@@ -67,6 +73,13 @@ const setDebugMode = function (debugMode) {
     };
 };
 
+const setTestMode = function (testMode) {
+    return {
+        type: SET_TEST_MODE,
+        testMode: testMode
+    };
+};
+
 const setNumberOfFrames = function (numberOfFrames) {
     return {
         type: SET_NUMBER_OF_FRAMES,
@@ -104,9 +117,10 @@ const setTimeFrame = function (timeFrame) {
 
 export {
     reducer as default,
-    initialState as debuggerInitialState,
+    initialState as timeSliderInitialState,
     setContext,
     setDebugMode,
+    setTestMode,
     setNumberOfFrames,
     setPaused,
     setChanged,

@@ -86,6 +86,7 @@ const GUIComponent = props => {
         costumeLibraryVisible,
         costumesTabVisible,
         debugMode,
+        testMode,
         enableCommunity,
         intl,
         isCreating,
@@ -378,7 +379,7 @@ const GUIComponent = props => {
                                 stageSize={stageSize}
                                 vm={vm}
                             />
-                            {debugMode ? <TimeInterface vm={vm} /> : null}
+                            {(debugMode || testMode) ? <TimeInterface vm={vm} /> : null}
                             <Box className={styles.targetWrapper}>
                                 <TargetPane
                                     stageSize={stageSize}
@@ -422,6 +423,7 @@ GUIComponent.propTypes = {
     costumesTabVisible: PropTypes.bool,
     debuggerTabVisible: PropTypes.bool,
     debugMode: PropTypes.bool,
+    testMode: PropTypes.bool,
     enableCommunity: PropTypes.bool,
     intl: intlShape.isRequired,
     isCreating: PropTypes.bool,
@@ -492,7 +494,8 @@ GUIComponent.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.debugger.debugMode,
+    debugMode: state.scratchGui.timeSlider.debugMode,
+    testMode: state.scratchGui.timeSlider.testMode,
     // This is the button's mode, as opposed to the actual current state
     blocksId: state.scratchGui.timeTravel.year.toString(),
     stageSizeMode: state.scratchGui.stageSize.stageSize,

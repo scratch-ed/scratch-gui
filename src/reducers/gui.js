@@ -6,7 +6,7 @@ import colorPickerReducer, {colorPickerInitialState} from './color-picker';
 import connectionModalReducer, {connectionModalInitialState} from './connection-modal';
 import customProceduresReducer, {customProceduresInitialState} from './custom-procedures';
 import blockDragReducer, {blockDragInitialState} from './block-drag';
-import debuggerReducer, {debuggerInitialState} from './debugger';
+import timeSliderReducer, {timeSliderInitialState} from './time-slider';
 import editorTabReducer, {editorTabInitialState} from './editor-tab';
 import hoveredTargetReducer, {hoveredTargetInitialState} from './hovered-target';
 import menuReducer, {menuInitialState} from './menus';
@@ -43,7 +43,7 @@ const guiInitialState = {
     colorPicker: colorPickerInitialState,
     connectionModal: connectionModalInitialState,
     customProcedures: customProceduresInitialState,
-    debugger: debuggerInitialState,
+    timeSlider: timeSliderInitialState,
     editorTab: editorTabInitialState,
     mode: modeInitialState,
     hoveredTarget: hoveredTargetInitialState,
@@ -146,7 +146,7 @@ const guiReducer = combineReducers({
     colorPicker: colorPickerReducer,
     connectionModal: connectionModalReducer,
     customProcedures: customProceduresReducer,
-    debugger: debuggerReducer,
+    timeSlider: timeSliderReducer,
     editorTab: editorTabReducer,
     mode: modeReducer,
     hoveredTarget: hoveredTargetReducer,

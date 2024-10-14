@@ -41,8 +41,8 @@ import systemPreferencesHOC from '../lib/system-preferences-hoc.jsx';
 
 import GUIComponent from '../components/gui/gui.jsx';
 import {setIsScratchDesktop} from '../lib/isScratchDesktop.js';
-import DebuggerHOC from '../lib/debugger-hoc.jsx';
-import DebuggerTimeSliderHOC from '../lib/debugger-time-slider-hoc.jsx';
+import DebuggerAndTesterHOC from '../lib/debugger-tester-hoc.jsx';
+import DebugAndTestTimeSliderHOC from '../lib/debug-test-time-slider-hoc.jsx';
 
 // const {RequestMetadata, setMetadata, unsetMetadata} = storage.scratchFetch;
 
@@ -198,10 +198,10 @@ const ConnectedGUI = injectIntl(connect(
 // the hierarchy of HOC constructor calls clearer here; it has nothing to do with redux's
 // ability to compose reducers.
 const WrappedGui = compose(
-    // Keep this order for DebuggerTimeSliderHOC and DebuggerHOC.
-    // This way DebuggerHOC always gets executed first.
-    DebuggerTimeSliderHOC,
-    DebuggerHOC,
+    // Keep this order for DebugAndTestTimeSliderHOC and DebuggerAndTesterHOC.
+    // This way DebuggerAndTesterHOC always gets executed first.
+    DebugAndTestTimeSliderHOC,
+    DebuggerAndTesterHOC,
     LocalizationHOC,
     ErrorBoundaryHOC('Top Level App'),
     FontLoaderHOC,
