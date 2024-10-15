@@ -23,7 +23,7 @@ describe('MenuBar Component', () => {
             theme: {
                 theme: DEFAULT_THEME
             },
-            debugger: {
+            timeSlider: {
                 debugMode: false,
                 testMode: false
             },
