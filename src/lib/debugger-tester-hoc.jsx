@@ -120,6 +120,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         handleProjectLoaded () {
             this.props.vm.runtime.disableDebugMode();
             this.props.vm.runtime.disableTestMode();
+            this.props.vm.clearTestResults();
         }
 
         handleProjectPaused () {
