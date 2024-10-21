@@ -25,8 +25,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             bindAll(this, [
                 'handleDebugModeDisabled',
                 'handleDebugModeEnabled',
-                'handleTestModeDisabled',
-                'handleTestModeEnabled',
+                'handleTestingStopped',
+                'handleTestingStarted',
                 'handleProjectLoaded',
                 'handleProjectPaused',
                 'handleProjectResumed',
@@ -77,8 +77,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         addListeners () {
             this.props.vm.runtime.addListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
             this.props.vm.runtime.addListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
-            this.props.vm.runtime.addListener('TEST_MODE_DISABLED', this.handleTestModeDisabled);
-            this.props.vm.runtime.addListener('TEST_MODE_ENABLED', this.handleTestModeEnabled);
+            this.props.vm.runtime.addListener('TESTING_STOPPED', this.handleTestingStopped);
+            this.props.vm.runtime.addListener('TESTING_STARTED', this.handleTestingStarted);
 
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
@@ -89,8 +89,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         removeListeners () {
             this.props.vm.runtime.removeListener('DEBUG_MODE_DISABLED', this.handleDebugModeDisabled);
             this.props.vm.runtime.removeListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
-            this.props.vm.runtime.removeListener('TEST_MODE_DISABLED', this.handleTestModeDisabled);
-            this.props.vm.runtime.removeListener('TEST_MODE_ENABLED', this.handleTestModeEnabled);
+            this.props.vm.runtime.removeListener('TESTING_STOPPED', this.handleTestingStopped);
+            this.props.vm.runtime.removeListener('TESTING_STARTED', this.handleTestingStarted);
 
             this.props.vm.runtime.removeListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.removeListener('PROJECT_PAUSED', this.handleProjectPaused);
@@ -106,12 +106,27 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.props.setDebugMode(true);
         }
 
-        handleTestModeDisabled () {
-            this.props.setTestMode(false);
+        handleTestingStopped () {
         }
 
-        handleTestModeEnabled () {
+        async handleTestingStarted () {
             this.props.setTestMode(true);
+
+            const context = await createContextWithVm(this.props.vm, this.props.testCallback);
+            const submission = snapshotFromVm(this.props.vm);
+            const template = snapshotFromSb3(this.props.vm.testTemplate);
+            context.instrumentVm('judge');
+            context.log.started = true;
+            context.log.registerStartSnapshots(template, submission);
+
+            this.props.setContext(context);
+            this.proxyRegisterSnapshot(context);
+
+            runWithContext({
+                ...this.props.vm.testConfig,
+                template: this.props.vm.testTemplate,
+                callback: this.props.testCallback
+            }, context, this.props.vm.runtime.getTestSignal());
         }
 
         /**
@@ -119,8 +134,9 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
          */
         handleProjectLoaded () {
             this.props.vm.runtime.disableDebugMode();
-            this.props.vm.runtime.disableTestMode();
+            this.props.vm.runtime.stopTesting();
             this.props.vm.clearTestResults();
+            this.props.setTestMode(false);
         }
 
         handleProjectPaused () {
@@ -191,16 +207,18 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.oldRegisterSnapshot = context.log.registerSnapshot;
             context.log.registerSnapshot = new Proxy(this.oldRegisterSnapshot, {
                 apply: (target, thisArg, argArray) => {
-                    const added = target.apply(thisArg, argArray);
-                    // The UI needs to reflect the new log entry
-                    if (this.props.changed) {
-                        // If changed, remove full history
-                        this.removeFullHistory();
-                        this.props.setChanged(false);
+                    if (this.props.testMode) {
+                        const added = target.apply(thisArg, argArray);
+                        // The UI needs to reflect the new log entry
+                        if (this.props.changed) {
+                            // If changed, remove full history
+                            this.removeFullHistory();
+                            this.props.setChanged(false);
+                        }
+                        this.props.setNumberOfFrames(this.props.context.log.snapshots.length - 1);
+                        this.props.setTimeFrame(this.props.context.log.snapshots.length - 2);
+                        return added;
                     }
-                    this.props.setNumberOfFrames(this.props.context.log.snapshots.length - 1);
-                    this.props.setTimeFrame(this.props.context.log.snapshots.length - 2);
-                    return added;
                 }
             });
         }
@@ -216,24 +234,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setContext(context);
                 this.proxyRegisterEvent(context);
 
-            } else if (this.props.testMode) {
-                const context = await createContextWithVm(this.props.vm, this.props.testCallback);
-                const submission = snapshotFromVm(this.props.vm);
-                const template = snapshotFromSb3(this.props.vm.testTemplate);
-                context.instrumentVm('judge');
-                context.log.started = true;
-                context.log.registerStartSnapshots(template, submission);
-
-                this.props.setContext(context);
-                this.proxyRegisterSnapshot(context);
-
-                runWithContext({
-                    ...this.props.vm.testConfig,
-                    template: this.props.vm.testTemplate,
-                    callback: this.props.testCallback
-                }, context);
-
-            } else {
+            } else if (!this.props.testMode) {
                 // Restore the VM to the state before the creation of the current context.
                 await this.props.context.deinstrumentVm();
                 this.props.setContext(null);

@@ -1,8 +1,12 @@
 import bindAll from 'lodash.bindall';
+import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
+import {
+    setTestMode
+} from '../reducers/time-slider.js';
 
 import ControlsComponent from '../components/controls/controls.jsx';
 
@@ -42,32 +46,32 @@ class Controls extends React.Component {
 
     handleTestFlagClick (e) {
         e.preventDefault();
-        if (this.props.testMode) {
-            this.props.vm.runtime.disableTestMode();
-        } else {
-            this.props.vm.runtime.enableTestMode();
-        }
+        this.props.vm.runtime.startTesting();
     }
 
     handleStopAllClick (e) {
         e.preventDefault();
 
+        if (this.props.testMode) {
+            this.props.vm.runtime.stopTesting();
+            this.props.setTestMode(false);
+        }
         this.props.vm.stopAll();
     }
 
     render () {
-        const {
-            vm, // eslint-disable-line no-unused-vars
-            projectRunning,
-            turbo,
-            ...props
-        } = this.props;
+        const componentProps = omit(this.props, [
+            'vm',
+            'projectRunning',
+            'turbo',
+            'setTestMode'
+        ]);
 
         return (
             <ControlsComponent
-                {...props}
-                active={projectRunning}
-                turbo={turbo}
+                {...componentProps}
+                active={this.props.projectRunning}
+                turbo={this.props.turbo}
                 onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onStopAllClick={this.handleStopAllClick}
@@ -79,7 +83,9 @@ class Controls extends React.Component {
 
 Controls.propTypes = {
     debugMode: PropTypes.bool.isRequired,
+    testsRunning: PropTypes.bool.isRequired,
     testMode: PropTypes.bool.isRequired,
+    setTestMode: PropTypes.func.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM),
@@ -89,11 +95,13 @@ Controls.propTypes = {
 const mapStateToProps = state => ({
     debugMode: state.scratchGui.timeSlider.debugMode,
     testMode: state.scratchGui.timeSlider.testMode,
+    testsRunning: state.scratchGui.vm.runtime.testMode,
     projectRunning: state.scratchGui.vmStatus.running,
     turbo: state.scratchGui.vmStatus.turbo
 });
 
-// no-op function to prevent dispatch prop being passed to component
-const mapDispatchToProps = () => ({});
+const mapDispatchToProps = dispatch => ({
+    setTestMode: testMode => dispatch(setTestMode(testMode))
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Controls);

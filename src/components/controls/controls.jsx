@@ -40,6 +40,7 @@ const Controls = function (props) {
         className,
         debugMode,
         testMode,
+        testsRunning,
         intl,
         onDebugModeClick,
         onGreenFlagClick,
@@ -60,7 +61,7 @@ const Controls = function (props) {
                 onClick={onGreenFlagClick}
             />
             <StopAll
-                active={active}
+                active={active || testMode}
                 title={intl.formatMessage(messages.stopTitle)}
                 onClick={onStopAllClick}
             />
@@ -70,7 +71,7 @@ const Controls = function (props) {
                 onClick={onDebugModeClick}
             />
             <TestFlag
-                active={testMode}
+                active={testsRunning}
                 title={intl.formatMessage(messages.testTitle)}
                 onClick={onTestFlagClick}
             />
@@ -86,6 +87,7 @@ Controls.propTypes = {
     className: PropTypes.string,
     debugMode: PropTypes.bool.isRequired,
     testMode: PropTypes.bool.isRequired,
+    testsRunning: PropTypes.bool.isRequired,
     intl: intlShape.isRequired,
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
