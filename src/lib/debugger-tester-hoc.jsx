@@ -10,6 +10,7 @@ import {
     setPaused,
     setChanged,
     setNumberOfFrames,
+    setMarkers,
     setTimeFrame,
     setRemoveFuture
 } from '../reducers/time-slider.js';
@@ -107,6 +108,14 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         }
 
         handleTestingStopped () {
+            const timestampToFrame = new Map(this.props.context.log.snapshots.slice(1).map(
+                (snapshot, index) => [snapshot.timestamp, index]
+            ));
+            const markers = this.props.vm.getMarkedTests().map(
+                test => [timestampToFrame.get(test.marker), test]
+            );
+
+            this.props.setMarkers(markers);
         }
 
         async handleTestingStarted () {
@@ -257,6 +266,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'setDebugMode',
                 'setTestMode',
                 'setNumberOfFrames',
+                'setMarkers',
                 'setPaused',
                 'setChanged',
                 'setRemoveFuture',
@@ -284,6 +294,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setDebugMode: PropTypes.func.isRequired,
         setTestMode: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
+        setMarkers: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setChanged: PropTypes.func.isRequired,
         setRemoveFuture: PropTypes.func.isRequired,
@@ -311,6 +322,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setDebugMode: debugMode => dispatch(setDebugMode(debugMode)),
         setTestMode: testMode => dispatch(setTestMode(testMode)),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
+        setMarkers: markers => dispatch(setMarkers(markers)),
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),
         setRemoveFuture: removeFuture => dispatch(setRemoveFuture(removeFuture)),

@@ -1,6 +1,7 @@
 import React from 'react';
 import Box from '../box/box.jsx';
 import TimeSliderComponent from '../time-slider/time-slider.jsx';
+import TestMarkers from '../test-markers/test-markers.jsx';
 import PropTypes from 'prop-types';
 
 import styles from './time-interface.css';
@@ -40,10 +41,12 @@ const TimeInterfaceComponent = function (props) {
     const {
         numberOfFrames,
         onTimeChange,
+        onFrameChange,
         onTimeMouseDown,
         timeFrame,
         paused,
         changed,
+        markers,
         onToggleResumeClick,
         onStepBackClick,
         onStepClick,
@@ -51,10 +54,24 @@ const TimeInterfaceComponent = function (props) {
         intl
     } = props;
 
+    const frames = Array.from(Array(numberOfFrames), () => []);
+    const markedFrames = Array(numberOfFrames);
+    markers.forEach(marker => {
+        if (marker[0] < numberOfFrames) {
+            frames[marker[0]].push(marker[1]);
+            markedFrames[marker[0]] = true;
+        }
+    });
+
     return (
         <Box>
+            <TestMarkers
+                frames={frames}
+                onFrameChange={onFrameChange}
+            />
             <TimeSliderComponent
                 numberOfFrames={numberOfFrames}
+                markedFrames={markedFrames}
                 onChange={onTimeChange}
                 onMouseDown={onTimeMouseDown}
                 timeFrame={timeFrame}
@@ -95,10 +112,12 @@ const TimeInterfaceComponent = function (props) {
 TimeInterfaceComponent.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
     onTimeChange: PropTypes.func.isRequired,
+    onFrameChange: PropTypes.func.isRequired,
     onTimeMouseDown: PropTypes.func.isRequired,
     timeFrame: PropTypes.number.isRequired,
     paused: PropTypes.bool.isRequired,
     changed: PropTypes.bool.isRequired,
+    markers: PropTypes.arrayOf(PropTypes.array),
     onToggleResumeClick: PropTypes.func.isRequired,
     onStepBackClick: PropTypes.func.isRequired,
     onStepClick: PropTypes.func.isRequired,

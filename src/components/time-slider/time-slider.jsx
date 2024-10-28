@@ -18,6 +18,7 @@ const messages = defineMessages({
 const TimeSliderComponent = function (props) {
     const {
         numberOfFrames,
+        markedFrames,
         timeFrame,
         sliderEnabled,
         paused,
@@ -36,7 +37,13 @@ const TimeSliderComponent = function (props) {
                 max={numberOfFrames === 1 ? 1 : Math.max(0, numberOfFrames - 1)}
                 value={numberOfFrames === 1 ? 1 : timeFrame}
                 disabled={!sliderEnabled}
+                list="test-markers"
             />
+            <datalist id="test-markers">
+                {
+                    // markedFrames.map((marked, index) => (marked && <option value={index} />))
+                }
+            </datalist>
             <img
                 className={classNames(
                     styles.removeFutureButton,
@@ -54,6 +61,7 @@ const TimeSliderComponent = function (props) {
 
 TimeSliderComponent.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
+    markedFrames: PropTypes.arrayOf(PropTypes.bool).isRequired,
     timeFrame: PropTypes.number.isRequired,
     sliderEnabled: PropTypes.bool.isRequired,
     paused: PropTypes.bool.isRequired,

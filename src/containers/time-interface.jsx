@@ -22,6 +22,7 @@ class TimeInterface extends React.Component {
 
         bindAll(this, [
             'handleTimeChange',
+            'handleFrameChange',
             'handleTimeMouseDown',
             'handleToggleResumeClick',
             'handleStepBackClick',
@@ -32,6 +33,10 @@ class TimeInterface extends React.Component {
 
     handleTimeChange (event) {
         this.props.setTimeFrame(parseInt(event.target.value, 10));
+    }
+
+    handleFrameChange (frame) {
+        this.props.setTimeFrame(frame);
     }
 
     handleTimeMouseDown () {
@@ -127,6 +132,7 @@ class TimeInterface extends React.Component {
                 {...componentProps}
                 paused={componentProps.paused && !this.state.historyPlayingInterval}
                 onTimeChange={this.handleTimeChange}
+                onFrameChange={this.handleFrameChange}
                 onTimeMouseDown={this.handleTimeMouseDown}
                 onToggleResumeClick={this.handleToggleResumeClick}
                 onStepBackClick={this.handleStepBackClick}
@@ -143,7 +149,8 @@ const mapStateToProps = state => ({
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timeFrame: state.scratchGui.timeSlider.timeFrame,
     paused: state.scratchGui.timeSlider.paused,
-    changed: state.scratchGui.timeSlider.changed
+    changed: state.scratchGui.timeSlider.changed,
+    markers: state.scratchGui.timeSlider.markers
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -164,7 +171,8 @@ TimeInterface.propTypes = {
     setChanged: PropTypes.func.isRequired,
     setRemoveFuture: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
-    changed: PropTypes.bool.isRequired
+    changed: PropTypes.bool.isRequired,
+    markers: PropTypes.arrayOf(PropTypes.array)
 };
 
 export default connect(

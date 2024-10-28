@@ -2,6 +2,7 @@ const SET_CONTEXT = 'scratch-gui/time-slider/SET_CONTEXT';
 const SET_DEBUG_MODE = 'scratch-gui/time-slider/SET_DEBUG_MODE';
 const SET_TEST_MODE = 'scratch-gui/time-slider/SET_TEST_MODE';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/time-slider/SET_NUMBER_OF_FRAMES';
+const SET_MARKERS = 'scratch-gui/time-slider/SET_MARKERS';
 const SET_PAUSED = 'scratch-gui/time-slider/SET_PAUSED';
 const SET_CHANGED = 'scratch-gui/time-slider/SET_CHANGED';
 const SET_REMOVE_FUTURE = 'scratch-gui/time-slider/SET_REMOVE_FUTURE';
@@ -13,6 +14,7 @@ const initialState = {
     debugMode: false,
     testMode: false,
     numberOfFrames: 0,
+    markers: [],
     paused: false,
     changed: false,
     removeFuture: false,
@@ -37,6 +39,10 @@ const reducer = function (state, action) {
     case SET_NUMBER_OF_FRAMES:
         return Object.assign({}, state, {
             numberOfFrames: action.numberOfFrames
+        });
+    case SET_MARKERS:
+        return Object.assign({}, state, {
+            markers: action.markers
         });
     case SET_PAUSED:
         return Object.assign({}, state, {
@@ -87,6 +93,13 @@ const setNumberOfFrames = function (numberOfFrames) {
     };
 };
 
+const setMarkers = function (markers) {
+    return {
+        type: SET_MARKERS,
+        markers: markers
+    };
+};
+
 const setPaused = function (paused) {
     return {
         type: SET_PAUSED,
@@ -122,6 +135,7 @@ export {
     setDebugMode,
     setTestMode,
     setNumberOfFrames,
+    setMarkers,
     setPaused,
     setChanged,
     setRemoveFuture,
