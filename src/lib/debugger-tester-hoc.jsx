@@ -108,7 +108,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         }
 
         handleTestingStopped () {
-            const timestampToFrame = new Map(this.props.context.log.snapshots.slice(1).map(
+            const timestampToFrame = new Map(this.props.context.log.snapshots.map(
                 (snapshot, index) => [snapshot.timestamp, index]
             ));
             const markers = this.props.vm.getMarkedTests().map(
@@ -170,7 +170,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                     this.props.setNumberOfFrames(this.props.context.log.ops.length);
                 } else {
                     this.props.context.setLogSnapshotRange(0, this.props.timeFrame + 1);
-                    this.props.setNumberOfFrames(this.props.context.log.snapshots.length - 1);
+                    this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
                 }
             }
         }
@@ -185,7 +185,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                     this.props.setNumberOfFrames(this.props.context.log.ops.length);
                 } else {
                     this.props.context.setLogSnapshotRange(this.props.timeFrame, this.props.timeFrame + 2);
-                    this.props.setNumberOfFrames(this.props.context.log.snapshots.length - 1);
+                    this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
                 }
             }
         }
@@ -224,8 +224,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                             this.removeFullHistory();
                             this.props.setChanged(false);
                         }
-                        this.props.setNumberOfFrames(this.props.context.log.snapshots.length - 1);
-                        this.props.setTimeFrame(this.props.context.log.snapshots.length - 2);
+                        this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
+                        this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
                         return added;
                     }
                 }

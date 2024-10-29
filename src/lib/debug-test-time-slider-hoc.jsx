@@ -159,7 +159,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
                 this.loadMonitors(snapshot, timestamp);
                 this.loadRuntime(snapshot);
             } else {
-                const snapshot = this.props.context.log.snapshots[this.props.timeFrame + 1];
+                const snapshot = this.props.context.log.snapshots[this.props.timeFrame];
                 const timestamp = snapshot.timestamp;
                 this.loadClones(snapshot);
                 this.loadSprites(snapshot);
