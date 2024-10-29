@@ -250,6 +250,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
+                this.props.setMarkers([]);
             }
         }
 
