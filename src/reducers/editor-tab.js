@@ -4,7 +4,7 @@ const ACTIVATE_TAB = 'scratch-gui/navigation/ACTIVATE_TAB';
 const BLOCKS_TAB_INDEX = 0;
 const COSTUMES_TAB_INDEX = 1;
 const SOUNDS_TAB_INDEX = 2;
-const TEST_TAB_INDEX = 3;
+const TEST_RESULTS_TAB_INDEX = 3;
 
 const initialState = {
     activeTabIndex: BLOCKS_TAB_INDEX
@@ -36,5 +36,5 @@ export {
     BLOCKS_TAB_INDEX,
     COSTUMES_TAB_INDEX,
     SOUNDS_TAB_INDEX,
-    TEST_TAB_INDEX
+    TEST_RESULTS_TAB_INDEX
 };

@@ -8,7 +8,7 @@ import TestComponent from '../components/test-results/test-component.jsx';
 
 import styles from '../components/test-results/test-results.css';
 
-const TestTab = ({getTestResults}) => {
+const TestResultsTab = ({getTestResults}) => {
     const testResults = getTestResults();
     return (<Box className={styles.wrapper}>
         <Box className={styles.testDetails}>
@@ -30,7 +30,7 @@ const TestTab = ({getTestResults}) => {
     </Box>);
 };
 
-TestTab.propTypes = {
+TestResultsTab.propTypes = {
     getTestResults: PropTypes.func
 };
 
@@ -41,4 +41,4 @@ const mapStateToProps = state => ({
 export default connect(
     mapStateToProps,
     () => ({}) // omit dispatch prop
-)(TestTab);
+)(TestResultsTab);

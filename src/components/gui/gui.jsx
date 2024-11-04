@@ -14,7 +14,7 @@ import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
-import TestTab from '../../containers/test-tab.jsx';
+import TestResultsTab from '../../containers/test-result-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
@@ -108,7 +108,7 @@ const GUIComponent = props => {
         onActivateCostumesTab,
         onActivateSoundsTab,
         onActivateTab,
-        onActivateTestTab,
+        onActivateTestResultsTab,
         onClickLogo,
         onExtensionButtonClick,
         onProjectTelemetryEvent,
@@ -127,7 +127,7 @@ const GUIComponent = props => {
         stageSizeMode,
         targetIsStage,
         telemetryModalVisible,
-        testTabVisible,
+        testResultsTabVisible,
         theme,
         tipsLibraryVisible,
         vm,
@@ -312,16 +312,16 @@ const GUIComponent = props => {
                                     </Tab>
                                     <Tab
                                         className={tabClassNames.tab}
-                                        onClick={onActivateTestTab}
+                                        onClick={onActivateTestResultsTab}
                                     >
                                         <img
                                             draggable={false}
                                             src={testIcon}
                                         />
                                         <FormattedMessage
-                                            defaultMessage="Test"
-                                            description="Button to get to the test panel"
-                                            id="gui.gui.testTab"
+                                            defaultMessage="Test Results"
+                                            description="Button to get to the test results panel"
+                                            id="gui.gui.testResultsTab"
                                         />
                                     </Tab>
                                 </TabList>
@@ -364,7 +364,7 @@ const GUIComponent = props => {
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
                                 <TabPanel className={tabClassNames.tabPanel}>
-                                    {testTabVisible ? <TestTab vm={vm} /> : null}
+                                    {testResultsTabVisible ? <TestResultsTab vm={vm} /> : null}
                                 </TabPanel>
                             </Tabs>
                             {backpackVisible ? (
@@ -437,7 +437,7 @@ GUIComponent.propTypes = {
     onActivateDebuggerTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
     onActivateTab: PropTypes.func,
-    onActivateTestTab: PropTypes.func,
+    onActivateTestResultsTab: PropTypes.func,
     onClickAccountNav: PropTypes.func,
     onClickLogo: PropTypes.func,
     onCloseAccountNav: PropTypes.func,
@@ -462,7 +462,7 @@ GUIComponent.propTypes = {
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
-    testTabVisible: PropTypes.bool,
+    testResultsTabVisible: PropTypes.bool,
     theme: PropTypes.string,
     tipsLibraryVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
