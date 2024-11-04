@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
 import {
+    TimeSliderMode,
+    TimeSliderStates,
     setTimeFrame,
     setNumberOfFrames,
     setChanged,
@@ -56,7 +58,8 @@ class TimeInterface extends React.Component {
             } else {
                 // Play history
                 const historyPlayingInterval = setInterval(() => {
-                    if ((this.props.debugMode || this.props.testMode) && this.props.timeFrame < this.props.numberOfFrames - 1) {
+                    if (this.props.timeSliderMode !== TimeSliderMode.OFF &&
+                        this.props.timeFrame < this.props.numberOfFrames - 1) {
                         this.props.setTimeFrame(this.props.timeFrame + 1);
                     } else {
                         clearInterval(this.state.historyPlayingInterval);
@@ -138,8 +141,7 @@ class TimeInterface extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.timeSlider.debugMode,
-    testMode: state.scratchGui.timeSlider.testMode,
+    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timeFrame: state.scratchGui.timeSlider.timeFrame,
     paused: state.scratchGui.timeSlider.paused,
@@ -154,8 +156,7 @@ const mapDispatchToProps = dispatch => ({
 });
 
 TimeInterface.propTypes = {
-    debugMode: PropTypes.bool.isRequired,
-    testMode: PropTypes.bool.isRequired,
+    timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
     numberOfFrames: PropTypes.number.isRequired,
     timeFrame: PropTypes.number.isRequired,
     vm: PropTypes.instanceOf(VM).isRequired,

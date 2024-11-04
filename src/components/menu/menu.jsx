@@ -4,12 +4,13 @@ import React from 'react';
 
 import styles from './menu.css';
 import {connect} from 'react-redux';
+import {TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
 
 const MenuComponent = ({
     className = '',
     children,
     componentRef,
-    debugMode,
+    timeSliderMode,
     place = 'right'
 }) => (
     <ul
@@ -21,7 +22,7 @@ const MenuComponent = ({
                 [styles.right]: place === 'right'
             },
             {
-                [styles.debugMode]: debugMode
+                [styles.debugMode]: timeSliderMode === TimeSliderMode.DEBUG
             }
         )}
         ref={componentRef}
@@ -34,12 +35,12 @@ MenuComponent.propTypes = {
     children: PropTypes.node,
     className: PropTypes.string,
     componentRef: PropTypes.func,
-    debugMode: PropTypes.bool,
+    timeSliderMode: PropTypes.oneOf(TimeSliderStates),
     place: PropTypes.oneOf(['left', 'right'])
 };
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.timeSlider.debugMode
+    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode
 });
 
 const Submenu = ({children, className, place, ...props}) => (

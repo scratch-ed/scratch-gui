@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
+import {TimeSliderMode, TimeSliderStates, closeSlider} from '../reducers/time-slider.js';
 
 import ControlsComponent from '../components/controls/controls.jsx';
 
@@ -21,7 +22,7 @@ class Controls extends React.Component {
     handleDebugModeClick (e) {
         e.preventDefault();
 
-        if (this.props.debugMode) {
+        if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
             this.props.vm.runtime.disableDebugMode();
         } else {
             this.props.vm.runtime.enableDebugMode();
@@ -42,17 +43,23 @@ class Controls extends React.Component {
 
     handleTestFlagClick (e) {
         e.preventDefault();
-        if (this.props.testMode) {
-            this.props.vm.runtime.disableTestMode();
+        if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
+            this.props.vm.runtime.stopTesting();
         } else {
-            this.props.vm.runtime.enableTestMode();
+            this.props.vm.runtime.startTesting();
         }
     }
 
     handleStopAllClick (e) {
         e.preventDefault();
 
-        this.props.vm.stopAll();
+        if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
+            this.props.vm.runtime.stopTesting();
+        } else if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
+            this.props.closeSlider();
+        } else {
+            this.props.vm.stopAll();
+        }
     }
 
     render () {
@@ -60,6 +67,7 @@ class Controls extends React.Component {
             vm, // eslint-disable-line no-unused-vars
             projectRunning,
             turbo,
+            closeSlider: _,
             ...props
         } = this.props;
 
@@ -78,8 +86,8 @@ class Controls extends React.Component {
 }
 
 Controls.propTypes = {
-    debugMode: PropTypes.bool.isRequired,
-    testMode: PropTypes.bool.isRequired,
+    timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
+    closeSlider: PropTypes.func.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM),
@@ -87,13 +95,13 @@ Controls.propTypes = {
 };
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.timeSlider.debugMode,
-    testMode: state.scratchGui.timeSlider.testMode,
+    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
     projectRunning: state.scratchGui.vmStatus.running,
     turbo: state.scratchGui.vmStatus.turbo
 });
 
-// no-op function to prevent dispatch prop being passed to component
-const mapDispatchToProps = () => ({});
+const mapDispatchToProps = dispatch => ({
+    closeSlider: () => dispatch(closeSlider())
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Controls);

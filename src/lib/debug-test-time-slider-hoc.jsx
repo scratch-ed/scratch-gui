@@ -4,6 +4,8 @@ import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import {Context} from 'itch';
 import {
+    TimeSliderMode,
+    TimeSliderStates,
     setNumberOfFrames,
     setTimeFrame
 } from '../reducers/time-slider.js';
@@ -22,8 +24,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
     class DebugAndTestTimeSliderWrapper extends React.Component {
 
         shouldComponentUpdate (nextProps) {
-            return this.props.debugMode !== nextProps.debugMode ||
-                   this.props.testMode !== nextProps.testMode ||
+            return this.props.timeSliderMode !== nextProps.timeSliderMode ||
                    this.props.timeFrame !== nextProps.timeFrame ||
                    this.props.numberOfFrames !== nextProps.numberOfFrames;
         }
@@ -33,7 +34,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
                 return;
             }
 
-            if (this.props.debugMode || this.props.testMode) {
+            if (this.props.timeSliderMode !== TimeSliderMode.OFF) {
                 if (this.props.vm.runtime.isPaused() && prevProps.timeFrame !== this.props.timeFrame) {
                     this.loadLogFrame();
                 }
@@ -149,7 +150,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadLogFrame () {
-            if (this.props.debugMode) {
+            if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
                 const snapshot = this.props.context.log.ops[this.props.timeFrame].previous;
                 const timestamp = this.props.context.log.ops[this.props.timeFrame].timestamp;
                 this.loadClones(snapshot);
@@ -173,8 +174,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
         render () {
             const componentProps = omit(this.props, [
                 'context',
-                'debugMode',
-                'testMode',
+                'timeSliderMode',
                 'numberOfFrames',
                 'timeFrame',
                 'vm'
@@ -188,8 +188,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
 
     DebugAndTestTimeSliderWrapper.propTypes = {
         context: PropTypes.instanceOf(Context),
-        debugMode: PropTypes.bool.isRequired,
-        testMode: PropTypes.bool.isRequired,
+        timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
         numberOfFrames: PropTypes.number.isRequired,
         timeFrame: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
@@ -199,8 +198,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
 
     const mapStateToProps = state => ({
         context: state.scratchGui.timeSlider.context,
-        debugMode: state.scratchGui.timeSlider.debugMode,
-        testMode: state.scratchGui.timeSlider.testMode,
+        timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
         numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
         timeFrame: state.scratchGui.timeSlider.timeFrame,
         vm: state.scratchGui.vm

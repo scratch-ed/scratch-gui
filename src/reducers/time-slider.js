@@ -1,17 +1,27 @@
 const SET_CONTEXT = 'scratch-gui/time-slider/SET_CONTEXT';
-const SET_DEBUG_MODE = 'scratch-gui/time-slider/SET_DEBUG_MODE';
-const SET_TEST_MODE = 'scratch-gui/time-slider/SET_TEST_MODE';
+const START_DEBUG = 'scratch-gui/time-slider/START_DEBUG';
+const START_TEST = 'scratch-gui/time-slider/START_TEST';
+const FINISH_TEST = 'scratch-gui/time-slider/FINISH_TEST';
+const CLOSE_SLIDER = 'scratch-gui/time-slider/CLOSE_SLIDER';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/time-slider/SET_NUMBER_OF_FRAMES';
 const SET_PAUSED = 'scratch-gui/time-slider/SET_PAUSED';
 const SET_CHANGED = 'scratch-gui/time-slider/SET_CHANGED';
 const SET_REMOVE_FUTURE = 'scratch-gui/time-slider/SET_REMOVE_FUTURE';
 const SET_TIME_FRAME = 'scratch-gui/time-slider/SET_TIME_FRAME';
 
+const TimeSliderMode = Object.freeze({
+    OFF: 'off',
+    DEBUG: 'debug',
+    TEST_RUNNING: 'running',
+    TEST_FINISHED: 'finished'
+});
+
+const TimeSliderStates = Object.values(TimeSliderMode);
+
 const initialState = {
     // State related to the debugger and tester time slider.
     context: null,
-    debugMode: false,
-    testMode: false,
+    timeSliderMode: TimeSliderMode.OFF,
     numberOfFrames: 0,
     paused: false,
     changed: false,
@@ -26,13 +36,21 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             context: action.context
         });
-    case SET_DEBUG_MODE:
+    case START_DEBUG:
         return Object.assign({}, state, {
-            debugMode: action.debugMode
+            timeSliderMode: TimeSliderMode.DEBUG
         });
-    case SET_TEST_MODE:
+    case START_TEST:
         return Object.assign({}, state, {
-            testMode: action.testMode
+            timeSliderMode: TimeSliderMode.TEST_RUNNING
+        });
+    case FINISH_TEST:
+        return Object.assign({}, state, {
+            timeSliderMode: TimeSliderMode.TEST_FINISHED
+        });
+    case CLOSE_SLIDER:
+        return Object.assign({}, state, {
+            timeSliderMode: TimeSliderMode.OFF
         });
     case SET_NUMBER_OF_FRAMES:
         return Object.assign({}, state, {
@@ -66,17 +84,27 @@ const setContext = function (context) {
     };
 };
 
-const setDebugMode = function (debugMode) {
+const startDebugging = function () {
     return {
-        type: SET_DEBUG_MODE,
-        debugMode: debugMode
+        type: START_DEBUG
     };
 };
 
-const setTestMode = function (testMode) {
+const startTesting = function () {
     return {
-        type: SET_TEST_MODE,
-        testMode: testMode
+        type: START_TEST
+    };
+};
+
+const finishTesting = function () {
+    return {
+        type: FINISH_TEST
+    };
+};
+
+const closeSlider = function () {
+    return {
+        type: CLOSE_SLIDER
     };
 };
 
@@ -118,9 +146,13 @@ const setTimeFrame = function (timeFrame) {
 export {
     reducer as default,
     initialState as timeSliderInitialState,
+    TimeSliderMode,
+    TimeSliderStates,
     setContext,
-    setDebugMode,
-    setTestMode,
+    startDebugging,
+    startTesting,
+    finishTesting,
+    closeSlider,
     setNumberOfFrames,
     setPaused,
     setChanged,

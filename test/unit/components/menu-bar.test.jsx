@@ -4,6 +4,7 @@ import MenuBar from '../../../src/components/menu-bar/menu-bar';
 import {menuInitialState} from '../../../src/reducers/menus';
 import {LoadingState} from '../../../src/reducers/project-state';
 import {DEFAULT_THEME} from '../../../src/lib/themes';
+import {TimeSliderMode} from '../../../src/reducers/time-slider';
 
 import configureStore from 'redux-mock-store';
 import {Provider} from 'react-redux';
@@ -24,8 +25,7 @@ describe('MenuBar Component', () => {
                 theme: DEFAULT_THEME
             },
             timeSlider: {
-                debugMode: false,
-                testMode: false
+                timeSliderMode: TimeSliderMode.OFF
             },
             timeTravel: {
                 year: 'NOW'
