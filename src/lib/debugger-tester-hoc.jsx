@@ -4,9 +4,13 @@ import {connect} from 'react-redux';
 
 import VM from 'scratch-vm';
 import {
+    TimeSliderMode,
+    TimeSliderStates,
     setContext,
-    setDebugMode,
-    setTestMode,
+    startDebugging,
+    startTesting,
+    finishTesting,
+    closeSlider,
     setPaused,
     setChanged,
     setNumberOfFrames,
@@ -38,25 +42,23 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         componentDidMount () {
             this.addListeners();
 
-            if (this.props.debugMode) {
+            if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
                 this.proxyRegisterEvent(this.props.context);
-            } else if (this.props.testMode) {
+            } else if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
                 this.proxyRegisterSnapshot(this.props.context);
             }
         }
 
         shouldComponentUpdate (nextProps) {
-            return this.props.debugMode !== nextProps.debugMode ||
-                this.props.testMode !== nextProps.testMode ||
+            return this.props.timeSliderMode !== nextProps.timeSliderMode ||
                 this.props.removeFuture !== nextProps.removeFuture;
         }
 
         async componentDidUpdate (prevProps) {
-            if (prevProps.debugMode !== this.props.debugMode ||
-                prevProps.testMode !== this.props.testMode) {
-                await this.changeMode();
+            if (prevProps.timeSliderMode !== this.props.timeSliderMode) {
+                await this.changeMode(prevProps.timeSliderMode);
             }
-            if ((this.props.debugMode || this.props.testMode) &&
+            if ((this.props.timeSliderMode !== TimeSliderMode.OFF) &&
                 this.props.removeFuture && !prevProps.removeFuture) {
                 // If changed, remove full history
                 this.removeFuture();
@@ -67,11 +69,13 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         componentWillUnmount () {
             this.removeListeners();
 
-            if (this.props.debugMode) {
-                this.props.context.log.registerEvent = this.oldRegisterEvent;
-            }
-            if (this.props.testMode) {
-                this.props.context.log.registerSnapshot = this.oldRegisterSnapshot;
+            if (this.props.context.log) {
+                if (typeof this.oldRegisterEvent !== 'undefined') {
+                    this.props.context.log.registerEvent = this.oldRegisterEvent;
+                }
+                if (typeof this.oldRegisterSnapshot !== 'undefined') {
+                    this.props.context.log.registerSnapshot = this.oldRegisterSnapshot;
+                }
             }
         }
 
@@ -100,14 +104,15 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         }
 
         handleDebugModeDisabled () {
-            this.props.setDebugMode(false);
+            this.props.closeSlider();
         }
 
         handleDebugModeEnabled () {
-            this.props.setDebugMode(true);
+            this.props.startDebugging();
         }
 
         handleTestingStopped () {
+            this.props.finishTesting();
             const timestampToFrame = new Map(this.props.context.log.snapshots.map(
                 (snapshot, index) => [snapshot.timestamp, index]
             ));
@@ -118,24 +123,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.props.setMarkers(markers);
         }
 
-        async handleTestingStarted () {
-            this.props.setTestMode(true);
-
-            const context = await createContextWithVm(this.props.vm, this.props.testCallback);
-            const submission = snapshotFromVm(this.props.vm);
-            const template = snapshotFromSb3(this.props.vm.testTemplate);
-            context.instrumentVm('judge');
-            context.log.started = true;
-            context.log.registerStartSnapshots(template, submission);
-
-            this.props.setContext(context);
-            this.proxyRegisterSnapshot(context);
-
-            runWithContext({
-                ...this.props.vm.testConfig,
-                template: this.props.vm.testTemplate,
-                callback: this.props.testCallback
-            }, context, this.props.vm.runtime.getTestSignal());
+        handleTestingStarted () {
+            this.props.startTesting();
         }
 
         /**
@@ -145,7 +134,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.props.vm.runtime.disableDebugMode();
             this.props.vm.runtime.stopTesting();
             this.props.vm.clearTestResults();
-            this.props.setTestMode(false);
         }
 
         handleProjectPaused () {
@@ -157,15 +145,17 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         }
 
         handleProjectChanged () {
-            if (this.props.debugMode || this.props.testMode) {
+            if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
                 this.props.vm.runtime.pause();
                 this.props.setChanged(true);
+            } else if (this.props.timeSliderMode !== TimeSliderMode.OFF) {
+                this.props.closeSlider();
             }
         }
 
         removeFuture () {
             if (this.props.numberOfFrames > 1) {
-                if (this.props.debugMode) {
+                if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
                     this.props.context.setLogEventRange(0, this.props.timeFrame + 1);
                     this.props.setNumberOfFrames(this.props.context.log.ops.length);
                 } else {
@@ -180,7 +170,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
          */
         removeFullHistory () {
             if (this.props.numberOfFrames > 1) {
-                if (this.props.debugMode) {
+                if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
                     this.props.context.setLogEventRange(this.props.timeFrame, this.props.timeFrame + 2);
                     this.props.setNumberOfFrames(this.props.context.log.ops.length);
                 } else {
@@ -216,24 +206,38 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.oldRegisterSnapshot = context.log.registerSnapshot;
             context.log.registerSnapshot = new Proxy(this.oldRegisterSnapshot, {
                 apply: (target, thisArg, argArray) => {
-                    if (this.props.testMode) {
-                        const added = target.apply(thisArg, argArray);
-                        // The UI needs to reflect the new log entry
-                        if (this.props.changed) {
-                            // If changed, remove full history
-                            this.removeFullHistory();
-                            this.props.setChanged(false);
-                        }
-                        this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
-                        this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
-                        return added;
+                    const added = target.apply(thisArg, argArray);
+                    // The UI needs to reflect the new log entry
+                    if (this.props.changed) {
+                        // If changed, remove full history
+                        this.removeFullHistory();
+                        this.props.setChanged(false);
                     }
+                    this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
+                    this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
+                    return added;
                 }
             });
         }
 
-        async changeMode () {
-            if (this.props.debugMode) {
+        async changeMode (prevMode) {
+            if (this.props.timeSliderMode === TimeSliderMode.OFF ||
+                (prevMode !== TimeSliderMode.OFF &&
+                 !(prevMode === TimeSliderMode.TEST_RUNNING &&
+                   this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED))) {
+
+                if (this.props.context) {
+                    // Restore the VM to the state before the creation of the current context.
+                    await this.props.context.deinstrumentVm();
+                    this.props.setContext(null);
+                }
+
+                this.props.setNumberOfFrames(0);
+                this.props.setTimeFrame(0);
+                this.props.setMarkers([]);
+            }
+
+            if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
                 const context = await createContextWithVm(this.props.vm);
                 context.instrumentVm('debugger');
                 context.log.started = true;
@@ -243,14 +247,24 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setContext(context);
                 this.proxyRegisterEvent(context);
 
-            } else if (!this.props.testMode) {
-                // Restore the VM to the state before the creation of the current context.
-                await this.props.context.deinstrumentVm();
-                this.props.setContext(null);
+            } else if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
+                this.props.vm.clearTestResults();
 
-                this.props.setNumberOfFrames(0);
-                this.props.setTimeFrame(0);
-                this.props.setMarkers([]);
+                const context = await createContextWithVm(this.props.vm, this.props.testCallback);
+                const submission = snapshotFromVm(this.props.vm);
+                const template = snapshotFromSb3(this.props.vm.testTemplate);
+                context.instrumentVm('judge');
+                context.log.started = true;
+                context.log.registerStartSnapshots(template, submission);
+
+                this.props.setContext(context);
+                this.proxyRegisterSnapshot(context);
+
+                runWithContext({
+                    ...this.props.vm.testConfig,
+                    template: this.props.vm.testTemplate,
+                    callback: this.props.testCallback
+                }, context, this.props.vm.runtime.getTestSignal());
             }
         }
 
@@ -258,14 +272,15 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             const componentProps = omit(this.props, [
                 'activeTab',
                 'context',
-                'debugMode',
-                'testMode',
+                'timeSliderMode',
                 'numberOfFrames',
                 'timeFrame',
                 'vm',
                 'setContext',
-                'setDebugMode',
-                'setTestMode',
+                'startDebugging',
+                'startTesting',
+                'finishTesting',
+                'closeSlider',
                 'setNumberOfFrames',
                 'setMarkers',
                 'setPaused',
@@ -286,14 +301,15 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
     DebuggerAndTesterWrapper.propTypes = {
         activeTab: PropTypes.number.isRequired,
         context: PropTypes.instanceOf(Context),
-        debugMode: PropTypes.bool.isRequired,
-        testMode: PropTypes.bool.isRequired,
+        timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
         numberOfFrames: PropTypes.number.isRequired,
         timeFrame: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         setContext: PropTypes.func.isRequired,
-        setDebugMode: PropTypes.func.isRequired,
-        setTestMode: PropTypes.func.isRequired,
+        startDebugging: PropTypes.func.isRequired,
+        startTesting: PropTypes.func.isRequired,
+        finishTesting: PropTypes.func.isRequired,
+        closeSlider: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setMarkers: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
@@ -308,8 +324,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
     const mapStateToProps = state => ({
         activeTab: state.scratchGui.editorTab.activeTabIndex,
         context: state.scratchGui.timeSlider.context,
-        debugMode: state.scratchGui.timeSlider.debugMode,
-        testMode: state.scratchGui.timeSlider.testMode,
+        timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
         numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
         timeFrame: state.scratchGui.timeSlider.timeFrame,
         changed: state.scratchGui.timeSlider.changed,
@@ -320,8 +335,10 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
     const mapDispatchToProps = dispatch => ({
         setContext: context => dispatch(setContext(context)),
-        setDebugMode: debugMode => dispatch(setDebugMode(debugMode)),
-        setTestMode: testMode => dispatch(setTestMode(testMode)),
+        startDebugging: () => dispatch(startDebugging()),
+        startTesting: () => dispatch(startTesting()),
+        finishTesting: () => dispatch(finishTesting()),
+        closeSlider: () => dispatch(closeSlider()),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setMarkers: markers => dispatch(setMarkers(markers)),
         setPaused: paused => dispatch(setPaused(paused)),

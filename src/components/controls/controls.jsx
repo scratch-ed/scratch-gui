@@ -8,6 +8,7 @@ import StopAll from '../stop-all/stop-all.jsx';
 import TestFlag from '../test-flag/test-flag.jsx';
 import DebugMode from '../debugger-buttons/debug-mode/debug-mode.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
+import {TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
 
 import styles from './controls.css';
 
@@ -38,9 +39,7 @@ const Controls = function (props) {
     const {
         active,
         className,
-        debugMode,
-        testMode,
-        testsRunning,
+        timeSliderMode,
         intl,
         onDebugModeClick,
         onGreenFlagClick,
@@ -61,17 +60,17 @@ const Controls = function (props) {
                 onClick={onGreenFlagClick}
             />
             <StopAll
-                active={active || testMode}
+                active={active || timeSliderMode === TimeSliderMode.TEST_FINISHED}
                 title={intl.formatMessage(messages.stopTitle)}
                 onClick={onStopAllClick}
             />
             <DebugMode
-                debugMode={debugMode}
+                debugMode={timeSliderMode === TimeSliderMode.DEBUG}
                 title={intl.formatMessage(messages.debugTitle)}
                 onClick={onDebugModeClick}
             />
             <TestFlag
-                active={testsRunning}
+                active={timeSliderMode === TimeSliderMode.TEST_RUNNING}
                 title={intl.formatMessage(messages.testTitle)}
                 onClick={onTestFlagClick}
             />
@@ -85,9 +84,7 @@ const Controls = function (props) {
 Controls.propTypes = {
     active: PropTypes.bool,
     className: PropTypes.string,
-    debugMode: PropTypes.bool.isRequired,
-    testMode: PropTypes.bool.isRequired,
-    testsRunning: PropTypes.bool.isRequired,
+    timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
     intl: intlShape.isRequired,
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,

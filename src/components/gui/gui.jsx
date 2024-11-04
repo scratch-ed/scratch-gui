@@ -43,6 +43,7 @@ import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
 import testIcon from './icon--test.svg';
 import TimeInterface from '../../containers/time-interface.jsx';
+import {TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
 
 const messages = defineMessages({
     addExtension: {
@@ -85,8 +86,7 @@ const GUIComponent = props => {
         connectionModalVisible,
         costumeLibraryVisible,
         costumesTabVisible,
-        debugMode,
-        testMode,
+        timeSliderMode,
         enableCommunity,
         intl,
         isCreating,
@@ -379,7 +379,7 @@ const GUIComponent = props => {
                                 stageSize={stageSize}
                                 vm={vm}
                             />
-                            {(debugMode || testMode) ? <TimeInterface vm={vm} /> : null}
+                            {timeSliderMode !== TimeSliderMode.OFF && <TimeInterface vm={vm} />}
                             <Box className={styles.targetWrapper}>
                                 <TargetPane
                                     stageSize={stageSize}
@@ -422,8 +422,7 @@ GUIComponent.propTypes = {
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
     debuggerTabVisible: PropTypes.bool,
-    debugMode: PropTypes.bool,
-    testMode: PropTypes.bool,
+    timeSliderMode: PropTypes.oneOf(TimeSliderStates),
     enableCommunity: PropTypes.bool,
     intl: intlShape.isRequired,
     isCreating: PropTypes.bool,
@@ -494,8 +493,7 @@ GUIComponent.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.timeSlider.debugMode,
-    testMode: state.scratchGui.timeSlider.testMode,
+    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
     // This is the button's mode, as opposed to the actual current state
     blocksId: state.scratchGui.timeTravel.year.toString(),
     stageSizeMode: state.scratchGui.stageSize.stageSize,

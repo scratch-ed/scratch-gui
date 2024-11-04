@@ -71,6 +71,7 @@ import {
     openSettingsMenu,
     closeSettingsMenu
 } from '../../reducers/menus';
+import {TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
 
 import collectMetadata from '../../lib/collect-metadata';
 
@@ -421,7 +422,7 @@ class MenuBar extends React.Component {
                     this.props.className,
                     styles.menuBar,
                     {
-                        [styles.debugMode]: this.props.debugMode
+                        [styles.debugMode]: this.props.timeSliderMode === TimeSliderMode.DEBUG
                     }
                 )}
             >
@@ -862,7 +863,7 @@ MenuBar.propTypes = {
     className: PropTypes.string,
     confirmReadyToReplaceProject: PropTypes.func,
     currentLocale: PropTypes.string.isRequired,
-    debugMode: PropTypes.bool,
+    timeSliderMode: PropTypes.oneOf(TimeSliderStates),
     editMenuOpen: PropTypes.bool,
     enableCommunity: PropTypes.bool,
     fileMenuOpen: PropTypes.bool,
@@ -941,7 +942,7 @@ const mapStateToProps = (state, ownProps) => {
         aboutMenuOpen: aboutMenuOpen(state),
         accountMenuOpen: accountMenuOpen(state),
         currentLocale: state.locales.locale,
-        debugMode: state.scratchGui.timeSlider.debugMode,
+        timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
         fileMenuOpen: fileMenuOpen(state),
         editMenuOpen: editMenuOpen(state),
         isRtl: state.locales.isRtl,
