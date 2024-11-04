@@ -69,7 +69,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         componentWillUnmount () {
             this.removeListeners();
 
-            if (this.props.context.log) {
+            if (this.props.context) {
                 if (typeof this.oldRegisterEvent !== 'undefined') {
                     this.props.context.log.registerEvent = this.oldRegisterEvent;
                 }
