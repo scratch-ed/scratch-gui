@@ -46,7 +46,6 @@ const TimeInterfaceComponent = function (props) {
         timeFrame,
         paused,
         changed,
-        markers,
         onToggleResumeClick,
         onStepBackClick,
         onStepClick,
@@ -54,24 +53,14 @@ const TimeInterfaceComponent = function (props) {
         intl
     } = props;
 
-    const frames = Array.from(Array(numberOfFrames), () => []);
-    const markedFrames = Array(numberOfFrames);
-    markers.forEach(marker => {
-        if (marker[0] < numberOfFrames) {
-            frames[marker[0]].push(marker[1]);
-            markedFrames[marker[0]] = true;
-        }
-    });
-
     return (
         <Box>
             <TestMarkers
-                frames={frames}
+                numberOfFrames={numberOfFrames}
                 onFrameChange={onFrameChange}
             />
             <TimeSliderComponent
                 numberOfFrames={numberOfFrames}
-                markedFrames={markedFrames}
                 onChange={onTimeChange}
                 onMouseDown={onTimeMouseDown}
                 timeFrame={timeFrame}
@@ -117,7 +106,6 @@ TimeInterfaceComponent.propTypes = {
     timeFrame: PropTypes.number.isRequired,
     paused: PropTypes.bool.isRequired,
     changed: PropTypes.bool.isRequired,
-    markers: PropTypes.arrayOf(PropTypes.array),
     onToggleResumeClick: PropTypes.func.isRequired,
     onStepBackClick: PropTypes.func.isRequired,
     onStepClick: PropTypes.func.isRequired,

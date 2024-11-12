@@ -4,7 +4,7 @@
 .wrapper {
     display: flex;
     flex-grow: 1;
-    flex-direction:column;
+    flex-direction: column;
     border: 1px solid $ui-black-transparent;
     background: white;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;

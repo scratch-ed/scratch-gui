@@ -151,8 +151,7 @@ const mapStateToProps = state => ({
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timeFrame: state.scratchGui.timeSlider.timeFrame,
     paused: state.scratchGui.timeSlider.paused,
-    changed: state.scratchGui.timeSlider.changed,
-    markers: state.scratchGui.timeSlider.markers
+    changed: state.scratchGui.timeSlider.changed
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -173,7 +172,6 @@ TimeInterface.propTypes = {
     setRemoveFuture: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
     changed: PropTypes.bool.isRequired,
-    markers: PropTypes.arrayOf(PropTypes.array)
 };
 
 export default connect(

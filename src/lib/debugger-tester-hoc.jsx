@@ -15,6 +15,8 @@ import {
     setChanged,
     setNumberOfFrames,
     setMarkers,
+    addRender,
+    clearRenders,
     setTimeFrame,
     setRemoveFuture
 } from '../reducers/time-slider.js';
@@ -113,11 +115,13 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
         handleTestingStopped () {
             this.props.finishTesting();
+            const markers = Array.from(Array(this.props.numberOfFrames), () => []);
+
             const timestampToFrame = new Map(this.props.context.log.snapshots.map(
                 (snapshot, index) => [snapshot.timestamp, index]
             ));
-            const markers = this.props.vm.getMarkedTests().map(
-                test => [timestampToFrame.get(test.marker), test]
+            this.props.vm.getMarkedTests().forEach(
+                test => markers[timestampToFrame.get(test.marker)].push(test)
             );
 
             this.props.setMarkers(markers);
@@ -215,6 +219,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                     }
                     this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
                     this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
+                    this.props.vm.renderer.requestSnapshot(snap => this.props.addRender(snap));
                     return added;
                 }
             });
@@ -235,6 +240,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
                 this.props.setMarkers([]);
+                this.props.clearRenders();
             }
 
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
@@ -259,6 +265,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                 this.props.setContext(context);
                 this.proxyRegisterSnapshot(context);
+                this.props.vm.renderer.requestSnapshot(snap => this.props.addRender(snap));
 
                 runWithContext({
                     ...this.props.vm.testConfig,
@@ -283,6 +290,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'closeSlider',
                 'setNumberOfFrames',
                 'setMarkers',
+                'addRender',
+                'clearRenders',
                 'setPaused',
                 'setChanged',
                 'setRemoveFuture',
@@ -312,6 +321,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         closeSlider: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setMarkers: PropTypes.func.isRequired,
+        addRender: PropTypes.func.isRequired,
+        clearRenders: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setChanged: PropTypes.func.isRequired,
         setRemoveFuture: PropTypes.func.isRequired,
@@ -341,6 +352,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         closeSlider: () => dispatch(closeSlider()),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setMarkers: markers => dispatch(setMarkers(markers)),
+        addRender: render => dispatch(addRender(render)),
+        clearRenders: () => dispatch(clearRenders()),
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),
         setRemoveFuture: removeFuture => dispatch(setRemoveFuture(removeFuture)),

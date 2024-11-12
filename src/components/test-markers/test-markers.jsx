@@ -11,12 +11,10 @@ import failedIcon from '../test-results/failed.png';
 
 import styles from './test-markers.css';
 
-import {injectIntl} from 'react-intl';
-
-const TestMarkers = ({frames, onFrameChange}) => {
-    return (<span className={styles.wrapper}>
+const TestMarkers = ({markers, onFrameChange, numberOfFrames}) => (
+    <span className={styles.wrapper}>
         {
-            frames.map((frame, index) => (
+            markers.slice(0, numberOfFrames).map((frame, index) => (
                 <span key={index}>
                     {frame.length > 0 &&
                         <>
@@ -47,11 +45,19 @@ const TestMarkers = ({frames, onFrameChange}) => {
             ))
         }
     </span>);
-};
 
 TestMarkers.propTypes = {
-    frames: PropTypes.arrayOf(PropTypes.array),
-    onFrameChange: PropTypes.func
+    markers: PropTypes.arrayOf(PropTypes.array),
+    onFrameChange: PropTypes.func,
+    numberOfFrames: PropTypes.number
 };
 
-export default injectIntl(TestMarkers);
+const mapStateToProps = state => ({
+    timeFrame: state.scratchGui.timeSlider.timeFrame,
+    markers: state.scratchGui.timeSlider.markers
+});
+
+export default connect(
+    mapStateToProps,
+    () => ({}) // omit dispatch prop
+)(TestMarkers);
