@@ -5,6 +5,7 @@ const FINISH_TEST = 'scratch-gui/time-slider/FINISH_TEST';
 const CLOSE_SLIDER = 'scratch-gui/time-slider/CLOSE_SLIDER';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/time-slider/SET_NUMBER_OF_FRAMES';
 const SET_TIMESTAMPS = 'scratch-gui/time-slider/SET_TIMESTAMPS';
+const SET_EVENTS = 'scratch-gui/time-slider/SET_EVENTS';
 const SET_MARKERS = 'scratch-gui/time-slider/SET_MARKERS';
 const ADD_RENDER = 'scratch-gui/time-slider/ADD_RENDER';
 const CLEAR_RENDERS = 'scratch-gui/time-slider/CLEAR_RENDERS';
@@ -28,6 +29,7 @@ const initialState = {
     timeSliderMode: TimeSliderMode.OFF,
     numberOfFrames: 0,
     timestamps: [],
+    events: [],
     markers: [],
     renders: [],
     paused: false,
@@ -66,6 +68,10 @@ const reducer = function (state, action) {
     case SET_TIMESTAMPS:
         return Object.assign({}, state, {
             timestamps: action.timestamps
+        });
+    case SET_EVENTS:
+        return Object.assign({}, state, {
+            events: action.events
         });
     case SET_MARKERS:
         return Object.assign({}, state, {
@@ -146,6 +152,13 @@ const setTimestamps = function (timestamps) {
     };
 };
 
+const setEvents = function (events) {
+    return {
+        type: SET_EVENTS,
+        events: events
+    };
+};
+
 const setMarkers = function (markers) {
     return {
         type: SET_MARKERS,
@@ -206,6 +219,7 @@ export {
     closeSlider,
     setNumberOfFrames,
     setTimestamps,
+    setEvents,
     setMarkers,
     addRender,
     clearRenders,

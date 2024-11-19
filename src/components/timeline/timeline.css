@@ -32,6 +32,10 @@ $background-color: white;
 .timeline-padding {
     padding-left: calc($render-width/2);
     padding-right: calc($render-width/2);
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    height: 30px;
 }
 
 /* Align timeline with renders */
@@ -95,6 +99,12 @@ $background-color: white;
 .marker-icon {
     width: 15px;
     height: 15px;
+}
+
+.event-icon {
+    width: 25px;
+    height: 25px;
+    transform: translatex(-10px);
 }
 
 /*

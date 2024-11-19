@@ -15,6 +15,7 @@ import {
     setChanged,
     setNumberOfFrames,
     setTimestamps,
+    setEvents,
     setMarkers,
     addRender,
     clearRenders,
@@ -138,6 +139,14 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.props.setMarkers([]);
 
             this.props.setTimestamps(this.props.context.log.ops.map(e => e.previous.timestamp));
+            this.props.setEvents(this.props.context.log.events.filter(e =>
+                e.type !== 'ops' && e.type !== 'block_execution'
+            ).map(e => ({
+                data: e.data,
+                type: e.type,
+                begin: e.previous.timestamp,
+                end: e.next.timestamp
+            })));
             this.props.vm.runtime.debugMode = false;
             // console.log(this.props.context.log);
             // console.log(events);
@@ -252,6 +261,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
                 this.props.setTimestamps([]);
+                this.props.setEvents([]);
                 this.props.setMarkers([]);
                 this.props.clearRenders();
             }
@@ -305,6 +315,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'closeSlider',
                 'setNumberOfFrames',
                 'setTimestamps',
+                'setEvents',
                 'setMarkers',
                 'addRender',
                 'clearRenders',
@@ -337,6 +348,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         closeSlider: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setTimestamps: PropTypes.func.isRequired,
+        setEvents: PropTypes.func.isRequired,
         setMarkers: PropTypes.func.isRequired,
         addRender: PropTypes.func.isRequired,
         clearRenders: PropTypes.func.isRequired,
@@ -369,6 +381,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         closeSlider: () => dispatch(closeSlider()),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setTimestamps: timestamps => dispatch(setTimestamps(timestamps)),
+        setEvents: events => dispatch(setEvents(events)),
         setMarkers: markers => dispatch(setMarkers(markers)),
         addRender: render => dispatch(addRender(render)),
         clearRenders: () => dispatch(clearRenders()),
