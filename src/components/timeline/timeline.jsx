@@ -47,28 +47,38 @@ Marker.propTypes = {
     id: PropTypes.string
 };
 
-const Timeline = ({numberOfFrames, timeFrame, renders, setFrame, markers}) => {
-    const frames = Array.from({length: numberOfFrames});
+const Timeline = ({numberOfFrames, timeFrame, renders, setFrame, timestamps, markers}) => {
+    const timeframe = timestamps[numberOfFrames - 1];
 
     return (<div className={styles.scrollWrapper}>
         <div className={styles.scrollDetails}>
             <div className={styles.content}>
                 <div className={styles.linePadding}>
                     <ul className={styles.line}>
-                        {frames.map((_, index) => (
-                            <li
-                                onClick={() => setFrame(index)}
+                        {timestamps.map((timestamp, index) => (
+                            <div
                                 key={index}
-                                className={classNames(styles.dot, {[styles.active]: index === timeFrame})}
+                                style={{position: 'relative', left: `${timestamp / timeframe * 100}%`, width: 0, height: 0}}
                             >
-                                <Marker
-                                    tests={markers[index]}
+                                <li
                                     onClick={() => setFrame(index)}
-                                    id={`timeline-tooltip-${index}`}
-                                />
-                            </li>
+                                    key={index}
+                                    className={classNames(styles.dot, {[styles.active]: index === timeFrame})}
+                                >{timestamp}</li>
+                            </div>
                         ))}
                     </ul>
+                </div>
+                <div className={styles.timelinePadding}>
+                    {
+                        // timestamps.map((timestamp, index) => (
+                        //     <Marker
+                        //         tests={markers[index]}
+                        //         onClick={() => setFrame(index)}
+                        //         id={`timeline-tooltip-${index}`}
+                        //     />
+                        // )
+                    }
                 </div>
                 <div className={styles.container}>
                     {renders.slice(0, numberOfFrames).map((render, index) => (
@@ -91,13 +101,15 @@ Timeline.propTypes = {
     numberOfFrames: PropTypes.number,
     renders: PropTypes.arrayOf(PropTypes.string),
     setFrame: PropTypes.func,
-    markers: PropTypes.arrayOf(PropTypes.array)
+    timestamps: PropTypes.arrayOf(PropTypes.number),
+    markers: PropTypes.arrayOf(PropTypes.number)
 };
 
 const mapStateToProps = state => ({
     timeFrame: state.scratchGui.timeSlider.timeFrame,
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     renders: state.scratchGui.timeSlider.renders,
+    timestamps: state.scratchGui.timeSlider.timestamps,
     markers: state.scratchGui.timeSlider.markers
 });
 

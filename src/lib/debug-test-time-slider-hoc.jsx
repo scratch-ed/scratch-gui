@@ -150,25 +150,14 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadLogFrame () {
-            if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
-                const snapshot = this.props.context.log.ops[this.props.timeFrame].previous;
-                const timestamp = this.props.context.log.ops[this.props.timeFrame].timestamp;
-                this.loadClones(snapshot);
-                this.loadSprites(snapshot);
-                this.loadBubbles(snapshot);
-                this.loadVariables(snapshot);
-                this.loadMonitors(snapshot, timestamp);
-                this.loadRuntime(snapshot);
-            } else {
-                const snapshot = this.props.context.log.snapshots[this.props.timeFrame];
-                const timestamp = snapshot.timestamp;
-                this.loadClones(snapshot);
-                this.loadSprites(snapshot);
-                this.loadBubbles(snapshot);
-                this.loadVariables(snapshot);
-                this.loadMonitors(snapshot, timestamp);
-                this.loadRuntime(snapshot);
-            }
+            const snapshot = this.props.context.log.ops[this.props.timeFrame].previous;
+            const timestamp = this.props.context.log.ops[this.props.timeFrame].timestamp;
+            this.loadClones(snapshot);
+            this.loadSprites(snapshot);
+            this.loadBubbles(snapshot);
+            this.loadVariables(snapshot);
+            this.loadMonitors(snapshot, timestamp);
+            this.loadRuntime(snapshot);
         }
 
         render () {

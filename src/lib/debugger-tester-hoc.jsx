@@ -14,6 +14,7 @@ import {
     setPaused,
     setChanged,
     setNumberOfFrames,
+    setTimestamps,
     setMarkers,
     addRender,
     clearRenders,
@@ -115,16 +116,34 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
         handleTestingStopped () {
             this.props.finishTesting();
-            const markers = Array.from(Array(this.props.numberOfFrames), () => []);
+            // const markers = Array.from(Array(this.props.numberOfFrames), () => []);
 
-            const timestampToFrame = new Map(this.props.context.log.snapshots.map(
-                (snapshot, index) => [snapshot.timestamp, index]
-            ));
-            this.props.vm.getMarkedTests().forEach(
-                test => markers[timestampToFrame.get(test.marker)].push(test)
-            );
+            // const timestampToFrame = new Map(this.props.context.log.ops.map(
+            //     (snapshot, index) => [snapshot.timestamp, index]
+            // ));
+            // this.props.vm.getMarkedTests().forEach(
+            //     test => markers[timestampToFrame.get(test.marker)].push(test)
+            // );
+            //
+            // this.props.setMarkers(markers);
 
-            this.props.setMarkers(markers);
+            // const events = this.props.context.log.events.map(event => {
+            //     return {
+            //         type: event.type,
+            //         data: event.data,
+            //         start: event.previous.timestamp,
+            //         end: event.next.timestamp
+            //     };
+            // });
+            this.props.setMarkers([]);
+
+            this.props.setTimestamps(this.props.context.log.ops.map(e => e.previous.timestamp));
+            this.props.vm.runtime.debugMode = false;
+            // console.log(this.props.context.log);
+            // console.log(events);
+            // console.log(this.props.context.log.snapshots.map(snapshot => snapshot.timestamp));
+            // console.log(this.props.vm.getTestResults());
+            // console.log(this.props.vm.getMarkedTests());
         }
 
         handleTestingStarted () {
@@ -159,13 +178,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
         removeFuture () {
             if (this.props.numberOfFrames > 1) {
-                if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
-                    this.props.context.setLogEventRange(0, this.props.timeFrame + 1);
-                    this.props.setNumberOfFrames(this.props.context.log.ops.length);
-                } else {
-                    this.props.context.setLogSnapshotRange(0, this.props.timeFrame + 1);
-                    this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
-                }
+                this.props.context.setLogEventRange(0, this.props.timeFrame + 1);
+                this.props.setNumberOfFrames(this.props.context.log.ops.length);
             }
         }
 
@@ -174,13 +188,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
          */
         removeFullHistory () {
             if (this.props.numberOfFrames > 1) {
-                if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
-                    this.props.context.setLogEventRange(this.props.timeFrame, this.props.timeFrame + 2);
-                    this.props.setNumberOfFrames(this.props.context.log.ops.length);
-                } else {
-                    this.props.context.setLogSnapshotRange(this.props.timeFrame, this.props.timeFrame + 2);
-                    this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
-                }
+                this.props.context.setLogEventRange(this.props.timeFrame, this.props.timeFrame + 2);
+                this.props.setNumberOfFrames(this.props.context.log.ops.length);
             }
         }
 
@@ -199,6 +208,9 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                         }
                         this.props.setNumberOfFrames(this.props.context.log.ops.length);
                         this.props.setTimeFrame(this.props.context.log.ops.length - 1);
+                        if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
+                            this.props.vm.renderer.requestSnapshot(snap => this.props.addRender(snap));
+                        }
                     }
                     return added;
                 }
@@ -239,6 +251,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
+                this.props.setTimestamps([]);
                 this.props.setMarkers([]);
                 this.props.clearRenders();
             }
@@ -259,13 +272,15 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 const context = await createContextWithVm(this.props.vm, this.props.testCallback);
                 const submission = snapshotFromVm(this.props.vm);
                 const template = snapshotFromSb3(this.props.vm.testTemplate);
-                context.instrumentVm('judge');
+                context.instrumentVm('tester');
                 context.log.started = true;
                 context.log.registerStartSnapshots(template, submission);
 
                 this.props.setContext(context);
-                this.proxyRegisterSnapshot(context);
+                // this.proxyRegisterSnapshot(context);
+                this.proxyRegisterEvent(context);
                 this.props.vm.renderer.requestSnapshot(snap => this.props.addRender(snap));
+                this.props.vm.runtime.debugMode = true;
 
                 runWithContext({
                     ...this.props.vm.testConfig,
@@ -289,6 +304,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'finishTesting',
                 'closeSlider',
                 'setNumberOfFrames',
+                'setTimestamps',
                 'setMarkers',
                 'addRender',
                 'clearRenders',
@@ -320,6 +336,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         finishTesting: PropTypes.func.isRequired,
         closeSlider: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
+        setTimestamps: PropTypes.func.isRequired,
         setMarkers: PropTypes.func.isRequired,
         addRender: PropTypes.func.isRequired,
         clearRenders: PropTypes.func.isRequired,
@@ -351,6 +368,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         finishTesting: () => dispatch(finishTesting()),
         closeSlider: () => dispatch(closeSlider()),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
+        setTimestamps: timestamps => dispatch(setTimestamps(timestamps)),
         setMarkers: markers => dispatch(setMarkers(markers)),
         addRender: render => dispatch(addRender(render)),
         clearRenders: () => dispatch(clearRenders()),

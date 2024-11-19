@@ -29,10 +29,16 @@ $background-color: white;
     flex-direction: column;
 }
 
+.timeline-padding {
+    padding-left: calc($render-width/2);
+    padding-right: calc($render-width/2);
+}
+
 /* Align timeline with renders */
 .line-padding {
     padding-left: calc($render-width/2 + $line-margin);
     padding-right: calc($render-width/2 + $line-margin + 5px);
+    height: 30px;
 }
 
 .line {
@@ -42,9 +48,6 @@ $background-color: white;
     flex-direction: row;
     list-style: none;
     padding: 0;
-    justify-content: space-between;
-    align-items: stretch;
-    align-content: stretch;
 }
 
 .dot {
