@@ -50,67 +50,8 @@ Marker.propTypes = {
     id: PropTypes.string
 };
 
-const Timeline = ({vm, numberOfFrames, timeFrame, renders, setFrame, timestamps, events, markers}) => {
-    const testTimestamp = Math.max.apply(Math, vm.getMarkedTests().map(test => test.marker));
-    const eventTimestamp = Math.max.apply(Math, events.map(event => event.end));
-    const timeframe = Math.max(timestamps[numberOfFrames - 1], testTimestamp, eventTimestamp);
-    let testGroups = Object.groupBy(vm.getMarkedTests(), ({parent}) => parent);
-    testGroups = Object.values(testGroups).map(group => Object.groupBy(group, ({marker}) => marker));
-
-    return (<div className={styles.scrollWrapper}>
-        <div className={styles.scrollDetails}>
-            <div className={styles.content}>
-                <div className={styles.linePadding}>
-                    <ul className={styles.line}>
-                        {timestamps.map((timestamp, index) => (
-                            <div
-                                key={index}
-                                style={{position: 'relative', left: `${timestamp / timeframe * 100}%`, width: 0, height: 0}}
-                            >
-                                <li
-                                    onClick={() => setFrame(index)}
-                                    key={index}
-                                    className={classNames(styles.dot, {[styles.active]: index === timeFrame})}
-                                >{timestamp}</li>
-                            </div>
-                        ))}
-                    </ul>
-                </div>
-                <div className={styles.linePadding}>
-                    {
-                        events.map((event, index) => (
-                            <div
-                                key={index}
-                                style={{position: 'relative', left: `${event.begin / timeframe * 100}%`, width: 0, height: 0}}
-                            >
-                                <EventMarker event={event} index={index} />
-                            </div>
-                        ))
-                    }
-                </div>
-                {
-                    testGroups.map((group, index) => (
-                        <Line key={index} group={group} groupName={Object.values(group)[0][0].parentName} timeframe={timeframe} groupid={`testgroup-${index}`}/>
-                    ))
-                }
-                <div className={styles.container}>
-                    {renders.slice(0, numberOfFrames).map((render, index) => (
-                        <div key={index}>
-                            <img
-                                onClick={() => setFrame(index)}
-                                className={styles.render}
-                                src={render}
-                            />
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    </div>);
-};
-
-const Line = ({group, groupName, timeframe, groupid}) => (
-    <div className={styles.timelinePadding}>
+const Band = ({group, groupName, timeframe, groupid}) => (
+    <div className={styles.bandWrapper}>
         <div
             style={{position: 'absolute', left: '0'}}
         >{groupName}
@@ -119,7 +60,8 @@ const Line = ({group, groupName, timeframe, groupid}) => (
             Object.entries(group).map(([timestamp, tests], index) => (
                 <div
                     key={index}
-                    style={{position: 'relative', left: `${timestamp / timeframe * 100}%`, width: 0, height: 0}}
+                    className={styles.timelineItem}
+                    style={{left: `${timestamp / timeframe * 100}%`}}
                 >
                     <img
                         className={styles.markerIcon}
@@ -145,7 +87,7 @@ const Line = ({group, groupName, timeframe, groupid}) => (
             ))
         }
     </div>
-)
+);
 
 const EventMarker = ({event, index}) => {
     if (event.type === 'key') {
@@ -167,7 +109,7 @@ const EventMarker = ({event, index}) => {
                     {`Pressed '${event.data.key}' key`}
                 </ReactTooltip>
             </>
-        )
+        );
     }
     if (event.type === 'click') {
         return (
@@ -188,17 +130,102 @@ const EventMarker = ({event, index}) => {
                     {`Clicked on ${event.data.target}`}
                 </ReactTooltip>
             </>
-        )
+        );
     }
     return null;
-}
+};
 
+const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, markers}) => {
+    if (!numberOfFrames) {
+        return null;
+    }
+    const testTimestamp = Math.max(...vm.getMarkedTests().map(test => test.marker));
+    const eventTimestamp = Math.max(...events.map(event => event.end));
+    const timeframe = Math.max(timestamps[numberOfFrames - 1], testTimestamp, eventTimestamp);
+
+    const testGroups = Object.values(Object.groupBy(vm.getMarkedTests(), ({parent}) => parent)).map(group =>
+        Object.groupBy(group, ({marker}) => marker)
+    );
+
+    let timeTicks = [];
+    let tickSize = 10;
+    if (timeframe) {
+        tickSize = Math.round(timeframe / numberOfFrames / 10) * 10;
+        timeTicks = Array(...Array(Math.floor(timeframe / tickSize) + 1)).map((_, index) => index * tickSize);
+    }
+
+    return (<div className={styles.scrollWrapper}>
+        <div className={styles.scrollDetails}>
+            <div className={styles.content}>
+                <div className={classNames(styles.linePadding, styles.tickHeight)}>
+                    {timeTicks.map(tick => (
+                        <div
+                            key={tick}
+                            className={styles.timelineItem}
+                            style={{left: `${tick / timeframe * 100}%`}}
+                        >{tick}
+                        </div>
+                    ))}
+                </div>
+
+                <div
+                    className={styles.linePadding}
+                    style={{width: `${timeframe / tickSize * 100}px`}}
+                >
+                    <ul className={styles.line}>
+                        {timestamps.map((timestamp, index) => (
+                            <div
+                                key={index}
+                                className={styles.timelineItem}
+                                style={{left: `${timestamp / timeframe * 100}%`}}
+                            >
+                                <li
+                                    onClick={() => setFrame(index)}
+                                    key={index}
+                                    className={classNames(styles.dot, {[styles.active]: index === timeFrame})}
+                                />
+                            </div>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className={classNames(styles.linePadding, styles.eventHeight)}>
+                    {
+                        events.map((event, index) => (
+                            <div
+                                key={index}
+                                className={styles.timelineItem}
+                                style={{left: `${event.begin / timeframe * 100}%`}}
+                            >
+                                <EventMarker
+                                    event={event}
+                                    index={index}
+                                />
+                            </div>
+                        ))
+                    }
+                </div>
+
+                {
+                    testGroups.map((group, index) => (
+                        <Band
+                            key={index}
+                            group={group}
+                            groupName={Object.values(group)[0][0].parentName}
+                            timeframe={timeframe}
+                            groupid={`testgroup-${index}`}
+                        />
+                    ))
+                }
+            </div>
+        </div>
+    </div>);
+};
 
 Timeline.propTypes = {
     vm: PropTypes.instanceOf(VM).isRequired,
     timeFrame: PropTypes.number,
     numberOfFrames: PropTypes.number,
-    renders: PropTypes.arrayOf(PropTypes.string),
     setFrame: PropTypes.func,
     timestamps: PropTypes.arrayOf(PropTypes.number),
     events: PropTypes.arrayOf(PropTypes.object),
@@ -209,7 +236,6 @@ const mapStateToProps = state => ({
     vm: state.scratchGui.vm,
     timeFrame: state.scratchGui.timeSlider.timeFrame,
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
-    renders: state.scratchGui.timeSlider.renders,
     timestamps: state.scratchGui.timeSlider.timestamps,
     events: state.scratchGui.timeSlider.events,
     markers: state.scratchGui.timeSlider.markers

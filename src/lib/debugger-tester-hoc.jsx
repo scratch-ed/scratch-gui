@@ -17,8 +17,6 @@ import {
     setTimestamps,
     setEvents,
     setMarkers,
-    addRender,
-    clearRenders,
     setTimeFrame,
     setRemoveFuture
 } from '../reducers/time-slider.js';
@@ -217,9 +215,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                         }
                         this.props.setNumberOfFrames(this.props.context.log.ops.length);
                         this.props.setTimeFrame(this.props.context.log.ops.length - 1);
-                        if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
-                            this.props.vm.renderer.requestSnapshot(snap => this.props.addRender(snap));
-                        }
                     }
                     return added;
                 }
@@ -240,7 +235,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                     }
                     this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
                     this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
-                    this.props.vm.renderer.requestSnapshot(snap => this.props.addRender(snap));
                     return added;
                 }
             });
@@ -263,7 +257,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setTimestamps([]);
                 this.props.setEvents([]);
                 this.props.setMarkers([]);
-                this.props.clearRenders();
             }
 
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
@@ -289,7 +282,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setContext(context);
                 // this.proxyRegisterSnapshot(context);
                 this.proxyRegisterEvent(context);
-                this.props.vm.renderer.requestSnapshot(snap => this.props.addRender(snap));
                 this.props.vm.runtime.debugMode = true;
 
                 runWithContext({
@@ -317,8 +309,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'setTimestamps',
                 'setEvents',
                 'setMarkers',
-                'addRender',
-                'clearRenders',
                 'setPaused',
                 'setChanged',
                 'setRemoveFuture',
@@ -350,8 +340,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setTimestamps: PropTypes.func.isRequired,
         setEvents: PropTypes.func.isRequired,
         setMarkers: PropTypes.func.isRequired,
-        addRender: PropTypes.func.isRequired,
-        clearRenders: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setChanged: PropTypes.func.isRequired,
         setRemoveFuture: PropTypes.func.isRequired,
@@ -383,8 +371,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setTimestamps: timestamps => dispatch(setTimestamps(timestamps)),
         setEvents: events => dispatch(setEvents(events)),
         setMarkers: markers => dispatch(setMarkers(markers)),
-        addRender: render => dispatch(addRender(render)),
-        clearRenders: () => dispatch(clearRenders()),
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),
         setRemoveFuture: removeFuture => dispatch(setRemoveFuture(removeFuture)),

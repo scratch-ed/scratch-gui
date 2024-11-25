@@ -6,6 +6,7 @@ $line-margin: 8px;
 $render-width: 200px;
 $timeline-color: black;
 $background-color: white;
+$left-padding: 200px;
 
 .scroll-wrapper {
     display: flex;
@@ -29,20 +30,30 @@ $background-color: white;
     flex-direction: column;
 }
 
-.timeline-padding {
-    padding-left: calc($render-width/2);
-    padding-right: calc($render-width/2);
+.band-wrapper {
+    padding-left: $left-padding;
     display: flex;
     flex-grow: 1;
     flex-direction: row;
     height: 30px;
 }
 
-/* Align timeline with renders */
-.line-padding {
-    padding-left: calc($render-width/2 + $line-margin);
-    padding-right: calc($render-width/2 + $line-margin + 5px);
+.tick-height {
+    height: 10px;
+}
+
+.event-height {
     height: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    width: 0;
+    height: 0;
+}
+
+.line-padding {
+    padding-left: $left-padding;
 }
 
 .line {
@@ -76,7 +87,7 @@ $background-color: white;
     border-radius: 10px;
     top: -18px;
     left: 50%;
-    transform: translatex(-50%);
+    /* transform: translatex(-50%); */
     border: 2px solid $timeline-color;
 }
 
