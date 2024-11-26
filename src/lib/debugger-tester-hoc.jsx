@@ -45,7 +45,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.addListeners();
 
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
-                this.proxyRegisterEvent(this.props.context);
+                // this.proxyRegisterEvent(this.props.context);
+                this.proxyRegisterSnapshot(this.props.context);
             } else if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
                 this.proxyRegisterSnapshot(this.props.context);
             }
@@ -126,17 +127,10 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             //
             // this.props.setMarkers(markers);
 
-            // const events = this.props.context.log.events.map(event => {
-            //     return {
-            //         type: event.type,
-            //         data: event.data,
-            //         start: event.previous.timestamp,
-            //         end: event.next.timestamp
-            //     };
-            // });
             this.props.setMarkers([]);
 
-            this.props.setTimestamps(this.props.context.log.ops.map(e => e.previous.timestamp));
+            // this.props.setTimestamps(this.props.context.log.ops.map(e => e.previous.timestamp));
+            this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
             this.props.setEvents(this.props.context.log.events.filter(e =>
                 e.type !== 'ops' && e.type !== 'block_execution'
             ).map(e => ({
@@ -185,8 +179,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
         removeFuture () {
             if (this.props.numberOfFrames > 1) {
-                this.props.context.setLogEventRange(0, this.props.timeFrame + 1);
-                this.props.setNumberOfFrames(this.props.context.log.ops.length);
+                this.props.context.setLogSnapshotRange(0, this.props.timeFrame + 1);
+                this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
             }
         }
 
@@ -195,8 +189,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
          */
         removeFullHistory () {
             if (this.props.numberOfFrames > 1) {
-                this.props.context.setLogEventRange(this.props.timeFrame, this.props.timeFrame + 2);
-                this.props.setNumberOfFrames(this.props.context.log.ops.length);
+                this.props.context.setLogSnapshotRange(this.props.timeFrame, this.props.timeFrame + 2);
+                this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
             }
         }
 
@@ -267,7 +261,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 context.log.registerStartSnapshots(snapshot, snapshot);
 
                 this.props.setContext(context);
-                this.proxyRegisterEvent(context);
+                // this.proxyRegisterEvent(context);
+                this.proxyRegisterSnapshot(context);
 
             } else if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
                 this.props.vm.clearTestResults();
@@ -280,8 +275,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 context.log.registerStartSnapshots(template, submission);
 
                 this.props.setContext(context);
-                // this.proxyRegisterSnapshot(context);
-                this.proxyRegisterEvent(context);
+                this.proxyRegisterSnapshot(context);
+                // this.proxyRegisterEvent(context);
                 this.props.vm.runtime.debugMode = true;
 
                 runWithContext({

@@ -150,8 +150,8 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
         }
 
         loadLogFrame () {
-            const snapshot = this.props.context.log.ops[this.props.timeFrame].previous;
-            const timestamp = this.props.context.log.ops[this.props.timeFrame].timestamp;
+            const snapshot = this.props.context.log.snapshots[this.props.timeFrame];
+            const timestamp = this.props.context.log.snapshots[this.props.timeFrame].timestamp;
             this.loadClones(snapshot);
             this.loadSprites(snapshot);
             this.loadBubbles(snapshot);
