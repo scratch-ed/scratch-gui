@@ -144,7 +144,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             // console.log(events);
             // console.log(this.props.context.log.snapshots.map(snapshot => snapshot.timestamp));
             // console.log(this.props.vm.getTestResults());
-            // console.log(this.props.vm.getMarkedTests());
+            console.log(this.props.vm.getMarkedTests());
         }
 
         handleTestingStarted () {

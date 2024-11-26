@@ -50,46 +50,101 @@ Marker.propTypes = {
     id: PropTypes.string
 };
 
-const Band = ({group, groupName, timeframe, groupid}) => (
+const Band = ({group, groupName, timeframe, tickSize, groupid}) => (
     <div className={styles.bandWrapper}>
         <div
             style={{position: 'absolute', left: '0'}}
         >{groupName}
         </div>
         {
-            Object.entries(group).map(([timestamp, tests], index) => (
-                <div
-                    key={index}
-                    className={styles.timelineItem}
-                    style={{left: `${timestamp / timeframe * 100}%`}}
-                >
-                    <img
-                        className={styles.markerIcon}
-                        draggable={false}
-                        src={tests.every(test => test.passed) ? passedIcon : failedIcon}
-                        data-for={`${groupid}-${timestamp}`}
-                        data-tip=""
+            Object.entries(group).map(([marker, tests], index) => {
+                // if (typeof marker === 'object' && !Array.isArray(marker)) {
+                if (isNaN(parseInt(marker, 10))) {
+                    return (
+                        <MarkRectangle
+                            key={index}
+                            index={index}
+                            begin={tests[0].marker.start}
+                            end={tests[0].marker.end}
+                            timeframe={timeframe}
+                            tickSize={tickSize}
+                            tests={tests}
+                            groupid={groupid}
+                        />
+                    );
+                }
+                return (
+                    <Mark
+                        key={index}
+                        index={index}
+                        timestamp={marker}
+                        timeframe={timeframe}
+                        tests={tests}
+                        groupid={groupid}
                     />
-                    <ReactTooltip
-                        className={styles.tooltip}
-                        effect="solid"
-                        id={`${groupid}-${timestamp}`}
-                        place="top"
-                    >
-                        {tests.map(test => (
-                            <TestComponent
-                                {...test}
-                                key={test.id}
-                            />))
-                        }
-                    </ReactTooltip>
-                </div>
-            ))
+                );
+            })
         }
     </div>
 );
 
-const EventMarker = ({event, index}) => {
+const MarkRectangle = ({index, begin, end, timeframe, tickSize, tests, groupid}) => (
+    <div
+        key={index}
+        className={styles.timelineItem}
+        style={{left: `${begin / timeframe * 100}%`}}
+    >
+        <div
+            style={{width: `${(end - begin) * 100 / tickSize}px`, height: '15px', background: tests.every(test => test.passed) ? '#77d354' : '#f00d0d',
+                borderRadius: '10px'}}
+            data-for={`${groupid}-${begin}-${end}`}
+            data-tip=""
+        />
+        <ReactTooltip
+            className={styles.tooltip}
+            effect="solid"
+            id={`${groupid}-${begin}-${end}`}
+            place="top"
+        >
+            {tests.map(test => (
+                <TestComponent
+                    {...test}
+                    key={test.id}
+                />))
+            }
+        </ReactTooltip>
+    </div>
+);
+
+const Mark = ({index, timestamp, timeframe, tests, groupid}) => (
+    <div
+        className={styles.timelineItem}
+        style={{left: `${timestamp / timeframe * 100}%`}}
+    >
+        <img
+            className={styles.markerIcon}
+            draggable={false}
+            src={tests.every(test => test.passed) ? passedIcon : failedIcon}
+            data-for={`${groupid}-${timestamp}`}
+            data-tip=""
+        />
+        <ReactTooltip
+            className={styles.tooltip}
+            effect="solid"
+            id={`${groupid}-${timestamp}`}
+            place="top"
+        >
+            {tests.map(test => (
+                <TestComponent
+                    {...test}
+                    key={test.id}
+                />))
+            }
+        </ReactTooltip>
+    </div>
+);
+
+const EventMarker = ({event, index, tickSize}) => {
     if (event.type === 'key') {
         return (
             <>
@@ -108,6 +163,12 @@ const EventMarker = ({event, index}) => {
                 >
                     {`Pressed '${event.data.key}' key`}
                 </ReactTooltip>
+                <div
+                    style={{width: `${(event.end - event.begin) * 100 / tickSize}px`, height: '5px', background: 'grey',
+                        borderRadius: '3px', transform: 'translatey(-15px)'}}
+                    data-for={`keypress-${index}`}
+                    data-tip=""
+                />
             </>
         );
     }
@@ -139,9 +200,10 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
     if (!numberOfFrames) {
         return null;
     }
-    const testTimestamp = Math.max(...vm.getMarkedTests().map(test => test.marker));
-    const eventTimestamp = Math.max(...events.map(event => event.end));
-    const timeframe = Math.max(timestamps[numberOfFrames - 1], testTimestamp, eventTimestamp);
+    // const testTimestamp = Math.max(...vm.getMarkedTests().map(test => test.marker));
+    // const eventTimestamp = Math.max(...events.map(event => event.end));
+    // const timeframe = Math.max(timestamps[numberOfFrames - 1], testTimestamp, eventTimestamp);
+    const timeframe = timestamps[numberOfFrames - 1];
 
     const testGroups = Object.values(Object.groupBy(vm.getMarkedTests(), ({parent}) => parent)).map(group =>
         Object.groupBy(group, ({marker}) => marker)
@@ -200,6 +262,7 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
                                 <EventMarker
                                     event={event}
                                     index={index}
+                                    tickSize={tickSize}
                                 />
                             </div>
                         ))
@@ -213,6 +276,7 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
                             group={group}
                             groupName={Object.values(group)[0][0].parentName}
                             timeframe={timeframe}
+                            tickSize={tickSize}
                             groupid={`testgroup-${index}`}
                         />
                     ))
