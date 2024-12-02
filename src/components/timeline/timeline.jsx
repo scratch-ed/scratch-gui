@@ -7,116 +7,134 @@ import classNames from 'classnames';
 
 import ReactTooltip from 'react-tooltip';
 
-import TestComponent from '../test-results/test-component.jsx';
-
 import passedIcon from '../test-results/passed.png';
 import failedIcon from '../test-results/failed.png';
-import keypressIcon from './keypress.png';
+import keycapIcon from './keycap.png';
 import mouseClickIcon from './mouseClick.png';
 import styles from './timeline.css';
 
 import {setTimeFrame} from '../../reducers/time-slider.js';
 
-const Marker = ({tests, onClick, id}) => (
-    (tests && tests.length > 0) ? (
-        <>
-            <img
-                className={styles.markerIcon}
-                draggable={false}
-                src={tests.every(test => test.passed) ? passedIcon : failedIcon}
-                onClick={onClick}
-                data-for={id}
-                data-tip=""
-            />
-            <ReactTooltip
-                className={styles.tooltip}
-                effect="solid"
-                id={id}
-                place="top"
-            >
-                {tests.map(test => (
-                    <TestComponent
-                        {...test}
-                        key={test.id}
-                    />))
-                }
-            </ReactTooltip>
-        </>
-    ) : null);
+const testsOverlap = (test1, test2) => {
+    let start1;
+    let end1;
+    let start2;
+    let end2;
+    if (typeof test1.marker === 'number') {
+        start1 = test1.marker;
+        end1 = test1.marker;
+    } else {
+        start1 = test1.marker.start;
+        end1 = test1.marker.end;
+    }
+    if (typeof test2.marker === 'number') {
+        start2 = test2.marker;
+        end2 = test2.marker;
+    } else {
+        start2 = test2.marker.start;
+        end2 = test2.marker.end;
+    }
 
-Marker.propTypes = {
-    tests: PropTypes.arrayOf(PropTypes.object),
-    onClick: PropTypes.func,
-    id: PropTypes.string
+    return start1 < end2 + 10 && start2 < end1 + 10;
 };
 
-const Band = ({group, groupName, timeframe, tickSize, groupid}) => (
-    <div className={styles.bandWrapper}>
-        <div
-            style={{position: 'absolute', left: '0'}}
-        >{groupName}
-        </div>
-        {
-            Object.entries(group).map(([marker, tests], index) => {
-                // if (typeof marker === 'object' && !Array.isArray(marker)) {
-                if (isNaN(parseInt(marker, 10))) {
+// Sort tests into groups that don't have overlapping markers
+const separateTests = tests => {
+    const groups = [];
+
+    tests.forEach(test => {
+        let placed = false;
+        for (const group of groups) {
+            if (!group.some(t => testsOverlap(t, test))) {
+                group.push(test);
+                placed = true;
+                break;
+            }
+        }
+
+        if (!placed) {
+            groups.push([test]);
+        }
+    });
+
+    return groups;
+};
+
+const Band = ({tests, timeframe, tickSize}) => (
+    <div className={styles.bandPadding}>
+        <div className={styles.lineWrapper}>
+            {
+                tests.map(test => {
+                    if (typeof test.marker !== 'number') {
+                        return (
+                            <MarkRectangle
+                                key={test.id}
+                                begin={test.marker.start}
+                                end={test.marker.end}
+                                timeframe={timeframe}
+                                tickSize={tickSize}
+                                test={test}
+                            />
+                        );
+                    }
                     return (
-                        <MarkRectangle
-                            key={index}
-                            index={index}
-                            begin={tests[0].marker.start}
-                            end={tests[0].marker.end}
+                        <Mark
+                            key={test.id}
+                            timestamp={test.marker}
                             timeframe={timeframe}
-                            tickSize={tickSize}
-                            tests={tests}
-                            groupid={groupid}
+                            test={test}
                         />
                     );
-                }
-                return (
-                    <Mark
-                        key={index}
-                        index={index}
-                        timestamp={marker}
-                        timeframe={timeframe}
-                        tests={tests}
-                        groupid={groupid}
-                    />
-                );
-            })
-        }
+                })
+            }
+        </div>
     </div>
 );
 
-const MarkRectangle = ({index, begin, end, timeframe, tickSize, tests, groupid}) => (
+Band.propTypes = {
+    tests: PropTypes.arrayOf(PropTypes.shape({
+        name: PropTypes.string,
+        feedback: PropTypes.string,
+        id: PropTypes.string,
+        passed: PropTypes.bool,
+        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.object])
+    })),
+    timeframe: PropTypes.number,
+    tickSize: PropTypes.number
+};
+
+
+const MarkRectangle = ({begin, end, timeframe, tickSize, test}) => (
     <div
-        key={index}
         className={styles.timelineItem}
         style={{left: `${begin / timeframe * 100}%`}}
     >
         <div
-            style={{width: `${(end - begin) * 100 / tickSize}px`, height: '15px', background: tests.every(test => test.passed) ? '#77d354' : '#f00d0d',
+            className={styles.rectangleMark}
+            style={{width: `${(end - begin) * 100 / tickSize}px`, background: test.passed ? '#77d354' : '#f00d0d',
                 borderRadius: '10px'}}
-            data-for={`${groupid}-${begin}-${end}`}
+            data-for={test.id}
             data-tip=""
-        />
-        <ReactTooltip
-            className={styles.tooltip}
-            effect="solid"
-            id={`${groupid}-${begin}-${end}`}
-            place="top"
-        >
-            {tests.map(test => (
-                <TestComponent
-                    {...test}
-                    key={test.id}
-                />))
-            }
-        </ReactTooltip>
+        >{test.feedback ? test.feedback : test.name}
+        </div>
     </div>
 );
 
-const Mark = ({index, timestamp, timeframe, tests, groupid}) => (
+MarkRectangle.propTypes = {
+    test: PropTypes.shape({
+        name: PropTypes.string,
+        feedback: PropTypes.string,
+        id: PropTypes.string,
+        passed: PropTypes.bool,
+        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.object])
+    }),
+    timeframe: PropTypes.number,
+    tickSize: PropTypes.number,
+    begin: PropTypes.number,
+    end: PropTypes.number
+};
+
+const Mark = ({timestamp, timeframe, test}) => (
     <div
         className={styles.timelineItem}
         style={{left: `${timestamp / timeframe * 100}%`}}
@@ -124,37 +142,52 @@ const Mark = ({index, timestamp, timeframe, tests, groupid}) => (
         <img
             className={styles.markerIcon}
             draggable={false}
-            src={tests.every(test => test.passed) ? passedIcon : failedIcon}
-            data-for={`${groupid}-${timestamp}`}
+            src={test.passed ? passedIcon : failedIcon}
+            data-for={test.id}
             data-tip=""
         />
         <ReactTooltip
             className={styles.tooltip}
             effect="solid"
-            id={`${groupid}-${timestamp}`}
+            id={test.id}
             place="top"
         >
-            {tests.map(test => (
-                <TestComponent
-                    {...test}
-                    key={test.id}
-                />))
-            }
+            {test.feedback ? test.feedback : test.name}
         </ReactTooltip>
     </div>
 );
+
+Mark.propTypes = {
+    test: PropTypes.shape({
+        name: PropTypes.string,
+        feedback: PropTypes.string,
+        id: PropTypes.string,
+        passed: PropTypes.bool,
+        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.object])
+    }),
+    timeframe: PropTypes.number,
+    timestamp: PropTypes.number
+};
 
 const EventMarker = ({event, index, tickSize}) => {
     if (event.type === 'key') {
         return (
             <>
-                <img
-                    className={styles.eventIcon}
-                    draggable={false}
-                    src={keypressIcon}
+                <div
                     data-for={`keypress-${index}`}
                     data-tip=""
-                />
+                >
+                    <img
+                        className={styles.eventIcon}
+                        draggable={false}
+                        src={keycapIcon}
+                    />
+                    <div
+                        className={styles.eventKeyData}
+                    >
+                        {event.data.key}
+                    </div>
+                </div>
                 <ReactTooltip
                     className={styles.tooltip}
                     effect="solid"
@@ -163,12 +196,14 @@ const EventMarker = ({event, index, tickSize}) => {
                 >
                     {`Pressed '${event.data.key}' key`}
                 </ReactTooltip>
-                <div
-                    style={{width: `${(event.end - event.begin) * 100 / tickSize}px`, height: '5px', background: 'grey',
-                        borderRadius: '3px', transform: 'translatey(-15px)'}}
-                    data-for={`keypress-${index}`}
-                    data-tip=""
-                />
+                {
+                    // <div
+                    //     style={{width: `${(event.end - event.begin) * 100 / tickSize}px`, height: '5px', background: 'grey',
+                    //         borderRadius: '3px', transform: 'translatey(-15px)'}}
+                    //     data-for={`keypress-${index}`}
+                    //     data-tip=""
+                    // />
+                }
             </>
         );
     }
@@ -196,30 +231,36 @@ const EventMarker = ({event, index, tickSize}) => {
     return null;
 };
 
+EventMarker.propTypes = {
+    event: PropTypes.shape({
+        type: PropTypes.string,
+        // eslint-disable-next-line react/forbid-prop-types
+        data: PropTypes.object,
+        begin: PropTypes.number,
+        end: PropTypes.number
+    }),
+    index: PropTypes.number,
+    tickSize: PropTypes.number
+};
+
 const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, markers}) => {
     if (!numberOfFrames) {
         return null;
     }
-    // const testTimestamp = Math.max(...vm.getMarkedTests().map(test => test.marker));
-    // const eventTimestamp = Math.max(...events.map(event => event.end));
-    // const timeframe = Math.max(timestamps[numberOfFrames - 1], testTimestamp, eventTimestamp);
     const timeframe = timestamps[numberOfFrames - 1];
-
-    const testGroups = Object.values(Object.groupBy(vm.getMarkedTests(), ({parent}) => parent)).map(group =>
-        Object.groupBy(group, ({marker}) => marker)
-    );
+    const testGroups = separateTests(vm.getMarkedTests());
 
     let timeTicks = [];
     let tickSize = 10;
     if (timeframe) {
-        tickSize = Math.round(timeframe / numberOfFrames / 10) * 10;
+        tickSize = Math.round(timeframe / numberOfFrames / 10) * 8;
         timeTicks = Array(...Array(Math.floor(timeframe / tickSize) + 1)).map((_, index) => index * tickSize);
     }
 
     return (<div className={styles.scrollWrapper}>
         <div className={styles.scrollDetails}>
             <div className={styles.content}>
-                <div className={classNames(styles.linePadding, styles.tickHeight)}>
+                <div className={classNames(styles.lineWrapper, styles.tickHeight)}>
                     {timeTicks.map(tick => (
                         <div
                             key={tick}
@@ -231,7 +272,7 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
                 </div>
 
                 <div
-                    className={styles.linePadding}
+                    className={styles.lineWrapper}
                     style={{width: `${timeframe / tickSize * 100}px`}}
                 >
                     <ul className={styles.line}>
@@ -251,13 +292,13 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
                     </ul>
                 </div>
 
-                <div className={classNames(styles.linePadding, styles.eventHeight)}>
+                <div className={classNames(styles.lineWrapper)}>
                     {
                         events.map((event, index) => (
                             <div
                                 key={index}
                                 className={styles.timelineItem}
-                                style={{left: `${event.begin / timeframe * 100}%`}}
+                                style={{left: `${event.timestamp / timeframe * 100}%`}}
                             >
                                 <EventMarker
                                     event={event}
@@ -270,11 +311,11 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
                 </div>
 
                 {
-                    testGroups.map((group, index) => (
+                    testGroups.map((tests, index) => (
                         <Band
+                            className={styles.bandPadding}
                             key={index}
-                            group={group}
-                            groupName={Object.values(group)[0][0].parentName}
+                            tests={tests}
                             timeframe={timeframe}
                             tickSize={tickSize}
                             groupid={`testgroup-${index}`}

@@ -136,15 +136,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             ).map(e => ({
                 data: e.data,
                 type: e.type,
+                timestamp: e.timestamp,
                 begin: e.previous.timestamp,
                 end: e.next.timestamp
             })));
             this.props.vm.runtime.debugMode = false;
-            // console.log(this.props.context.log);
-            // console.log(events);
-            // console.log(this.props.context.log.snapshots.map(snapshot => snapshot.timestamp));
-            // console.log(this.props.vm.getTestResults());
-            console.log(this.props.vm.getMarkedTests());
         }
 
         handleTestingStarted () {
