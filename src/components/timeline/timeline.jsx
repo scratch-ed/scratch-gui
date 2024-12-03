@@ -10,6 +10,7 @@ import ReactTooltip from 'react-tooltip';
 import passedIcon from '../test-results/passed.png';
 import failedIcon from '../test-results/failed.png';
 import keycapIcon from './keycap.png';
+import broadcastIcon from './broadcast.png';
 import mouseClickIcon from './mouseClick.png';
 import styles from './timeline.css';
 
@@ -185,6 +186,63 @@ Mark.propTypes = {
     handleClick: PropTypes.func
 };
 
+const Band = ({tests, timeframe, tickSize, setFrameMark, setFrameRange}) => (
+    <div className={styles.bandPadding}>
+        <div className={styles.flexRow}>
+            {
+                tests.map(test => {
+                    if (typeof test.marker === 'number') {
+                        return (
+                            <Mark
+                                key={test.id}
+                                timestamp={test.marker}
+                                timeframe={timeframe}
+                                test={test}
+                                handleClick={() => setFrameMark(test.marker)}
+                            />
+                        );
+                    } else if (Array.isArray(test.marker)) {
+                        return (
+                            <MarkMultiple
+                                key={test.id}
+                                timestamps={test.marker}
+                                timeframe={timeframe}
+                                test={test}
+                                handleClick={setFrameMark}
+                            />
+                        );
+                    }
+                    return (
+                        <MarkRectangle
+                            key={test.id}
+                            begin={test.marker.start}
+                            end={test.marker.end}
+                            timeframe={timeframe}
+                            tickSize={tickSize}
+                            test={test}
+                            handleClick={() => setFrameRange(test.marker.start, test.marker.end)}
+                        />
+                    );
+                })
+            }
+        </div>
+    </div>
+);
+
+Band.propTypes = {
+    tests: PropTypes.arrayOf(PropTypes.shape({
+        name: PropTypes.string,
+        feedback: PropTypes.string,
+        id: PropTypes.string,
+        passed: PropTypes.bool,
+        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
+    })),
+    timeframe: PropTypes.number,
+    tickSize: PropTypes.number,
+    setFrameMark: PropTypes.func,
+    setFrameRange: PropTypes.func
+};
+
 const EventMarker = ({event, index, tickSize}) => {
     if (event.type === 'key') {
         return (
@@ -259,61 +317,73 @@ EventMarker.propTypes = {
     tickSize: PropTypes.number
 };
 
-const Band = ({tests, timeframe, tickSize, setFrameMark, setFrameRange}) => (
-    <div className={styles.bandPadding}>
-        <div className={styles.flexRow}>
-            {
-                tests.map(test => {
-                    if (typeof test.marker === 'number') {
-                        return (
-                            <Mark
-                                key={test.id}
-                                timestamp={test.marker}
-                                timeframe={timeframe}
-                                test={test}
-                                handleClick={() => setFrameMark(test.marker)}
-                            />
-                        );
-                    } else if (Array.isArray(test.marker)) {
-                        return (
-                            <MarkMultiple
-                                key={test.id}
-                                timestamps={test.marker}
-                                timeframe={timeframe}
-                                test={test}
-                                handleClick={setFrameMark}
-                            />
-                        );
-                    }
-                    return (
-                        <MarkRectangle
-                            key={test.id}
-                            begin={test.marker.start}
-                            end={test.marker.end}
-                            timeframe={timeframe}
-                            tickSize={tickSize}
-                            test={test}
-                            handleClick={() => setFrameRange(test.marker.start, test.marker.end)}
-                        />
-                    );
-                })
-            }
-        </div>
-    </div>
-);
+const Events = ({events, timeframe, tickSize}) => {
+    const clickAndKeyEvents = events.filter(e => e.type === 'key' || e.type === 'click');
+    const broadcastEvents = events.filter(e => e.type === 'broadcast');
 
-Band.propTypes = {
-    tests: PropTypes.arrayOf(PropTypes.shape({
-        name: PropTypes.string,
-        feedback: PropTypes.string,
-        id: PropTypes.string,
-        passed: PropTypes.bool,
-        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
+    return (
+        <>
+            <div className={classNames(styles.flexRow)}>
+                {
+                    clickAndKeyEvents.map((event, index) => (
+                        <div
+                            key={index}
+                            className={styles.timelineItem}
+                            style={{left: `${event.timestamp / timeframe * 100}%`}}
+                        >
+                            <EventMarker
+                                event={event}
+                                index={index}
+                                tickSize={tickSize}
+                            />
+                        </div>
+                    ))
+                }
+            </div>
+            <div className={classNames(styles.flexRow)}>
+                {
+                    broadcastEvents.map((event, index) => (
+                        <div
+                            key={index}
+                            className={styles.timelineItem}
+                            style={{left: `${event.timestamp / timeframe * 100}%`}}
+                        >
+                            <div
+                                data-for={`broadcast-${index}`}
+                                data-tip=""
+                            >
+                                <img
+                                    className={styles.eventIcon}
+                                    draggable={false}
+                                    src={broadcastIcon}
+                                />
+                            </div>
+                            <ReactTooltip
+                                className={styles.tooltip}
+                                effect="solid"
+                                id={`broadcast-${index}`}
+                                place="top"
+                            >
+                                {`Broadcast: ${event.data.name}`}
+                            </ReactTooltip>
+                        </div>
+                    ))
+                }
+            </div>
+        </>
+    );
+};
+
+Events.propTypes = {
+    events: PropTypes.arrayOf(PropTypes.shape({
+        type: PropTypes.string,
+        // eslint-disable-next-line react/forbid-prop-types
+        data: PropTypes.object,
+        begin: PropTypes.number,
+        end: PropTypes.number
     })),
     timeframe: PropTypes.number,
-    tickSize: PropTypes.number,
-    setFrameMark: PropTypes.func,
-    setFrameRange: PropTypes.func
+    tickSize: PropTypes.number
 };
 
 const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events}) => {
@@ -384,23 +454,11 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events})
                     </ul>
                 </div>
 
-                <div className={classNames(styles.flexRow)}>
-                    {
-                        events.map((event, index) => (
-                            <div
-                                key={index}
-                                className={styles.timelineItem}
-                                style={{left: `${event.timestamp / timeframe * 100}%`}}
-                            >
-                                <EventMarker
-                                    event={event}
-                                    index={index}
-                                    tickSize={tickSize}
-                                />
-                            </div>
-                        ))
-                    }
-                </div>
+                <Events
+                    events={events}
+                    timeframe={timeframe}
+                    tickSize={tickSize}
+                />
 
                 {
                     testGroups.map((tests, index) => (
