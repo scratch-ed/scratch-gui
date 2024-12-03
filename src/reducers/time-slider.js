@@ -6,7 +6,6 @@ const CLOSE_SLIDER = 'scratch-gui/time-slider/CLOSE_SLIDER';
 const SET_NUMBER_OF_FRAMES = 'scratch-gui/time-slider/SET_NUMBER_OF_FRAMES';
 const SET_TIMESTAMPS = 'scratch-gui/time-slider/SET_TIMESTAMPS';
 const SET_EVENTS = 'scratch-gui/time-slider/SET_EVENTS';
-const SET_MARKERS = 'scratch-gui/time-slider/SET_MARKERS';
 const SET_PAUSED = 'scratch-gui/time-slider/SET_PAUSED';
 const SET_CHANGED = 'scratch-gui/time-slider/SET_CHANGED';
 const SET_REMOVE_FUTURE = 'scratch-gui/time-slider/SET_REMOVE_FUTURE';
@@ -28,7 +27,6 @@ const initialState = {
     numberOfFrames: 0,
     timestamps: [],
     events: [],
-    markers: [],
     paused: false,
     changed: false,
     removeFuture: false,
@@ -69,10 +67,6 @@ const reducer = function (state, action) {
     case SET_EVENTS:
         return Object.assign({}, state, {
             events: action.events
-        });
-    case SET_MARKERS:
-        return Object.assign({}, state, {
-            markers: action.markers
         });
     case SET_PAUSED:
         return Object.assign({}, state, {
@@ -147,13 +141,6 @@ const setEvents = function (events) {
     };
 };
 
-const setMarkers = function (markers) {
-    return {
-        type: SET_MARKERS,
-        markers: markers
-    };
-};
-
 const setPaused = function (paused) {
     return {
         type: SET_PAUSED,
@@ -195,7 +182,6 @@ export {
     setNumberOfFrames,
     setTimestamps,
     setEvents,
-    setMarkers,
     setPaused,
     setChanged,
     setRemoveFuture,

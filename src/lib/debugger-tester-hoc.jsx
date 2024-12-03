@@ -16,7 +16,6 @@ import {
     setNumberOfFrames,
     setTimestamps,
     setEvents,
-    setMarkers,
     setTimeFrame,
     setRemoveFuture
 } from '../reducers/time-slider.js';
@@ -116,18 +115,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
         handleTestingStopped () {
             this.props.finishTesting();
-            // const markers = Array.from(Array(this.props.numberOfFrames), () => []);
-
-            // const timestampToFrame = new Map(this.props.context.log.ops.map(
-            //     (snapshot, index) => [snapshot.timestamp, index]
-            // ));
-            // this.props.vm.getMarkedTests().forEach(
-            //     test => markers[timestampToFrame.get(test.marker)].push(test)
-            // );
-            //
-            // this.props.setMarkers(markers);
-
-            this.props.setMarkers([]);
 
             // this.props.setTimestamps(this.props.context.log.ops.map(e => e.previous.timestamp));
             this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
@@ -246,7 +233,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setTimeFrame(0);
                 this.props.setTimestamps([]);
                 this.props.setEvents([]);
-                this.props.setMarkers([]);
             }
 
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
@@ -299,7 +285,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'setNumberOfFrames',
                 'setTimestamps',
                 'setEvents',
-                'setMarkers',
                 'setPaused',
                 'setChanged',
                 'setRemoveFuture',
@@ -330,7 +315,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setNumberOfFrames: PropTypes.func.isRequired,
         setTimestamps: PropTypes.func.isRequired,
         setEvents: PropTypes.func.isRequired,
-        setMarkers: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setChanged: PropTypes.func.isRequired,
         setRemoveFuture: PropTypes.func.isRequired,
@@ -361,7 +345,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setTimestamps: timestamps => dispatch(setTimestamps(timestamps)),
         setEvents: events => dispatch(setEvents(events)),
-        setMarkers: markers => dispatch(setMarkers(markers)),
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),
         setRemoveFuture: removeFuture => dispatch(setRemoveFuture(removeFuture)),

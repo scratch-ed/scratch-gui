@@ -23,6 +23,9 @@ const testsOverlap = (test1, test2) => {
     if (typeof test1.marker === 'number') {
         start1 = test1.marker;
         end1 = test1.marker;
+    } else if (Array.isArray(test1.marker)) {
+        start1 = test1.marker[0];
+        end1 = test1.marker[test1.marker.length - 1];
     } else {
         start1 = test1.marker.start;
         end1 = test1.marker.end;
@@ -30,6 +33,9 @@ const testsOverlap = (test1, test2) => {
     if (typeof test2.marker === 'number') {
         start2 = test2.marker;
         end2 = test2.marker;
+    } else if (Array.isArray(test2.marker)) {
+        start2 = test2.marker[0];
+        end2 = test2.marker[test2.marker.length - 1];
     } else {
         start2 = test2.marker.start;
         end2 = test2.marker.end;
@@ -60,63 +66,77 @@ const separateTests = tests => {
     return groups;
 };
 
-const Band = ({tests, timeframe, tickSize}) => (
-    <div className={styles.bandPadding}>
-        <div className={styles.lineWrapper}>
-            {
-                tests.map(test => {
-                    if (typeof test.marker !== 'number') {
-                        return (
-                            <MarkRectangle
-                                key={test.id}
-                                begin={test.marker.start}
-                                end={test.marker.end}
-                                timeframe={timeframe}
-                                tickSize={tickSize}
-                                test={test}
-                            />
-                        );
-                    }
-                    return (
-                        <Mark
-                            key={test.id}
-                            timestamp={test.marker}
-                            timeframe={timeframe}
-                            test={test}
-                        />
-                    );
-                })
-            }
-        </div>
+const TestTooltip = ({test}) => (
+    <ReactTooltip
+        className={styles.tooltip}
+        effect="solid"
+        id={test.id}
+        place="top"
+    >
+        {test.feedback ? test.feedback : test.name}
+    </ReactTooltip>
+);
+
+TestTooltip.propTypes = {
+    test: PropTypes.shape({
+        name: PropTypes.string,
+        feedback: PropTypes.string,
+        id: PropTypes.string,
+        passed: PropTypes.bool
+    })
+};
+
+const MarkMultiple = ({timestamps, timeframe, test, handleClick}) => (
+    <div className={styles.flexRow}>
+        {timestamps.map(timestamp => (
+            <div
+                key={timestamp}
+                className={styles.timelineItem}
+                style={{left: `${timestamp / timeframe * 100}%`}}
+                onClick={() => handleClick(timestamp)}
+            >
+                <div
+                    className={styles.markMultiple}
+                    style={{background: test.passed ? '#77d354' : '#f00d0d'}}
+                    data-for={test.id}
+                    data-tip=""
+                />
+                <TestTooltip test={test} />
+            </div>
+        ))}
     </div>
 );
 
-Band.propTypes = {
-    tests: PropTypes.arrayOf(PropTypes.shape({
+MarkMultiple.propTypes = {
+    test: PropTypes.shape({
         name: PropTypes.string,
         feedback: PropTypes.string,
         id: PropTypes.string,
         passed: PropTypes.bool,
-        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.object])
-    })),
+        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
+    }),
     timeframe: PropTypes.number,
-    tickSize: PropTypes.number
+    timestamps: PropTypes.arrayOf(PropTypes.number),
+    handleClick: PropTypes.func
 };
 
-
-const MarkRectangle = ({begin, end, timeframe, tickSize, test}) => (
+const MarkRectangle = ({begin, end, timeframe, tickSize, test, handleClick}) => (
     <div
         className={styles.timelineItem}
         style={{left: `${begin / timeframe * 100}%`}}
+        onClick={handleClick}
     >
         <div
-            className={styles.rectangleMark}
-            style={{width: `${(end - begin) * 100 / tickSize}px`, background: test.passed ? '#77d354' : '#f00d0d',
-                borderRadius: '10px'}}
+            className={styles.markRectangle}
+            style={{
+                width: `${(end - begin) * 100 / tickSize}px`,
+                background: test.passed ? '#77d354' : '#f00d0d'
+            }}
             data-for={test.id}
             data-tip=""
         >{test.feedback ? test.feedback : test.name}
         </div>
+        <TestTooltip test={test} />
     </div>
 );
 
@@ -126,18 +146,20 @@ MarkRectangle.propTypes = {
         feedback: PropTypes.string,
         id: PropTypes.string,
         passed: PropTypes.bool,
-        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.object])
+        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     }),
     timeframe: PropTypes.number,
     tickSize: PropTypes.number,
     begin: PropTypes.number,
-    end: PropTypes.number
+    end: PropTypes.number,
+    handleClick: PropTypes.func
 };
 
-const Mark = ({timestamp, timeframe, test}) => (
+const Mark = ({timestamp, timeframe, test, handleClick}) => (
     <div
         className={styles.timelineItem}
         style={{left: `${timestamp / timeframe * 100}%`}}
+        onClick={handleClick}
     >
         <img
             className={styles.markerIcon}
@@ -146,14 +168,7 @@ const Mark = ({timestamp, timeframe, test}) => (
             data-for={test.id}
             data-tip=""
         />
-        <ReactTooltip
-            className={styles.tooltip}
-            effect="solid"
-            id={test.id}
-            place="top"
-        >
-            {test.feedback ? test.feedback : test.name}
-        </ReactTooltip>
+        <TestTooltip test={test} />
     </div>
 );
 
@@ -163,10 +178,11 @@ Mark.propTypes = {
         feedback: PropTypes.string,
         id: PropTypes.string,
         passed: PropTypes.bool,
-        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.object])
+        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     }),
     timeframe: PropTypes.number,
-    timestamp: PropTypes.number
+    timestamp: PropTypes.number,
+    handleClick: PropTypes.func
 };
 
 const EventMarker = ({event, index, tickSize}) => {
@@ -243,7 +259,64 @@ EventMarker.propTypes = {
     tickSize: PropTypes.number
 };
 
-const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, markers}) => {
+const Band = ({tests, timeframe, tickSize, setFrameMark, setFrameRange}) => (
+    <div className={styles.bandPadding}>
+        <div className={styles.flexRow}>
+            {
+                tests.map(test => {
+                    if (typeof test.marker === 'number') {
+                        return (
+                            <Mark
+                                key={test.id}
+                                timestamp={test.marker}
+                                timeframe={timeframe}
+                                test={test}
+                                handleClick={() => setFrameMark(test.marker)}
+                            />
+                        );
+                    } else if (Array.isArray(test.marker)) {
+                        return (
+                            <MarkMultiple
+                                key={test.id}
+                                timestamps={test.marker}
+                                timeframe={timeframe}
+                                test={test}
+                                handleClick={setFrameMark}
+                            />
+                        );
+                    }
+                    return (
+                        <MarkRectangle
+                            key={test.id}
+                            begin={test.marker.start}
+                            end={test.marker.end}
+                            timeframe={timeframe}
+                            tickSize={tickSize}
+                            test={test}
+                            handleClick={() => setFrameRange(test.marker.start, test.marker.end)}
+                        />
+                    );
+                })
+            }
+        </div>
+    </div>
+);
+
+Band.propTypes = {
+    tests: PropTypes.arrayOf(PropTypes.shape({
+        name: PropTypes.string,
+        feedback: PropTypes.string,
+        id: PropTypes.string,
+        passed: PropTypes.bool,
+        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
+    })),
+    timeframe: PropTypes.number,
+    tickSize: PropTypes.number,
+    setFrameMark: PropTypes.func,
+    setFrameRange: PropTypes.func
+};
+
+const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events}) => {
     if (!numberOfFrames) {
         return null;
     }
@@ -253,14 +326,33 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
     let timeTicks = [];
     let tickSize = 10;
     if (timeframe) {
-        tickSize = Math.round(timeframe / numberOfFrames / 10) * 8;
+        tickSize = Math.round(timeframe / numberOfFrames / 10) * 10;
         timeTicks = Array(...Array(Math.floor(timeframe / tickSize) + 1)).map((_, index) => index * tickSize);
     }
 
-    return (<div className={styles.scrollWrapper}>
+    const timestampToIndex = timestamps.reduce((map, item, index) => {
+        map[item] = index;
+        return map;
+    }, {});
+
+    const setFrameMark = timestamp => {
+        setFrame(timestampToIndex[timestamp]);
+    };
+
+    const setFrameRange = (start, end) => {
+        const index1 = timestampToIndex[start];
+        const index2 = timestampToIndex[end];
+        if (timeFrame < index1 || timeFrame >= index2) {
+            setFrame(index1);
+        } else {
+            setFrame(timeFrame + 1);
+        }
+    };
+
+    return (<div className={styles.flexRow}>
         <div className={styles.scrollDetails}>
             <div className={styles.content}>
-                <div className={classNames(styles.lineWrapper, styles.tickHeight)}>
+                <div className={classNames(styles.flexRow, styles.tickHeight)}>
                     {timeTicks.map(tick => (
                         <div
                             key={tick}
@@ -272,7 +364,7 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
                 </div>
 
                 <div
-                    className={styles.lineWrapper}
+                    className={styles.flexRow}
                     style={{width: `${timeframe / tickSize * 100}px`}}
                 >
                     <ul className={styles.line}>
@@ -292,7 +384,7 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
                     </ul>
                 </div>
 
-                <div className={classNames(styles.lineWrapper)}>
+                <div className={classNames(styles.flexRow)}>
                     {
                         events.map((event, index) => (
                             <div
@@ -319,6 +411,8 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events, 
                             timeframe={timeframe}
                             tickSize={tickSize}
                             groupid={`testgroup-${index}`}
+                            setFrameMark={setFrameMark}
+                            setFrameRange={setFrameRange}
                         />
                     ))
                 }
@@ -333,8 +427,7 @@ Timeline.propTypes = {
     numberOfFrames: PropTypes.number,
     setFrame: PropTypes.func,
     timestamps: PropTypes.arrayOf(PropTypes.number),
-    events: PropTypes.arrayOf(PropTypes.object),
-    markers: PropTypes.arrayOf(PropTypes.number)
+    events: PropTypes.arrayOf(PropTypes.object)
 };
 
 const mapStateToProps = state => ({
@@ -342,8 +435,7 @@ const mapStateToProps = state => ({
     timeFrame: state.scratchGui.timeSlider.timeFrame,
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timestamps: state.scratchGui.timeSlider.timestamps,
-    events: state.scratchGui.timeSlider.events,
-    markers: state.scratchGui.timeSlider.markers
+    events: state.scratchGui.timeSlider.events
 });
 
 const mapDispatchToProps = dispatch => ({

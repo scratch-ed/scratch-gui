@@ -1,7 +1,6 @@
 import React from 'react';
 import Box from '../box/box.jsx';
 import TimeSliderComponent from '../time-slider/time-slider.jsx';
-import TestMarkers from '../test-markers/test-markers.jsx';
 import PropTypes from 'prop-types';
 
 import styles from './time-interface.css';
@@ -41,7 +40,6 @@ const TimeInterfaceComponent = function (props) {
     const {
         numberOfFrames,
         onTimeChange,
-        onFrameChange,
         onTimeMouseDown,
         timeFrame,
         paused,
@@ -55,10 +53,6 @@ const TimeInterfaceComponent = function (props) {
 
     return (
         <Box>
-            <TestMarkers
-                numberOfFrames={numberOfFrames}
-                onFrameChange={onFrameChange}
-            />
             <TimeSliderComponent
                 numberOfFrames={numberOfFrames}
                 onChange={onTimeChange}
@@ -101,7 +95,6 @@ const TimeInterfaceComponent = function (props) {
 TimeInterfaceComponent.propTypes = {
     numberOfFrames: PropTypes.number.isRequired,
     onTimeChange: PropTypes.func.isRequired,
-    onFrameChange: PropTypes.func.isRequired,
     onTimeMouseDown: PropTypes.func.isRequired,
     timeFrame: PropTypes.number.isRequired,
     paused: PropTypes.bool.isRequired,
