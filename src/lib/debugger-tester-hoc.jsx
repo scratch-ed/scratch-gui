@@ -31,6 +31,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             bindAll(this, [
                 'handleDebugModeDisabled',
                 'handleDebugModeEnabled',
+                'handleTestModeDisabled',
                 'handleTestingStopped',
                 'handleTestingStarted',
                 'handleProjectLoaded',
@@ -86,6 +87,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.props.vm.runtime.addListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
             this.props.vm.runtime.addListener('TESTING_STOPPED', this.handleTestingStopped);
             this.props.vm.runtime.addListener('TESTING_STARTED', this.handleTestingStarted);
+            this.props.vm.runtime.addListener('TEST_MODE_DISABLED', this.handleTestModeDisabled);
 
             this.props.vm.runtime.addListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.addListener('PROJECT_PAUSED', this.handleProjectPaused);
@@ -98,6 +100,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.props.vm.runtime.removeListener('DEBUG_MODE_ENABLED', this.handleDebugModeEnabled);
             this.props.vm.runtime.removeListener('TESTING_STOPPED', this.handleTestingStopped);
             this.props.vm.runtime.removeListener('TESTING_STARTED', this.handleTestingStarted);
+            this.props.vm.runtime.removeListener('TEST_MODE_DISABLED', this.handleTestModeDisabled);
 
             this.props.vm.runtime.removeListener('PROJECT_LOADED', this.handleProjectLoaded);
             this.props.vm.runtime.removeListener('PROJECT_PAUSED', this.handleProjectPaused);
@@ -113,10 +116,13 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.props.startDebugging();
         }
 
+        handleTestModeDisabled () {
+            this.props.closeSlider();
+        }
+
         handleTestingStopped () {
             this.props.finishTesting();
 
-            // this.props.setTimestamps(this.props.context.log.ops.map(e => e.previous.timestamp));
             this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
             this.props.setEvents(this.props.context.log.events.filter(e =>
                 e.type !== 'ops' && e.type !== 'block_execution'
@@ -139,7 +145,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
          */
         handleProjectLoaded () {
             this.props.vm.runtime.disableDebugMode();
-            this.props.vm.runtime.stopTesting();
+            this.props.vm.runtime.disableTestMode();
             this.props.vm.clearTestResults();
         }
 
@@ -177,58 +183,38 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             }
         }
 
-        proxyRegisterEvent (context) {
-            // Increase the length of the time slider every time a new frame gets added to the log.
-            this.oldRegisterEvent = context.log.registerEvent;
-            context.log.registerEvent = new Proxy(this.oldRegisterEvent, {
-                apply: (target, thisArg, argArray) => {
-                    const added = target.apply(thisArg, argArray);
-                    if (added && argArray[0].type === 'ops') {
-                        // The UI needs to reflect the new log entry
-                        if (this.props.changed) {
-                            // If changed, remove full history
-                            this.removeFullHistory();
-                            this.props.setChanged(false);
-                        }
-                        this.props.setNumberOfFrames(this.props.context.log.ops.length);
-                        this.props.setTimeFrame(this.props.context.log.ops.length - 1);
-                    }
-                    return added;
-                }
-            });
-        }
-
         proxyRegisterSnapshot (context) {
             // Increase the length of the time slider every time a new frame gets added to the log.
             this.oldRegisterSnapshot = context.log.registerSnapshot;
             context.log.registerSnapshot = new Proxy(this.oldRegisterSnapshot, {
                 apply: (target, thisArg, argArray) => {
                     const added = target.apply(thisArg, argArray);
-                    // The UI needs to reflect the new log entry
-                    if (this.props.changed) {
-                        // If changed, remove full history
-                        this.removeFullHistory();
-                        this.props.setChanged(false);
+                    if (added && this.props.context) {
+                        // The UI needs to reflect the new log entry
+                        if (this.props.changed) {
+                            // If changed, remove full history
+                            this.removeFullHistory();
+                            this.props.setChanged(false);
+                        }
+                        this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
+                        this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
                     }
-                    this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
-                    this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
                     return added;
                 }
             });
         }
 
         async changeMode (prevMode) {
+            if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
+                // Restore the VM to the state before the creation of the current context.
+                await this.props.context.deinstrumentVm();
+                return;
+            }
+
             if (this.props.timeSliderMode === TimeSliderMode.OFF ||
-                (prevMode !== TimeSliderMode.OFF &&
-                 !(prevMode === TimeSliderMode.TEST_RUNNING &&
-                   this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED))) {
+                prevMode !== TimeSliderMode.OFF) {
 
-                if (this.props.context) {
-                    // Restore the VM to the state before the creation of the current context.
-                    await this.props.context.deinstrumentVm();
-                    this.props.setContext(null);
-                }
-
+                this.props.setContext(null);
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
                 this.props.setTimestamps([]);
@@ -243,7 +229,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 context.log.registerStartSnapshots(snapshot, snapshot);
 
                 this.props.setContext(context);
-                // this.proxyRegisterEvent(context);
                 this.proxyRegisterSnapshot(context);
 
             } else if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
@@ -258,7 +243,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                 this.props.setContext(context);
                 this.proxyRegisterSnapshot(context);
-                // this.proxyRegisterEvent(context);
                 this.props.vm.runtime.debugMode = true;
 
                 runWithContext({

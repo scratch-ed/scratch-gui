@@ -29,7 +29,6 @@ import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
 import {isTimeTravel2020} from '../reducers/time-travel';
-import {TimeSliderStates} from '../reducers/time-slider.js';
 
 import {
     activateTab,
@@ -609,7 +608,6 @@ class Blocks extends React.Component {
             updateMetrics: updateMetricsProp,
             useCatBlocks,
             workspaceMetrics,
-            timeSliderMode,
             ...props
         } = this.props;
         /* eslint-enable no-unused-vars */
@@ -658,7 +656,6 @@ Blocks.propTypes = {
     anyModalVisible: PropTypes.bool,
     canUseCloud: PropTypes.bool,
     customProceduresVisible: PropTypes.bool,
-    timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
     extensionLibraryVisible: PropTypes.bool,
     isRtl: PropTypes.bool,
     isVisible: PropTypes.bool,
@@ -719,7 +716,6 @@ const mapStateToProps = state => ({
         Object.keys(state.scratchGui.modals).some(key => state.scratchGui.modals[key]) ||
         state.scratchGui.mode.isFullScreen
     ),
-    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
     extensionLibraryVisible: state.scratchGui.modals.extensionLibrary,
     isRtl: state.locales.isRtl,
     locale: state.locales.locale,

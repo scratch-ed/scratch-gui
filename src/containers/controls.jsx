@@ -57,8 +57,7 @@ class Controls extends React.Component {
         if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
             this.props.vm.runtime.stopTesting();
         } else if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
-            this.props.vm.runtime.resume();
-            this.props.closeSlider();
+            this.props.vm.runtime.disableTestMode();
         } else {
             this.props.vm.stopAll();
         }

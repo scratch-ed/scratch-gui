@@ -128,7 +128,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
             }
         }
 
-        loadMonitors (snapshot, timestamp) {
+        loadMonitors (snapshot) {
             const monitorState = this.props.context.vm.runtime.getMonitorState();
             for (const monitorId of monitorState.keys()) {
                 const loggedTarget = snapshot.findTargetById(monitorId.substring(0, 20));
@@ -141,7 +141,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
 
             // Restore answer
             const answerEvents = this.props.context.log.events.filter(e => e.type === 'answer');
-            updateAnswerMonitor(this.props.context.vm.runtime, answerEvents, timestamp);
+            updateAnswerMonitor(this.props.context.vm.runtime, answerEvents, snapshot.timestamp);
         }
 
         loadRuntime (snapshot) {
@@ -151,12 +151,11 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
 
         loadLogFrame () {
             const snapshot = this.props.context.log.snapshots[this.props.timeFrame];
-            const timestamp = this.props.context.log.snapshots[this.props.timeFrame].timestamp;
             this.loadClones(snapshot);
             this.loadSprites(snapshot);
             this.loadBubbles(snapshot);
             this.loadVariables(snapshot);
-            this.loadMonitors(snapshot, timestamp);
+            this.loadMonitors(snapshot);
             this.loadRuntime(snapshot);
         }
 
