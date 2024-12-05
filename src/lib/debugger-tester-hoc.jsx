@@ -39,6 +39,10 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'handleProjectResumed',
                 'handleProjectChanged'
             ]);
+
+            this.state = {
+                refreshed: false
+            };
         }
 
         componentDidMount () {
@@ -133,7 +137,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 begin: e.previous.timestamp,
                 end: e.next.timestamp
             })));
-            this.props.vm.runtime.debugMode = false;
         }
 
         handleTestingStarted () {
@@ -158,6 +161,14 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         }
 
         handleProjectChanged () {
+            if (this.state.refreshed) {
+                // Hack for bug where workspace refreshes result in wrong project change emissions.
+                setTimeout(() => {
+                    this.setState({refreshed: false});
+                }, 100);
+                return;
+            }
+
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
                 this.props.vm.runtime.pause();
                 this.props.setChanged(true);
@@ -206,6 +217,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
         async changeMode (prevMode) {
             if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
+                this.setState({refreshed: true});
                 // Restore the VM to the state before the creation of the current context.
                 await this.props.context.deinstrumentVm();
                 return;
@@ -214,6 +226,9 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             if (this.props.timeSliderMode === TimeSliderMode.OFF ||
                 prevMode !== TimeSliderMode.OFF) {
 
+                if (prevMode === TimeSliderMode.DEBUG) {
+                    await this.props.context.deinstrumentVm();
+                }
                 this.props.setContext(null);
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
@@ -243,7 +258,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                 this.props.setContext(context);
                 this.proxyRegisterSnapshot(context);
-                this.props.vm.runtime.debugMode = true;
 
                 runWithContext({
                     ...this.props.vm.testConfig,
