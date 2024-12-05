@@ -46,6 +46,7 @@ const Controls = function (props) {
         onStopAllClick,
         onTestFlagClick,
         turbo,
+        testsLoaded,
         ...componentProps
     } = props;
 
@@ -69,11 +70,13 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.debugTitle)}
                 onClick={onDebugModeClick}
             />
-            <TestFlag
-                active={timeSliderMode === TimeSliderMode.TEST_RUNNING}
-                title={intl.formatMessage(messages.testTitle)}
-                onClick={onTestFlagClick}
-            />
+            {testsLoaded &&
+                <TestFlag
+                    active={timeSliderMode === TimeSliderMode.TEST_RUNNING}
+                    title={intl.formatMessage(messages.testTitle)}
+                    onClick={onTestFlagClick}
+                />
+            }
             {turbo ? (
                 <TurboMode />
             ) : null}
@@ -90,12 +93,14 @@ Controls.propTypes = {
     onGreenFlagClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
     onTestFlagClick: PropTypes.func.isRequired,
-    turbo: PropTypes.bool
+    turbo: PropTypes.bool,
+    testsLoaded: PropTypes.bool
 };
 
 Controls.defaultProps = {
     active: false,
-    turbo: false
+    turbo: false,
+    testsLoaded: false
 };
 
 export default injectIntl(Controls);

@@ -68,6 +68,7 @@ class Controls extends React.Component {
             'vm',
             'projectRunning',
             'turbo',
+            'testsLoaded',
             'closeSlider'
         ]);
 
@@ -76,6 +77,7 @@ class Controls extends React.Component {
                 {...componentProps}
                 active={this.props.projectRunning}
                 turbo={this.props.turbo}
+                testsLoaded={this.props.testsLoaded}
                 onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onStopAllClick={this.handleStopAllClick}
@@ -90,6 +92,7 @@ Controls.propTypes = {
     closeSlider: PropTypes.func.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
+    testsLoaded: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM),
     isStarted: PropTypes.bool
 };
@@ -97,7 +100,8 @@ Controls.propTypes = {
 const mapStateToProps = state => ({
     timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
     projectRunning: state.scratchGui.vmStatus.running,
-    turbo: state.scratchGui.vmStatus.turbo
+    turbo: state.scratchGui.vmStatus.turbo,
+    testsLoaded: state.scratchGui.vmStatus.testsLoaded
 });
 
 const mapDispatchToProps = dispatch => ({

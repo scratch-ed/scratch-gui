@@ -128,6 +128,7 @@ const GUIComponent = props => {
         targetIsStage,
         telemetryModalVisible,
         testResultsTabVisible,
+        testsLoaded,
         theme,
         tipsLibraryVisible,
         vm,
@@ -310,20 +311,22 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
-                                    <Tab
-                                        className={tabClassNames.tab}
-                                        onClick={onActivateTestResultsTab}
-                                    >
-                                        <img
-                                            draggable={false}
-                                            src={testIcon}
-                                        />
-                                        <FormattedMessage
-                                            defaultMessage="Test Results"
-                                            description="Button to get to the test results panel"
-                                            id="gui.gui.testResultsTab"
-                                        />
-                                    </Tab>
+                                    {testsLoaded &&
+                                        <Tab
+                                            className={tabClassNames.tab}
+                                            onClick={onActivateTestResultsTab}
+                                        >
+                                            <img
+                                                draggable={false}
+                                                src={testIcon}
+                                            />
+                                            <FormattedMessage
+                                                defaultMessage="Test Results"
+                                                description="Button to get to the test results panel"
+                                                id="gui.gui.testResultsTab"
+                                            />
+                                        </Tab>
+                                    }
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
@@ -363,9 +366,11 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
-                                <TabPanel className={tabClassNames.tabPanel}>
-                                    {testResultsTabVisible ? <TestResultsTab vm={vm} /> : null}
-                                </TabPanel>
+                                {testsLoaded &&
+                                    <TabPanel className={tabClassNames.tabPanel}>
+                                        {testResultsTabVisible ? <TestResultsTab vm={vm} /> : null}
+                                    </TabPanel>
+                                }
                             </Tabs>
                             {backpackVisible ? (
                                 <Backpack host={backpackHost} />
@@ -463,6 +468,7 @@ GUIComponent.propTypes = {
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
     testResultsTabVisible: PropTypes.bool,
+    testsLoaded: PropTypes.bool,
     theme: PropTypes.string,
     tipsLibraryVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired

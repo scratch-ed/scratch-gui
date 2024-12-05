@@ -173,6 +173,7 @@ const mapStateToProps = state => {
         ),
         telemetryModalVisible: state.scratchGui.modals.telemetryModal,
         testResultsTabVisible: state.scratchGui.editorTab.activeTabIndex === TEST_RESULTS_TAB_INDEX,
+        testsLoaded: state.scratchGui.vmStatus.testsLoaded,
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
         vm: state.scratchGui.vm
     };
