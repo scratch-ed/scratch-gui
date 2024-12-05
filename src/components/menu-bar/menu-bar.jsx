@@ -422,7 +422,9 @@ class MenuBar extends React.Component {
                     this.props.className,
                     styles.menuBar,
                     {
-                        [styles.debugMode]: this.props.timeSliderMode === TimeSliderMode.DEBUG
+                        [styles.debugMode]: this.props.timeSliderMode === TimeSliderMode.DEBUG,
+                        [styles.testMode]: this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED ||
+                                           this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING
                     }
                 )}
             >

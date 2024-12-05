@@ -22,7 +22,9 @@ const MenuComponent = ({
                 [styles.right]: place === 'right'
             },
             {
-                [styles.debugMode]: timeSliderMode === TimeSliderMode.DEBUG
+                [styles.debugMode]: timeSliderMode === TimeSliderMode.DEBUG,
+                [styles.testMode]: timeSliderMode === TimeSliderMode.TEST_FINISHED ||
+                                   timeSliderMode === TimeSliderMode.TEST_RUNNING
             }
         )}
         ref={componentRef}
