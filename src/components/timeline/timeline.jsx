@@ -391,14 +391,34 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events})
         return null;
     }
     const timeframe = timestamps[numberOfFrames - 1];
-    const testGroups = separateTests(vm.getMarkedTests());
-
     let timeTicks = [];
     let tickSize = 10;
     if (timeframe) {
         tickSize = Math.round(timeframe / numberOfFrames / 10) * 10;
         timeTicks = Array(...Array(Math.floor(timeframe / tickSize) + 1)).map((_, index) => index * tickSize);
     }
+
+    const filteredTests = vm.getMarkedTests()
+        .filter(t => {
+            if (typeof t.marker === 'number') {
+                return t.marker <= timeframe;
+            } else if (Array.isArray(t.marker)) {
+                return t.marker[0] <= timeframe;
+            }
+            return t.marker.start + (tickSize / 2) <= timeframe;
+        })
+        .map(t => {
+            if (typeof t.marker === 'number') {
+                return t;
+            } else if (Array.isArray(t.marker)) {
+                return {...t, marker: t.marker.filter(timestamp => timestamp <= timeframe)};
+            }
+            return {...t, marker: {start: t.marker.start, end: Math.min(t.marker.end, timeframe)}};
+        });
+    const testGroups = separateTests(filteredTests);
+    const filteredEvents = events.filter(e => e.begin <= timeframe).map(e => ({
+        ...e, end: Math.min(e.end, timeframe)
+    }));
 
     const timestampToIndex = timestamps.reduce((map, item, index) => {
         map[item] = index;
@@ -455,7 +475,7 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events})
                 </div>
 
                 <Events
-                    events={events}
+                    events={filteredEvents}
                     timeframe={timeframe}
                     tickSize={tickSize}
                 />

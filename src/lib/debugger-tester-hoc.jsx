@@ -232,7 +232,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setContext(null);
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
-                this.props.setTimestamps([]);
                 this.props.setEvents([]);
             }
 

@@ -58,7 +58,8 @@ const reducer = function (state, action) {
         });
     case SET_NUMBER_OF_FRAMES:
         return Object.assign({}, state, {
-            numberOfFrames: action.numberOfFrames
+            numberOfFrames: action.numberOfFrames,
+            timestamps: state.timestamps.slice(0, action.numberOfFrames)
         });
     case SET_TIMESTAMPS:
         return Object.assign({}, state, {

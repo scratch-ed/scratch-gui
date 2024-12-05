@@ -6,8 +6,6 @@ import {Context} from 'itch';
 import {
     TimeSliderMode,
     TimeSliderStates,
-    setNumberOfFrames,
-    setTimeFrame
 } from '../reducers/time-slider.js';
 import {
     updateSpriteBubble,
@@ -179,9 +177,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
         timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
         numberOfFrames: PropTypes.number.isRequired,
         timeFrame: PropTypes.number.isRequired,
-        vm: PropTypes.instanceOf(VM).isRequired,
-        setNumberOfFrames: PropTypes.func.isRequired,
-        setTimeFrame: PropTypes.func.isRequired
+        vm: PropTypes.instanceOf(VM).isRequired
     };
 
     const mapStateToProps = state => ({
@@ -192,10 +188,7 @@ const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
         vm: state.scratchGui.vm
     });
 
-    const mapDispatchToProps = dispatch => ({
-        setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
-        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
-    });
+    const mapDispatchToProps = () => ({});
 
     return connect(
         mapStateToProps,
