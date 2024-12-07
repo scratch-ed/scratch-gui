@@ -386,7 +386,7 @@ Events.propTypes = {
     tickSize: PropTypes.number
 };
 
-const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events}) => {
+const Timeline = ({vm, paused, numberOfFrames, timeFrame, setFrame, timestamps, events}) => {
     if (!numberOfFrames) {
         return null;
     }
@@ -420,16 +420,29 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events})
         ...e, end: Math.min(e.end, timeframe)
     }));
 
+    const setFrameIndex = index => {
+        if (!paused) {
+            vm.runtime.pause();
+        }
+        setFrame(index);
+    };
+
     const timestampToIndex = timestamps.reduce((map, item, index) => {
         map[item] = index;
         return map;
     }, {});
 
     const setFrameMark = timestamp => {
+        if (!paused) {
+            vm.runtime.pause();
+        }
         setFrame(timestampToIndex[timestamp]);
     };
 
     const setFrameRange = (start, end) => {
+        if (!paused) {
+            vm.runtime.pause();
+        }
         const index1 = timestampToIndex[start];
         const index2 = timestampToIndex[end];
         if (timeFrame < index1 || timeFrame >= index2) {
@@ -465,7 +478,7 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events})
                                 style={{left: `${timestamp / timeframe * 100}%`}}
                             >
                                 <li
-                                    onClick={() => setFrame(index)}
+                                    onClick={() => setFrameIndex(index)}
                                     key={index}
                                     className={classNames(styles.dot, {[styles.active]: index === timeFrame})}
                                 />
@@ -501,6 +514,7 @@ const Timeline = ({vm, numberOfFrames, timeFrame, setFrame, timestamps, events})
 
 Timeline.propTypes = {
     vm: PropTypes.instanceOf(VM).isRequired,
+    paused: PropTypes.bool,
     timeFrame: PropTypes.number,
     numberOfFrames: PropTypes.number,
     setFrame: PropTypes.func,
@@ -510,6 +524,7 @@ Timeline.propTypes = {
 
 const mapStateToProps = state => ({
     vm: state.scratchGui.vm,
+    paused: state.scratchGui.timeSlider.paused,
     timeFrame: state.scratchGui.timeSlider.timeFrame,
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timestamps: state.scratchGui.timeSlider.timestamps,
