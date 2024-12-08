@@ -127,16 +127,18 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         handleTestingStopped () {
             this.props.finishTesting();
 
-            this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
-            this.props.setEvents(this.props.context.log.events.filter(e =>
-                e.type !== 'ops' && e.type !== 'block_execution'
-            ).map(e => ({
-                data: e.data,
-                type: e.type,
-                timestamp: e.timestamp,
-                begin: e.previous.timestamp,
-                end: e.next.timestamp
-            })));
+            if (this.props.context) {
+                this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
+                this.props.setEvents(this.props.context.log.events.filter(e =>
+                    e.type !== 'ops' && e.type !== 'block_execution'
+                ).map(e => ({
+                    data: e.data,
+                    type: e.type,
+                    timestamp: e.timestamp,
+                    begin: e.previous.timestamp,
+                    end: e.next.timestamp
+                })));
+            }
         }
 
         handleTestingStarted () {
@@ -217,18 +219,18 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
         async changeMode (prevMode) {
             if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
-                this.setState({refreshed: true});
-                // Restore the VM to the state before the creation of the current context.
-                await this.props.context.deinstrumentVm();
+                if (this.props.context) {
+                    this.setState({refreshed: true});
+                    // Restore the VM to the state before the creation of the current context.
+                    await this.props.context.deinstrumentVm();
+                }
                 return;
             }
 
             if (this.props.timeSliderMode === TimeSliderMode.OFF ||
                 prevMode !== TimeSliderMode.OFF) {
 
-                if (prevMode === TimeSliderMode.DEBUG) {
-                    await this.props.context.deinstrumentVm();
-                }
+                await this.props.context.deinstrumentVm();
                 this.props.setContext(null);
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
