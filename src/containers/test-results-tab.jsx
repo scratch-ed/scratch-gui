@@ -5,33 +5,28 @@ import {connect} from 'react-redux';
 import Box from '../components/box/box.jsx';
 import TestGroupComponent from '../components/test-results/test-group.jsx';
 import TestComponent from '../components/test-results/test-component.jsx';
-import Timeline from '../components/timeline/timeline.jsx';
 
 import styles from '../components/test-results/test-results.css';
 
 const TestResultsTab = ({getTestResults}) => {
     const testResults = getTestResults();
-    // return (<Box className={styles.wrapper}>
-    //     <Box className={styles.testDetails}>
-    //         {
-    //             testResults.map(result => {
-    //                 if ('children' in result) {
-    //                     return (<TestGroupComponent
-    //                         testGroup={result}
-    //                         key={result.id}
-    //                     />);
-    //                 }
-    //                 return (<TestComponent
-    //                     {...result}
-    //                     key={result.id}
-    //                 />);
-    //             })
-    //         }
-    //     </Box>
-    // </Box>);
-
     return (<Box className={styles.wrapper}>
-        <Timeline />
+        <Box className={styles.testDetails}>
+            {
+                testResults.map(result => {
+                    if ('children' in result) {
+                        return (<TestGroupComponent
+                            testGroup={result}
+                            key={result.id}
+                        />);
+                    }
+                    return (<TestComponent
+                        {...result}
+                        key={result.id}
+                    />);
+                })
+            }
+        </Box>
     </Box>);
 };
 

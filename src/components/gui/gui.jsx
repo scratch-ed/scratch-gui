@@ -14,7 +14,8 @@ import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
-import TestResultsTab from '../../containers/test-result-tab.jsx';
+import TestResultsTab from '../../containers/test-results-tab.jsx';
+import TimelineTab from '../../containers/timeline-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
@@ -109,6 +110,7 @@ const GUIComponent = props => {
         onActivateSoundsTab,
         onActivateTab,
         onActivateTestResultsTab,
+        onActivateTimelineTab,
         onClickLogo,
         onExtensionButtonClick,
         onProjectTelemetryEvent,
@@ -128,6 +130,7 @@ const GUIComponent = props => {
         targetIsStage,
         telemetryModalVisible,
         testResultsTabVisible,
+        timelineTabVisible,
         testsLoaded,
         theme,
         tipsLibraryVisible,
@@ -312,20 +315,36 @@ const GUIComponent = props => {
                                         />
                                     </Tab>
                                     {testsLoaded &&
-                                        <Tab
-                                            className={tabClassNames.tab}
-                                            onClick={onActivateTestResultsTab}
-                                        >
-                                            <img
-                                                draggable={false}
-                                                src={testIcon}
-                                            />
-                                            <FormattedMessage
-                                                defaultMessage="Test Results"
-                                                description="Button to get to the test results panel"
-                                                id="gui.gui.testResultsTab"
-                                            />
-                                        </Tab>
+                                        <>
+                                            <Tab
+                                                className={tabClassNames.tab}
+                                                onClick={onActivateTestResultsTab}
+                                            >
+                                                <img
+                                                    draggable={false}
+                                                    src={testIcon}
+                                                />
+                                                <FormattedMessage
+                                                    defaultMessage="Test Results"
+                                                    description="Button to get to the test results panel"
+                                                    id="gui.gui.testResultsTab"
+                                                />
+                                            </Tab>
+                                            <Tab
+                                                className={tabClassNames.tab}
+                                                onClick={onActivateTimelineTab}
+                                            >
+                                                <img
+                                                    draggable={false}
+                                                    src={testIcon}
+                                                />
+                                                <FormattedMessage
+                                                    defaultMessage="Timeline"
+                                                    description="Button to get to the timeline panel"
+                                                    id="gui.gui.timelineTab"
+                                                />
+                                            </Tab>
+                                        </>
                                     }
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
@@ -367,9 +386,14 @@ const GUIComponent = props => {
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
                                 {testsLoaded &&
-                                    <TabPanel className={tabClassNames.tabPanel}>
-                                        {testResultsTabVisible ? <TestResultsTab vm={vm} /> : null}
-                                    </TabPanel>
+                                    <>
+                                        <TabPanel className={tabClassNames.tabPanel}>
+                                            {testResultsTabVisible ? <TestResultsTab vm={vm} /> : null}
+                                        </TabPanel>
+                                        <TabPanel className={tabClassNames.tabPanel}>
+                                            {timelineTabVisible ? <TimelineTab vm={vm} /> : null}
+                                        </TabPanel>
+                                    </>
                                 }
                             </Tabs>
                             {backpackVisible ? (
@@ -443,6 +467,7 @@ GUIComponent.propTypes = {
     onActivateSoundsTab: PropTypes.func,
     onActivateTab: PropTypes.func,
     onActivateTestResultsTab: PropTypes.func,
+    onActivateTimelineTab: PropTypes.func,
     onClickAccountNav: PropTypes.func,
     onClickLogo: PropTypes.func,
     onCloseAccountNav: PropTypes.func,
@@ -468,6 +493,7 @@ GUIComponent.propTypes = {
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
     testResultsTabVisible: PropTypes.bool,
+    timelineTabVisible: PropTypes.bool,
     testsLoaded: PropTypes.bool,
     theme: PropTypes.string,
     tipsLibraryVisible: PropTypes.bool,
