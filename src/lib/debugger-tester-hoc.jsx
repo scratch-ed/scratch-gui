@@ -128,6 +128,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.props.finishTesting();
 
             if (this.props.context) {
+                this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
+                this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
                 this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
                 this.props.setEvents(this.props.context.log.events.filter(e =>
                     e.type !== 'ops' && e.type !== 'block_execution'
@@ -258,7 +260,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 context.log.registerStartSnapshots(template, submission);
 
                 this.props.setContext(context);
-                this.proxyRegisterSnapshot(context);
+                // this.proxyRegisterSnapshot(context);
 
                 runWithContext({
                     ...this.props.vm.testConfig,

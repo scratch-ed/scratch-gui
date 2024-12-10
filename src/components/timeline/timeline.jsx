@@ -394,7 +394,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame, setFrame, timestamps, 
     let timeTicks = [];
     let tickSize = 10;
     if (timeframe) {
-        tickSize = Math.round(timeframe / numberOfFrames / 10) * 10;
+        tickSize = (Math.round(timeframe / numberOfFrames / 10) + 1) * 10;
         timeTicks = Array(...Array(Math.floor(timeframe / tickSize) + 1)).map((_, index) => index * tickSize);
     }
 
