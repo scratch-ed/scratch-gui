@@ -223,6 +223,9 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
                 if (this.props.context) {
                     this.setState({refreshed: true});
+                    // Hack to reload workspace due to bug that causes runtime primitives
+                    // not being able to be changed if any blocks have been run
+                    this.props.vm.emitWorkspaceUpdate();
                     // Restore the VM to the state before the creation of the current context.
                     await this.props.context.deinstrumentVm();
                 }
