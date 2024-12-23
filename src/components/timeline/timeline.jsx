@@ -245,6 +245,33 @@ Band.propTypes = {
 
 const EventMarker = ({event, index, tickSize}) => {
     if (event.type === 'key') {
+        let key;
+        let text;
+        switch (event.data.key) {
+        case ' ':
+            key = ' ';
+            text = 'space';
+            break;
+        case 'ArrowLeft':
+            key = '⬅';
+            text = 'left arrow';
+            break;
+        case 'ArrowRight':
+            key = '➡';
+            text = 'right arrow';
+            break;
+        case 'ArrowUp':
+            key = '⬆';
+            text = 'up arrow';
+            break;
+        case 'ArrowDown':
+            key = '⬇';
+            text = 'down arrow';
+            break;
+        default:
+            key = event.data.key;
+            text = event.data.key;
+        }
         return (
             <>
                 <div
@@ -259,7 +286,7 @@ const EventMarker = ({event, index, tickSize}) => {
                     <div
                         className={styles.eventKeyData}
                     >
-                        {event.data.key}
+                        {key}
                     </div>
                 </div>
                 <ReactTooltip
@@ -268,7 +295,7 @@ const EventMarker = ({event, index, tickSize}) => {
                     id={`keypress-${index}`}
                     place="top"
                 >
-                    {`Pressed '${event.data.key}' key`}
+                    {`Pressed '${text}' key`}
                 </ReactTooltip>
                 {
                     // <div
