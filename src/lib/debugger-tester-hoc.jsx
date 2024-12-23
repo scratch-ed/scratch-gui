@@ -133,13 +133,14 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
                 this.props.setEvents(this.props.context.log.events.filter(e =>
                     e.type !== 'ops' && e.type !== 'block_execution'
-                ).map(e => ({
-                    data: e.data,
-                    type: e.type,
-                    timestamp: e.timestamp,
-                    begin: e.previous.timestamp,
-                    end: e.next.timestamp
-                })));
+                ).map(e => {
+                    const {nextSnapshot, previousSnapshot, ...event} = e;
+                    return {
+                        ...event,
+                        begin: nextSnapshot.timestamp,
+                        end: previousSnapshot.timestamp
+                    };
+                }));
             }
         }
 

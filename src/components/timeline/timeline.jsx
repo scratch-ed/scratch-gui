@@ -42,7 +42,7 @@ const testsOverlap = (test1, test2) => {
         end2 = test2.marker.end;
     }
 
-    return start1 < end2 + 10 && start2 < end1 + 10;
+    return start1 < end2 + 1 && start2 < end1 + 1;
 };
 
 // Sort tests into groups that don't have overlapping markers
@@ -243,7 +243,16 @@ Band.propTypes = {
     setFrameRange: PropTypes.func
 };
 
+const eventSeenMessage = (event, formatter) => {
+    if (event.sprites.length > 0) {
+        return `${formatter.format(event.sprites)} reacted`;
+    }
+    return `...but nothing happened`;
+};
+
 const EventMarker = ({event, index, tickSize}) => {
+    const formatter = new Intl.ListFormat('en', {style: 'long', type: 'conjunction'});
+
     if (event.type === 'key') {
         let key;
         let text;
@@ -295,7 +304,8 @@ const EventMarker = ({event, index, tickSize}) => {
                     id={`keypress-${index}`}
                     place="top"
                 >
-                    {`Pressed '${text}' key`}
+                    <div>{`The '${text}' key was pressed`}</div>
+                    <div>{eventSeenMessage(event, formatter)}</div>
                 </ReactTooltip>
                 {
                     // <div
@@ -324,7 +334,8 @@ const EventMarker = ({event, index, tickSize}) => {
                     id={`mouseClick-${index}`}
                     place="top"
                 >
-                    {`Clicked on ${event.data.target}`}
+                    <div>{`Clicked on ${event.data.target}`}</div>
+                    <div>{eventSeenMessage(event, formatter)}</div>
                 </ReactTooltip>
             </>
         );
@@ -338,15 +349,16 @@ EventMarker.propTypes = {
         // eslint-disable-next-line react/forbid-prop-types
         data: PropTypes.object,
         begin: PropTypes.number,
-        end: PropTypes.number
+        end: PropTypes.number,
+        sprites: PropTypes.arrayOf(PropTypes.string)
     }),
     index: PropTypes.number,
     tickSize: PropTypes.number
 };
 
 const broadcastMessage = (event, formatter) => {
-    if (event.data.sprites.length > 0) {
-        return `Broadcast '${event.data.name}' received by ${formatter.format(event.data.sprites)}`;
+    if (event.sprites.length > 0) {
+        return `Broadcast '${event.data.name}' received by ${formatter.format(event.sprites)}`;
     }
     return `Broadcast '${event.data.name}' was sent, but no one was there to receive it`;
 };
@@ -416,7 +428,8 @@ Events.propTypes = {
         // eslint-disable-next-line react/forbid-prop-types
         data: PropTypes.object,
         begin: PropTypes.number,
-        end: PropTypes.number
+        end: PropTypes.number,
+        sprites: PropTypes.arrayOf(PropTypes.string)
     })),
     timeframe: PropTypes.number,
     tickSize: PropTypes.number
