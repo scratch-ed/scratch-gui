@@ -344,7 +344,16 @@ EventMarker.propTypes = {
     tickSize: PropTypes.number
 };
 
+const broadcastMessage = (event, formatter) => {
+    if (event.data.sprites.length > 0) {
+        return `Broadcast '${event.data.name}' received by ${formatter.format(event.data.sprites)}`;
+    }
+    return `Broadcast '${event.data.name}' was sent, but no one was there to receive it`;
+};
+
 const Events = ({events, timeframe, tickSize}) => {
+    const formatter = new Intl.ListFormat('en', {style: 'long', type: 'conjunction'});
+
     const clickAndKeyEvents = events.filter(e => e.type === 'key' || e.type === 'click');
     const broadcastEvents = events.filter(e => e.type === 'broadcast');
 
@@ -391,7 +400,7 @@ const Events = ({events, timeframe, tickSize}) => {
                                 id={`broadcast-${index}`}
                                 place="top"
                             >
-                                {`Broadcast: ${event.data.name}`}
+                                {broadcastMessage(event, formatter)}
                             </ReactTooltip>
                         </div>
                     ))
