@@ -131,6 +131,7 @@ const GUIComponent = props => {
         telemetryModalVisible,
         testResultsTabVisible,
         timelineTabVisible,
+        timelineActive,
         testsLoaded,
         theme,
         tipsLibraryVisible,
@@ -314,37 +315,37 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
+                                    {timelineActive &&
+                                        <Tab
+                                            className={tabClassNames.tab}
+                                            onClick={onActivateTimelineTab}
+                                        >
+                                            <img
+                                                draggable={false}
+                                                src={testIcon}
+                                            />
+                                            <FormattedMessage
+                                                defaultMessage="Timeline"
+                                                description="Button to get to the timeline panel"
+                                                id="gui.gui.timelineTab"
+                                            />
+                                        </Tab>
+                                    }
                                     {testsLoaded &&
-                                        <>
-                                            <Tab
-                                                className={tabClassNames.tab}
-                                                onClick={onActivateTestResultsTab}
-                                            >
-                                                <img
-                                                    draggable={false}
-                                                    src={testIcon}
-                                                />
-                                                <FormattedMessage
-                                                    defaultMessage="Test Results"
-                                                    description="Button to get to the test results panel"
-                                                    id="gui.gui.testResultsTab"
-                                                />
-                                            </Tab>
-                                            <Tab
-                                                className={tabClassNames.tab}
-                                                onClick={onActivateTimelineTab}
-                                            >
-                                                <img
-                                                    draggable={false}
-                                                    src={testIcon}
-                                                />
-                                                <FormattedMessage
-                                                    defaultMessage="Timeline"
-                                                    description="Button to get to the timeline panel"
-                                                    id="gui.gui.timelineTab"
-                                                />
-                                            </Tab>
-                                        </>
+                                        <Tab
+                                            className={tabClassNames.tab}
+                                            onClick={onActivateTestResultsTab}
+                                        >
+                                            <img
+                                                draggable={false}
+                                                src={testIcon}
+                                            />
+                                            <FormattedMessage
+                                                defaultMessage="Test Results"
+                                                description="Button to get to the test results panel"
+                                                id="gui.gui.testResultsTab"
+                                            />
+                                        </Tab>
                                     }
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
@@ -385,15 +386,15 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
+                                {timelineActive &&
+                                    <TabPanel className={tabClassNames.tabPanel}>
+                                        {timelineTabVisible ? <TimelineTab vm={vm} /> : null}
+                                    </TabPanel>
+                                }
                                 {testsLoaded &&
-                                    <>
-                                        <TabPanel className={tabClassNames.tabPanel}>
-                                            {testResultsTabVisible ? <TestResultsTab vm={vm} /> : null}
-                                        </TabPanel>
-                                        <TabPanel className={tabClassNames.tabPanel}>
-                                            {timelineTabVisible ? <TimelineTab vm={vm} /> : null}
-                                        </TabPanel>
-                                    </>
+                                    <TabPanel className={tabClassNames.tabPanel}>
+                                        {testResultsTabVisible ? <TestResultsTab vm={vm} /> : null}
+                                    </TabPanel>
                                 }
                             </Tabs>
                             {backpackVisible ? (
@@ -494,6 +495,7 @@ GUIComponent.propTypes = {
     telemetryModalVisible: PropTypes.bool,
     testResultsTabVisible: PropTypes.bool,
     timelineTabVisible: PropTypes.bool,
+    timelineActive: PropTypes.bool,
     testsLoaded: PropTypes.bool,
     theme: PropTypes.string,
     tipsLibraryVisible: PropTypes.bool,

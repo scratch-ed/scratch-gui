@@ -26,6 +26,7 @@ import {
     closeTelemetryModal,
     openExtensionLibrary
 } from '../reducers/modals';
+import {TimeSliderMode} from '../reducers/time-slider.js';
 
 import FontLoaderHOC from '../lib/font-loader-hoc.jsx';
 import LocalizationHOC from '../lib/localization-hoc.jsx';
@@ -176,6 +177,10 @@ const mapStateToProps = state => {
         testResultsTabVisible: state.scratchGui.editorTab.activeTabIndex === TEST_RESULTS_TAB_INDEX,
         timelineTabVisible: state.scratchGui.editorTab.activeTabIndex === TIMELINE_TAB_INDEX,
         testsLoaded: state.scratchGui.vmStatus.testsLoaded,
+        timelineActive: (
+            state.scratchGui.vmStatus.testsLoaded ||
+            state.scratchGui.timeSlider.timeSliderMode === TimeSliderMode.DEBUG
+        ),
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
         vm: state.scratchGui.vm
     };

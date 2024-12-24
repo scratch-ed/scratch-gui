@@ -15,6 +15,7 @@ import {
     setChanged,
     setNumberOfFrames,
     setTimestamps,
+    addEvent,
     setEvents,
     setTimeFrame,
     setRemoveFuture
@@ -49,7 +50,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.addListeners();
 
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
-                // this.proxyRegisterEvent(this.props.context);
+                this.proxyRegisterEvent(this.props.context);
                 this.proxyRegisterSnapshot(this.props.context);
             } else if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
                 this.proxyRegisterSnapshot(this.props.context);
@@ -132,7 +133,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
                 this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
                 this.props.setEvents(this.props.context.log.events.filter(e =>
-                    e.type !== 'ops' && e.type !== 'block_execution'
+                    e.type !== 'block_execution'
                 ).map(e => {
                     const {nextSnapshot, previousSnapshot, ...event} = e;
                     return {
@@ -214,6 +215,26 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                         }
                         this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
                         this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
+                        this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
+                    }
+                    return added;
+                }
+            });
+        }
+
+        proxyRegisterEvent (context) {
+            // Register new events as they get added to the log.
+            this.oldRegisterEvent = context.log.registerEvent;
+            context.log.registerEvent = new Proxy(this.oldRegisterEvent, {
+                apply: (target, thisArg, argArray) => {
+                    const added = target.apply(thisArg, argArray);
+                    if (added && this.props.context) {
+                        const {nextSnapshot, previousSnapshot, ...event} = argArray[0];
+                        this.props.addEvent({
+                            ...event,
+                            begin: nextSnapshot.timestamp,
+                            end: previousSnapshot.timestamp
+                        });
                     }
                     return added;
                 }
@@ -244,6 +265,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             }
 
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
+                this.props.vm.clearTestResults();
+
                 const context = await createContextWithVm(this.props.vm);
                 context.instrumentVm('debugger');
                 context.log.started = true;
@@ -252,6 +275,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                 this.props.setContext(context);
                 this.proxyRegisterSnapshot(context);
+                this.proxyRegisterEvent(context);
 
             } else if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
                 this.props.vm.clearTestResults();
@@ -264,7 +288,6 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 context.log.registerStartSnapshots(template, submission);
 
                 this.props.setContext(context);
-                // this.proxyRegisterSnapshot(context);
 
                 runWithContext({
                     ...this.props.vm.testConfig,
@@ -289,6 +312,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'closeSlider',
                 'setNumberOfFrames',
                 'setTimestamps',
+                'addEvent',
                 'setEvents',
                 'setPaused',
                 'setChanged',
@@ -319,6 +343,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         closeSlider: PropTypes.func.isRequired,
         setNumberOfFrames: PropTypes.func.isRequired,
         setTimestamps: PropTypes.func.isRequired,
+        addEvent: PropTypes.func.isRequired,
         setEvents: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setChanged: PropTypes.func.isRequired,
@@ -349,6 +374,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         closeSlider: () => dispatch(closeSlider()),
         setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
         setTimestamps: timestamps => dispatch(setTimestamps(timestamps)),
+        addEvent: event => dispatch(addEvent(event)),
         setEvents: events => dispatch(setEvents(events)),
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),

@@ -435,7 +435,7 @@ Events.propTypes = {
     tickSize: PropTypes.number
 };
 
-const Timeline = ({vm, paused, numberOfFrames, timeFrame, setFrame, timestamps, events}) => {
+const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events}) => {
     if (!numberOfFrames) {
         return null;
     }
@@ -494,10 +494,10 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame, setFrame, timestamps, 
         }
         const index1 = timestampToIndex[start];
         const index2 = timestampToIndex[end];
-        if (timeFrame < index1 || timeFrame >= index2) {
+        if (currentFrame < index1 || currentFrame >= index2) {
             setFrame(index1);
         } else {
-            setFrame(timeFrame + 1);
+            setFrame(currentFrame + 1);
         }
     };
 
@@ -529,7 +529,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame, setFrame, timestamps, 
                                 <li
                                     onClick={() => setFrameIndex(index)}
                                     key={index}
-                                    className={classNames(styles.dot, {[styles.active]: index === timeFrame})}
+                                    className={classNames(styles.dot, {[styles.active]: index === currentFrame})}
                                 />
                             </div>
                         ))}
