@@ -258,28 +258,33 @@ const EventMarker = ({event, index, tickSize}) => {
         let text;
         switch (event.data.key) {
         case ' ':
+        case 'SPACE':
             key = ' ';
-            text = 'space';
+            text = 'Space';
             break;
         case 'ArrowLeft':
+        case 'LEFT ARROW':
             key = '⬅';
-            text = 'left arrow';
+            text = 'Left Arrow';
             break;
         case 'ArrowRight':
+        case 'RIGHT ARROW':
             key = '➡';
-            text = 'right arrow';
+            text = 'Right Arrow';
             break;
         case 'ArrowUp':
+        case 'UP ARROW':
             key = '⬆';
-            text = 'up arrow';
+            text = 'Up Arrow';
             break;
         case 'ArrowDown':
+        case 'DOWN ARROW':
             key = '⬇';
-            text = 'down arrow';
+            text = 'Down Arrow';
             break;
         default:
-            key = event.data.key;
-            text = event.data.key;
+            key = event.data.key.toUpperCase();
+            text = event.data.key.toUpperCase();
         }
         return (
             <>
