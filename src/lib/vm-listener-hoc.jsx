@@ -44,7 +44,12 @@ const vmListenerHOC = function (WrappedComponent) {
             this.props.vm.on('PROJECT_CHANGED', this.handleProjectChanged);
             this.props.vm.on('RUNTIME_STARTED', this.props.onRuntimeStarted);
             this.props.vm.on('PROJECT_START', this.props.onGreenFlag);
-            this.props.vm.on('PROJECT_LOADED', this.props.onProjectLoaded);
+            this.props.vm.on('PROJECT_LOADED', () => {
+                // This check is necessary because PROJECT_LOADED comes after TESTS_LOADED in some browsers
+                if (!this.props.vm.testConfig) {
+                    this.props.onProjectLoaded();
+                }
+            });
             this.props.vm.on('TESTS_LOADED', this.props.onTestsLoaded);
             this.props.vm.on('PERIPHERAL_CONNECTION_LOST_ERROR', this.props.onShowExtensionAlert);
             this.props.vm.on('MIC_LISTENING', this.props.onMicListeningUpdate);
