@@ -291,6 +291,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                 runWithContext({
                     ...this.props.vm.testConfig,
+                    language: this.props.vm.getLocale(),
                     template: this.props.vm.testTemplate,
                     callback: this.props.testCallback
                 }, context, this.props.vm.runtime.getTestSignal());
