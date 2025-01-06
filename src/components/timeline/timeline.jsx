@@ -87,23 +87,46 @@ TestTooltip.propTypes = {
     })
 };
 
+const Mark = ({timestamp, timeElapsed, test, handleClick}) => (
+    <div
+        className={styles.timelineItem}
+        style={{left: `${timestamp / timeElapsed * 100}%`}}
+        onClick={handleClick}
+    >
+        <img
+            className={styles.markerIcon}
+            draggable={false}
+            src={test.passed ? passedIcon : failedIcon}
+            data-for={test.id}
+            data-tip=""
+        />
+        <TestTooltip test={test} />
+    </div>
+);
+
+Mark.propTypes = {
+    test: PropTypes.shape({
+        name: PropTypes.string,
+        feedback: PropTypes.string,
+        id: PropTypes.string,
+        passed: PropTypes.bool,
+        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
+    }),
+    timeElapsed: PropTypes.number,
+    timestamp: PropTypes.number,
+    handleClick: PropTypes.func
+};
+
 const MarkMultiple = ({timestamps, timeElapsed, test, handleClick}) => (
     <div className={styles.flexRow}>
         {timestamps.map(timestamp => (
-            <div
+            <Mark
                 key={timestamp}
-                className={styles.timelineItem}
-                style={{left: `${timestamp / timeElapsed * 100}%`}}
+                timestamp={timestamp}
+                timeElapsed={timeElapsed}
+                test={test}
                 onClick={() => handleClick(timestamp)}
-            >
-                <div
-                    className={styles.markMultiple}
-                    style={{background: test.passed ? '#77d354' : '#f00d0d'}}
-                    data-for={test.id}
-                    data-tip=""
-                />
-                <TestTooltip test={test} />
-            </div>
+            />
         ))}
     </div>
 );
@@ -153,36 +176,6 @@ MarkRectangle.propTypes = {
     tickSize: PropTypes.number,
     begin: PropTypes.number,
     end: PropTypes.number,
-    handleClick: PropTypes.func
-};
-
-const Mark = ({timestamp, timeElapsed, test, handleClick}) => (
-    <div
-        className={styles.timelineItem}
-        style={{left: `${timestamp / timeElapsed * 100}%`}}
-        onClick={handleClick}
-    >
-        <img
-            className={styles.markerIcon}
-            draggable={false}
-            src={test.passed ? passedIcon : failedIcon}
-            data-for={test.id}
-            data-tip=""
-        />
-        <TestTooltip test={test} />
-    </div>
-);
-
-Mark.propTypes = {
-    test: PropTypes.shape({
-        name: PropTypes.string,
-        feedback: PropTypes.string,
-        id: PropTypes.string,
-        passed: PropTypes.bool,
-        marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
-    }),
-    timeElapsed: PropTypes.number,
-    timestamp: PropTypes.number,
     handleClick: PropTypes.func
 };
 
