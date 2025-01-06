@@ -87,13 +87,13 @@ TestTooltip.propTypes = {
     })
 };
 
-const MarkMultiple = ({timestamps, timeframe, test, handleClick}) => (
+const MarkMultiple = ({timestamps, timeElapsed, test, handleClick}) => (
     <div className={styles.flexRow}>
         {timestamps.map(timestamp => (
             <div
                 key={timestamp}
                 className={styles.timelineItem}
-                style={{left: `${timestamp / timeframe * 100}%`}}
+                style={{left: `${timestamp / timeElapsed * 100}%`}}
                 onClick={() => handleClick(timestamp)}
             >
                 <div
@@ -116,15 +116,15 @@ MarkMultiple.propTypes = {
         passed: PropTypes.bool,
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     }),
-    timeframe: PropTypes.number,
+    timeElapsed: PropTypes.number,
     timestamps: PropTypes.arrayOf(PropTypes.number),
     handleClick: PropTypes.func
 };
 
-const MarkRectangle = ({begin, end, timeframe, tickSize, test, handleClick}) => (
+const MarkRectangle = ({begin, end, timeElapsed, tickSize, test, handleClick}) => (
     <div
         className={styles.timelineItem}
-        style={{left: `${begin / timeframe * 100}%`}}
+        style={{left: `${begin / timeElapsed * 100}%`}}
         onClick={handleClick}
     >
         <div
@@ -149,17 +149,17 @@ MarkRectangle.propTypes = {
         passed: PropTypes.bool,
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     }),
-    timeframe: PropTypes.number,
+    timeElapsed: PropTypes.number,
     tickSize: PropTypes.number,
     begin: PropTypes.number,
     end: PropTypes.number,
     handleClick: PropTypes.func
 };
 
-const Mark = ({timestamp, timeframe, test, handleClick}) => (
+const Mark = ({timestamp, timeElapsed, test, handleClick}) => (
     <div
         className={styles.timelineItem}
-        style={{left: `${timestamp / timeframe * 100}%`}}
+        style={{left: `${timestamp / timeElapsed * 100}%`}}
         onClick={handleClick}
     >
         <img
@@ -181,12 +181,12 @@ Mark.propTypes = {
         passed: PropTypes.bool,
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     }),
-    timeframe: PropTypes.number,
+    timeElapsed: PropTypes.number,
     timestamp: PropTypes.number,
     handleClick: PropTypes.func
 };
 
-const Band = ({tests, timeframe, tickSize, setFrameMark, setFrameRange}) => (
+const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange}) => (
     <div className={styles.bandPadding}>
         <div className={styles.flexRow}>
             {
@@ -196,7 +196,7 @@ const Band = ({tests, timeframe, tickSize, setFrameMark, setFrameRange}) => (
                             <Mark
                                 key={test.id}
                                 timestamp={test.marker}
-                                timeframe={timeframe}
+                                timeElapsed={timeElapsed}
                                 test={test}
                                 handleClick={() => setFrameMark(test.marker)}
                             />
@@ -206,7 +206,7 @@ const Band = ({tests, timeframe, tickSize, setFrameMark, setFrameRange}) => (
                             <MarkMultiple
                                 key={test.id}
                                 timestamps={test.marker}
-                                timeframe={timeframe}
+                                timeElapsed={timeElapsed}
                                 test={test}
                                 handleClick={setFrameMark}
                             />
@@ -217,7 +217,7 @@ const Band = ({tests, timeframe, tickSize, setFrameMark, setFrameRange}) => (
                             key={test.id}
                             begin={test.marker.start}
                             end={test.marker.end}
-                            timeframe={timeframe}
+                            timeElapsed={timeElapsed}
                             tickSize={tickSize}
                             test={test}
                             handleClick={() => setFrameRange(test.marker.start, test.marker.end)}
@@ -237,7 +237,7 @@ Band.propTypes = {
         passed: PropTypes.bool,
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     })),
-    timeframe: PropTypes.number,
+    timeElapsed: PropTypes.number,
     tickSize: PropTypes.number,
     setFrameMark: PropTypes.func,
     setFrameRange: PropTypes.func
@@ -368,7 +368,7 @@ const broadcastMessage = (event, formatter) => {
     return `Broadcast '${event.data.name}' was sent, but no one was there to receive it`;
 };
 
-const Events = ({events, timeframe, tickSize}) => {
+const Events = ({events, timeElapsed, tickSize}) => {
     const formatter = new Intl.ListFormat('en', {style: 'long', type: 'conjunction'});
 
     const clickAndKeyEvents = events.filter(e => e.type === 'key' || e.type === 'click');
@@ -382,7 +382,7 @@ const Events = ({events, timeframe, tickSize}) => {
                         <div
                             key={index}
                             className={styles.timelineItem}
-                            style={{left: `${event.timestamp / timeframe * 100}%`}}
+                            style={{left: `${event.timestamp / timeElapsed * 100}%`}}
                         >
                             <EventMarker
                                 event={event}
@@ -399,7 +399,7 @@ const Events = ({events, timeframe, tickSize}) => {
                         <div
                             key={index}
                             className={styles.timelineItem}
-                            style={{left: `${event.timestamp / timeframe * 100}%`}}
+                            style={{left: `${event.timestamp / timeElapsed * 100}%`}}
                         >
                             <div
                                 data-for={`broadcast-${index}`}
@@ -436,7 +436,7 @@ Events.propTypes = {
         end: PropTypes.number,
         sprites: PropTypes.arrayOf(PropTypes.string)
     })),
-    timeframe: PropTypes.number,
+    timeElapsed: PropTypes.number,
     tickSize: PropTypes.number
 };
 
@@ -444,34 +444,34 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
     if (!numberOfFrames) {
         return null;
     }
-    const timeframe = timestamps[numberOfFrames - 1];
+    const timeElapsed = timestamps[numberOfFrames - 1];
     let timeTicks = [];
     let tickSize = 10;
-    if (timeframe) {
-        tickSize = (Math.round(timeframe / numberOfFrames / 10) + 1) * 10;
-        timeTicks = Array(...Array(Math.floor(timeframe / tickSize) + 1)).map((_, index) => index * tickSize);
+    if (timeElapsed) {
+        tickSize = (Math.round(timeElapsed / numberOfFrames / 10) + 1) * 10;
+        timeTicks = Array(...Array(Math.floor(timeElapsed / tickSize) + 1)).map((_, index) => index * tickSize);
     }
 
     const filteredTests = vm.getMarkedTests()
         .filter(t => {
             if (typeof t.marker === 'number') {
-                return t.marker <= timeframe;
+                return t.marker <= timeElapsed;
             } else if (Array.isArray(t.marker)) {
-                return t.marker[0] <= timeframe;
+                return t.marker[0] <= timeElapsed;
             }
-            return t.marker.start + (tickSize / 2) <= timeframe;
+            return t.marker.start + (tickSize / 2) <= timeElapsed;
         })
         .map(t => {
             if (typeof t.marker === 'number') {
                 return t;
             } else if (Array.isArray(t.marker)) {
-                return {...t, marker: t.marker.filter(timestamp => timestamp <= timeframe)};
+                return {...t, marker: t.marker.filter(timestamp => timestamp <= timeElapsed)};
             }
-            return {...t, marker: {start: t.marker.start, end: Math.min(t.marker.end, timeframe)}};
+            return {...t, marker: {start: t.marker.start, end: Math.min(t.marker.end, timeElapsed)}};
         });
     const testGroups = separateTests(filteredTests);
-    const filteredEvents = events.filter(e => e.begin <= timeframe).map(e => ({
-        ...e, end: Math.min(e.end, timeframe)
+    const filteredEvents = events.filter(e => e.begin <= timeElapsed).map(e => ({
+        ...e, end: Math.min(e.end, timeElapsed)
     }));
 
     const setFrameIndex = index => {
@@ -514,7 +514,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                         <div
                             key={tick}
                             className={styles.timelineItem}
-                            style={{left: `${tick / timeframe * 100}%`}}
+                            style={{left: `${tick / timeElapsed * 100}%`}}
                         >{tick}
                         </div>
                     ))}
@@ -522,14 +522,14 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
 
                 <div
                     className={styles.flexRow}
-                    style={{width: `${timeframe / tickSize * 100}px`}}
+                    style={{width: `${timeElapsed / tickSize * 100}px`}}
                 >
                     <ul className={styles.line}>
                         {timestamps.map((timestamp, index) => (
                             <div
                                 key={index}
                                 className={styles.timelineItem}
-                                style={{left: `${timestamp / timeframe * 100}%`}}
+                                style={{left: `${timestamp / timeElapsed * 100}%`}}
                             >
                                 <li
                                     onClick={() => setFrameIndex(index)}
@@ -543,7 +543,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
 
                 <Events
                     events={filteredEvents}
-                    timeframe={timeframe}
+                    timeElapsed={timeElapsed}
                     tickSize={tickSize}
                 />
 
@@ -553,7 +553,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                             className={styles.bandPadding}
                             key={index}
                             tests={tests}
-                            timeframe={timeframe}
+                            timeElapsed={timeElapsed}
                             tickSize={tickSize}
                             groupid={`testgroup-${index}`}
                             setFrameMark={setFrameMark}
