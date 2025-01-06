@@ -14,6 +14,7 @@ export default function TestComponent ({name, passed, feedback}) {
     return (
         <div className={styles.feedbackTree}>
             <div className={styles.feedbackRow}>
+                <div className={styles.caretPadding} />
                 {icon}
                 <a>{feedback ? feedback : name}</a>
             </div>

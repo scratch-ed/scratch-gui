@@ -1,6 +1,8 @@
 @import "../../css/units.css";
 @import "../../css/colors.css";
 
+$caret-width: 15px;
+
 .wrapper {
     display: flex;
     flex-grow: 1;
@@ -51,14 +53,20 @@
 }
 
 .caret-open::before {
+    width: $caret-width;
     content: "\25B6";
     display: inline-block;
     transform: rotate(90deg);
 }
 
 .caret-closed::before {
+    width: $caret-width;
     content: "\25B6";
     display: inline-block;
+}
+
+.caret-padding {
+    width: $caret-width;
 }
 
 [dir="rtl"] .caret-closed::before {
