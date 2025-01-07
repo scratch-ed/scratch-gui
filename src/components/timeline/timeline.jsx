@@ -236,9 +236,16 @@ Band.propTypes = {
     setFrameRange: PropTypes.func
 };
 
-const eventSeenMessage = (event, formatter) => {
+const keyEventSeenMessage = (event, formatter) => {
     if (event.sprites.length > 0) {
         return `${formatter.format(event.sprites)} reacted`;
+    }
+    return `...but nothing happened`;
+};
+
+const clickEventSeenMessage = event => {
+    if (event.sprites.includes(event.data.target)) {
+        return `and ${event.data.target} reacted`;
     }
     return `...but nothing happened`;
 };
@@ -303,7 +310,7 @@ const EventMarker = ({event, index, tickSize}) => {
                     place="top"
                 >
                     <div>{`The '${text}' key was pressed`}</div>
-                    <div>{eventSeenMessage(event, formatter)}</div>
+                    <div>{keyEventSeenMessage(event, formatter)}</div>
                 </ReactTooltip>
                 {
                     // <div
@@ -333,7 +340,7 @@ const EventMarker = ({event, index, tickSize}) => {
                     place="top"
                 >
                     <div>{`Clicked on ${event.data.target}`}</div>
-                    <div>{eventSeenMessage(event, formatter)}</div>
+                    <div>{clickEventSeenMessage(event)}</div>
                 </ReactTooltip>
             </>
         );
