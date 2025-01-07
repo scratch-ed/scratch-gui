@@ -125,7 +125,7 @@ const MarkMultiple = ({timestamps, timeElapsed, test, handleClick}) => (
                 timestamp={timestamp}
                 timeElapsed={timeElapsed}
                 test={test}
-                onClick={() => handleClick(timestamp)}
+                handleClick={() => handleClick(timestamp)}
             />
         ))}
     </div>
