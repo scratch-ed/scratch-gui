@@ -43,6 +43,7 @@ import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
 import testIcon from './icon--test.svg';
+import timeIcon from './icon--time.svg';
 import TimeInterface from '../../containers/time-interface.jsx';
 import {TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
 
@@ -322,7 +323,7 @@ const GUIComponent = props => {
                                         >
                                             <img
                                                 draggable={false}
-                                                src={testIcon}
+                                                src={timeIcon}
                                             />
                                             <FormattedMessage
                                                 defaultMessage="Timeline"
