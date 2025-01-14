@@ -4,8 +4,9 @@ import PropTypes from 'prop-types';
 import ReactTooltip from 'react-tooltip';
 
 import keycapIcon from './keycap.png';
-import broadcastIcon from './broadcast.png';
 import mouseClickIcon from './mouseClick.png';
+import broadcastIcon from './broadcast.png';
+import greenFlagIcon from '../green-flag/icon--green-flag.svg';
 import styles from './timeline.css';
 
 const TooltipContents = ({event}) => {
@@ -71,6 +72,22 @@ const TooltipContents = ({event}) => {
             <div>{message}</div>
         );
     }
+
+    if (event.type === 'greenFlag') {
+        if (event.sprites.length > 0) {
+            message = `${formatter.format(event.sprites)} started`;
+        } else {
+            message = `...but nothing happened`;
+        }
+        return (
+            <>
+                <div>{'Green flag was clicked'}</div>
+                <div>{message}</div>
+            </>
+        );
+    }
+
+    return null;
 };
 
 TooltipContents.propTypes = {
@@ -144,6 +161,16 @@ const EventMarker = ({event}) => {
                 className={styles.eventIcon}
                 draggable={false}
                 src={broadcastIcon}
+            />
+        );
+    }
+
+    if (event.type === 'greenFlag') {
+        return (
+            <img
+                className={styles.eventIcon}
+                draggable={false}
+                src={greenFlagIcon}
             />
         );
     }
