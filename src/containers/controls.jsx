@@ -32,6 +32,11 @@ class Controls extends React.Component {
 
     handleGreenFlagClick (e) {
         e.preventDefault();
+
+        if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
+            this.props.vm.runtime.disableTestMode();
+        }
+
         if (e.shiftKey) {
             this.props.vm.setTurboMode(!this.props.turbo);
         } else {
