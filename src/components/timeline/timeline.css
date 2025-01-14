@@ -37,7 +37,7 @@ $background-color: white;
 }
 
 .event-key-data {
-    transform: translate(-2px, -27px);
+    transform: translate(4px, -27px);
     color: white;
 }
 
@@ -49,12 +49,14 @@ $background-color: white;
 .marker-icon {
     width: 15px;
     height: 15px;
+    user-select: none;
 }
 
 .event-icon {
     width: 25px;
     height: 25px;
-    transform: translatex(-10px);
+    transform: translatex(-3px);
+    user-select: none;
 }
 
 .mark-rectangle {
@@ -84,6 +86,14 @@ $background-color: white;
 
 .band-padding {
     margin-bottom: 5px;
+}
+
+.highlight-frame {
+    box-shadow: 8px 0px 10px 10px #FFF200
+}
+
+.highlight-icon {
+    box-shadow: 0px 0px 10px 5px #FFF200
 }
 
 .line {
@@ -138,6 +148,7 @@ $background-color: white;
     border: 1px solid hsla(0, 0%, 0%, .1) !important;
     box-shadow: 0 0 .5rem hsla(0, 0%, 0%, .25) !important;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    user-select: none;
 }
 
 .tooltip:after {

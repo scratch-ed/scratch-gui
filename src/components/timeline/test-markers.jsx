@@ -1,5 +1,7 @@
-import React from 'react';
+import React, {useState} from 'react';
 import PropTypes from 'prop-types';
+
+import classNames from 'classnames';
 
 import ReactTooltip from 'react-tooltip';
 import passedIcon from '../test-results/passed.png';
@@ -12,7 +14,7 @@ const TestTooltip = ({test}) => (
         className={styles.tooltip}
         effect="solid"
         id={test.id}
-        place="top"
+        place="right"
     >
         {test.feedback ? test.feedback : test.name}
     </ReactTooltip>
@@ -27,18 +29,22 @@ TestTooltip.propTypes = {
     })
 };
 
-const Mark = ({timestamp, timeElapsed, test, handleClick}) => (
+const Mark = ({timestamp, timeElapsed, test, handleClick, clearHighlighting, setHighlighting, highlighted}) => (
     <div
         className={styles.timelineItem}
         style={{left: `${timestamp / timeElapsed * 100}%`}}
         onClick={handleClick}
     >
         <img
-            className={styles.markerIcon}
+            className={classNames(styles.markerIcon, {
+                [styles.highlightIcon]: highlighted
+            })}
             draggable={false}
             src={test.passed ? passedIcon : failedIcon}
             data-for={test.id}
             data-tip=""
+            onMouseEnter={setHighlighting}
+            onMouseLeave={clearHighlighting}
         />
         <TestTooltip test={test} />
     </div>
@@ -54,11 +60,15 @@ Mark.propTypes = {
     }),
     timeElapsed: PropTypes.number,
     timestamp: PropTypes.number,
-    handleClick: PropTypes.func
+    handleClick: PropTypes.func,
+    clearHighlighting: PropTypes.func,
+    setHighlighting: PropTypes.func,
+    highlighted: PropTypes.bool
 };
 
-const MarkMultiple = ({timestamps, timeElapsed, test, handleClick}) => (
-    <div className={styles.flexRow}>
+const MarkMultiple = ({timestamps, timeElapsed, test, handleClick, clearHighlighting, setHighlighting}) => {
+    const [highlighted, setHighlighted] = useState(false);
+    return (<div className={styles.flexRow}>
         {timestamps.map(timestamp => (
             <Mark
                 key={timestamp}
@@ -66,10 +76,19 @@ const MarkMultiple = ({timestamps, timeElapsed, test, handleClick}) => (
                 timeElapsed={timeElapsed}
                 test={test}
                 handleClick={() => handleClick(timestamp)}
+                highlighted={highlighted}
+                clearHighlighting={() => {
+                    setHighlighted(false);
+                    clearHighlighting();
+                }}
+                setHighlighting={() => {
+                    setHighlighted(true);
+                    setHighlighting();
+                }}
             />
         ))}
-    </div>
-);
+    </div>)
+};
 
 MarkMultiple.propTypes = {
     test: PropTypes.shape({
@@ -81,10 +100,12 @@ MarkMultiple.propTypes = {
     }),
     timeElapsed: PropTypes.number,
     timestamps: PropTypes.arrayOf(PropTypes.number),
-    handleClick: PropTypes.func
+    handleClick: PropTypes.func,
+    clearHighlighting: PropTypes.func,
+    setHighlighting: PropTypes.func
 };
 
-const MarkRectangle = ({begin, end, timeElapsed, tickSize, test, handleClick}) => (
+const MarkRectangle = ({begin, end, timeElapsed, tickSize, test, handleClick, clearHighlighting, setHighlighting}) => (
     <div
         className={styles.timelineItem}
         style={{left: `${begin / timeElapsed * 100}%`}}
@@ -98,6 +119,8 @@ const MarkRectangle = ({begin, end, timeElapsed, tickSize, test, handleClick}) =
             }}
             data-for={test.id}
             data-tip=""
+            onMouseEnter={setHighlighting}
+            onMouseLeave={clearHighlighting}
         >{test.feedback ? test.feedback : test.name}
         </div>
         <TestTooltip test={test} />
@@ -116,10 +139,15 @@ MarkRectangle.propTypes = {
     tickSize: PropTypes.number,
     begin: PropTypes.number,
     end: PropTypes.number,
-    handleClick: PropTypes.func
+    handleClick: PropTypes.func,
+    clearHighlighting: PropTypes.func,
+    setHighlighting: PropTypes.func
 };
 
-const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange}) => (
+const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange,
+    clearHighlighting, highlightFrames, highlightFrameRange}) => (
+
+    // eslint-disable-next-line react/jsx-indent
     <div className={styles.bandPadding}>
         <div className={styles.flexRow}>
             {
@@ -132,6 +160,8 @@ const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange}) => (
                                 timeElapsed={timeElapsed}
                                 test={test}
                                 handleClick={() => setFrameMark(test.marker)}
+                                clearHighlighting={clearHighlighting}
+                                setHighlighting={() => highlightFrames([test.marker])}
                             />
                         );
                     } else if (Array.isArray(test.marker)) {
@@ -142,6 +172,8 @@ const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange}) => (
                                 timeElapsed={timeElapsed}
                                 test={test}
                                 handleClick={setFrameMark}
+                                clearHighlighting={clearHighlighting}
+                                setHighlighting={() => highlightFrames(test.marker)}
                             />
                         );
                     }
@@ -154,6 +186,8 @@ const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange}) => (
                             tickSize={tickSize}
                             test={test}
                             handleClick={() => setFrameRange(test.marker.start, test.marker.end)}
+                            clearHighlighting={clearHighlighting}
+                            setHighlighting={() => highlightFrameRange(test.marker.start, test.marker.end)}
                         />
                     );
                 })
@@ -173,7 +207,10 @@ Band.propTypes = {
     timeElapsed: PropTypes.number,
     tickSize: PropTypes.number,
     setFrameMark: PropTypes.func,
-    setFrameRange: PropTypes.func
+    setFrameRange: PropTypes.func,
+    clearHighlighting: PropTypes.func,
+    highlightFrames: PropTypes.func,
+    highlightFrameRange: PropTypes.func
 };
 
 export default Band;

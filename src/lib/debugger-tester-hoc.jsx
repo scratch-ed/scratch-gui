@@ -138,8 +138,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                     const {nextSnapshot, previousSnapshot, ...event} = e;
                     return {
                         ...event,
-                        begin: nextSnapshot.timestamp,
-                        end: previousSnapshot.timestamp
+                        begin: previousSnapshot.timestamp,
+                        end: nextSnapshot.timestamp
                     };
                 }));
             }

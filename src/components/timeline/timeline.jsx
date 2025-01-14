@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
@@ -64,6 +64,8 @@ const separateTests = tests => {
 };
 
 const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events}) => {
+    const [highlight, setHighlight] = useState([]);
+
     if (!numberOfFrames) {
         return null;
     }
@@ -129,6 +131,12 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
         }
     };
 
+    const clearHighlighting = () => setHighlight([]);
+    const highlightFrames = frames => setHighlight(frames);
+    const highlightFrameRange = (frame1, frame2) => {
+        setHighlight(timestamps.filter(t => t >= frame1 && t <= frame2));
+    };
+
     return (<div className={styles.flexRow}>
         <div className={styles.scrollDetails}>
             <div className={styles.content}>
@@ -151,7 +159,10 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                         {timestamps.map((timestamp, index) => (
                             <div
                                 key={index}
-                                className={styles.timelineItem}
+                                className={classNames(styles.timelineItem, {
+                                    // Highlight frames when hovering over items
+                                    [styles.highlightFrame]: highlight.includes(timestamp)
+                                })}
                                 style={{left: `${timestamp / timeElapsed * 100}%`}}
                             >
                                 <li
@@ -167,7 +178,9 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                 <Events
                     events={filteredEvents}
                     timeElapsed={timeElapsed}
-                    tickSize={tickSize}
+                    setFrameRange={setFrameRange}
+                    clearHighlighting={clearHighlighting}
+                    highlightFrameRange={highlightFrameRange}
                 />
 
                 {
@@ -181,6 +194,9 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                             groupid={`testgroup-${index}`}
                             setFrameMark={setFrameMark}
                             setFrameRange={setFrameRange}
+                            clearHighlighting={clearHighlighting}
+                            highlightFrames={highlightFrames}
+                            highlightFrameRange={highlightFrameRange}
                         />
                     ))
                 }

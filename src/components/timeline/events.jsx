@@ -3,122 +3,151 @@ import PropTypes from 'prop-types';
 
 import ReactTooltip from 'react-tooltip';
 
-import classNames from 'classnames';
-
 import keycapIcon from './keycap.png';
 import broadcastIcon from './broadcast.png';
 import mouseClickIcon from './mouseClick.png';
 import styles from './timeline.css';
 
-const keyEventSeenMessage = (event, formatter) => {
-    if (event.sprites.length > 0) {
-        return `${formatter.format(event.sprites)} reacted`;
-    }
-    return `...but nothing happened`;
-};
-
-const clickEventSeenMessage = event => {
-    if (event.sprites.includes(event.data.target)) {
-        return `and ${event.data.target} reacted`;
-    }
-    return `...but nothing happened`;
-};
-
-const EventMarker = ({event, index, tickSize}) => {
+const TooltipContents = ({event}) => {
     const formatter = new Intl.ListFormat('en', {style: 'long', type: 'conjunction'});
+    let message;
 
     if (event.type === 'key') {
-        let key;
         let text;
         switch (event.data.key) {
         case ' ':
         case 'SPACE':
-            key = ' ';
             text = 'Space';
             break;
         case 'ArrowLeft':
         case 'LEFT ARROW':
-            key = '⬅';
             text = 'Left Arrow';
             break;
         case 'ArrowRight':
         case 'RIGHT ARROW':
-            key = '➡';
             text = 'Right Arrow';
             break;
         case 'ArrowUp':
         case 'UP ARROW':
-            key = '⬆';
             text = 'Up Arrow';
             break;
         case 'ArrowDown':
         case 'DOWN ARROW':
-            key = '⬇';
             text = 'Down Arrow';
             break;
         default:
-            key = event.data.key.toUpperCase();
             text = event.data.key.toUpperCase();
         }
+        if (event.sprites.length > 0) {
+            message = `${formatter.format(event.sprites)} reacted`;
+        } else {
+            message = `and nothing happened`;
+        }
+        return (<>
+            <div>{`The '${text}' key was pressed`}</div>
+            <div>{message}</div>
+        </>);
+    }
+
+    if (event.type === 'click') {
+        if (event.sprites.includes(event.data.target)) {
+            message = `and ${event.data.target} reacted`;
+        } else {
+            message = `and nothing happened`;
+        }
+        return (<>
+            <div>{`Clicked on ${event.data.target}`}</div>
+            <div>{message}</div>
+        </>);
+    }
+
+    if (event.type === 'broadcast') {
+        if (event.sprites.length > 0) {
+            message = `Broadcast '${event.data.name}' received by ${formatter.format(event.sprites)}`;
+        } else {
+            message = `Broadcast '${event.data.name}' was sent, but no one received it`;
+        }
         return (
-            <>
-                <div
-                    data-for={`keypress-${index}`}
-                    data-tip=""
-                >
-                    <img
-                        className={styles.eventIcon}
-                        draggable={false}
-                        src={keycapIcon}
-                    />
-                    <div
-                        className={styles.eventKeyData}
-                    >
-                        {key}
-                    </div>
-                </div>
-                <ReactTooltip
-                    className={styles.tooltip}
-                    effect="solid"
-                    id={`keypress-${index}`}
-                    place="top"
-                >
-                    <div>{`The '${text}' key was pressed`}</div>
-                    <div>{keyEventSeenMessage(event, formatter)}</div>
-                </ReactTooltip>
-                {
-                    // <div
-                    //     style={{width: `${(event.end - event.begin) * 100 / tickSize}px`, height: '5px', background: 'grey',
-                    //         borderRadius: '3px', transform: 'translatey(-15px)'}}
-                    //     data-for={`keypress-${index}`}
-                    //     data-tip=""
-                    // />
-                }
-            </>
+            <div>{message}</div>
         );
     }
-    if (event.type === 'click') {
+};
+
+TooltipContents.propTypes = {
+    event: PropTypes.shape({
+        type: PropTypes.string,
+        // eslint-disable-next-line react/forbid-prop-types
+        data: PropTypes.object,
+        begin: PropTypes.number,
+        end: PropTypes.number,
+        sprites: PropTypes.arrayOf(PropTypes.string)
+    })
+};
+
+
+const EventMarker = ({event}) => {
+    if (event.type === 'key') {
+        let key;
+        switch (event.data.key) {
+        case ' ':
+        case 'SPACE':
+            key = ' ';
+            break;
+        case 'ArrowLeft':
+        case 'LEFT ARROW':
+            key = '⬅';
+            break;
+        case 'ArrowRight':
+        case 'RIGHT ARROW':
+            key = '➡';
+            break;
+        case 'ArrowUp':
+        case 'UP ARROW':
+            key = '⬆';
+            break;
+        case 'ArrowDown':
+        case 'DOWN ARROW':
+            key = '⬇';
+            break;
+        default:
+            key = event.data.key.toUpperCase();
+        }
         return (
             <>
                 <img
                     className={styles.eventIcon}
                     draggable={false}
-                    src={mouseClickIcon}
-                    data-for={`mouseClick-${index}`}
-                    data-tip=""
+                    src={keycapIcon}
                 />
-                <ReactTooltip
-                    className={styles.tooltip}
-                    effect="solid"
-                    id={`mouseClick-${index}`}
-                    place="top"
+                <div
+                    className={styles.eventKeyData}
                 >
-                    <div>{`Clicked on ${event.data.target}`}</div>
-                    <div>{clickEventSeenMessage(event)}</div>
-                </ReactTooltip>
+                    {key}
+                </div>
             </>
         );
     }
+
+    if (event.type === 'click') {
+        return (
+            <img
+                className={styles.eventIcon}
+                draggable={false}
+                src={mouseClickIcon}
+            />
+        );
+    }
+
+    if (event.type === 'broadcast') {
+        return (
+            <img
+                className={styles.eventIcon}
+                draggable={false}
+                src={broadcastIcon}
+            />
+        );
+    }
+
     return null;
 };
 
@@ -130,76 +159,41 @@ EventMarker.propTypes = {
         begin: PropTypes.number,
         end: PropTypes.number,
         sprites: PropTypes.arrayOf(PropTypes.string)
-    }),
-    index: PropTypes.number,
-    tickSize: PropTypes.number
+    })
 };
 
-const broadcastMessage = (event, formatter) => {
-    if (event.sprites.length > 0) {
-        return `Broadcast '${event.data.name}' received by ${formatter.format(event.sprites)}`;
-    }
-    return `Broadcast '${event.data.name}' was sent, but no one was there to receive it`;
-};
-
-const Events = ({events, timeElapsed, tickSize}) => {
-    const formatter = new Intl.ListFormat('en', {style: 'long', type: 'conjunction'});
-
-    const clickAndKeyEvents = events.filter(e => e.type === 'key' || e.type === 'click');
-    const broadcastEvents = events.filter(e => e.type === 'broadcast');
-
-    return (
-        <>
-            <div className={classNames(styles.flexRow)}>
-                {
-                    clickAndKeyEvents.map((event, index) => (
-                        <div
-                            key={index}
-                            className={styles.timelineItem}
-                            style={{left: `${event.timestamp / timeElapsed * 100}%`}}
-                        >
-                            <EventMarker
-                                event={event}
-                                index={index}
-                                tickSize={tickSize}
-                            />
-                        </div>
-                    ))
-                }
-            </div>
-            <div className={classNames(styles.flexRow)}>
-                {
-                    broadcastEvents.map((event, index) => (
-                        <div
-                            key={index}
-                            className={styles.timelineItem}
-                            style={{left: `${event.timestamp / timeElapsed * 100}%`}}
-                        >
-                            <div
-                                data-for={`broadcast-${index}`}
-                                data-tip=""
-                            >
-                                <img
-                                    className={styles.eventIcon}
-                                    draggable={false}
-                                    src={broadcastIcon}
-                                />
-                            </div>
-                            <ReactTooltip
-                                className={styles.tooltip}
-                                effect="solid"
-                                id={`broadcast-${index}`}
-                                place="top"
-                            >
-                                {broadcastMessage(event, formatter)}
-                            </ReactTooltip>
-                        </div>
-                    ))
-                }
-            </div>
-        </>
-    );
-};
+const Events = ({events, timeElapsed, setFrameRange, clearHighlighting, highlightFrameRange}) => (
+    <div className={styles.flexRow}>
+        {
+            events.map((event, index) => (
+                <div
+                    key={index}
+                    className={styles.timelineItem}
+                    style={{left: `${event.timestamp / timeElapsed * 100}%`}}
+                >
+                    <div
+                        className={styles.eventIcon}
+                        data-for={`event-${index}`}
+                        data-tip=""
+                        onClick={() => setFrameRange(event.begin, event.end)}
+                        onMouseEnter={() => highlightFrameRange(event.begin, event.end)}
+                        onMouseLeave={clearHighlighting}
+                    >
+                        <EventMarker event={event} />
+                    </div>
+                    <ReactTooltip
+                        className={styles.tooltip}
+                        effect="solid"
+                        id={`event-${index}`}
+                        place="left"
+                    >
+                        <TooltipContents event={event} />
+                    </ReactTooltip>
+                </div>
+            ))
+        }
+    </div>
+);
 
 Events.propTypes = {
     events: PropTypes.arrayOf(PropTypes.shape({
@@ -211,7 +205,9 @@ Events.propTypes = {
         sprites: PropTypes.arrayOf(PropTypes.string)
     })),
     timeElapsed: PropTypes.number,
-    tickSize: PropTypes.number
+    setFrameRange: PropTypes.func,
+    clearHighlighting: PropTypes.func,
+    highlightFrameRange: PropTypes.func
 };
 
 export default Events;
