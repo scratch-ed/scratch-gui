@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import classNames from 'classnames';
+
 import ReactTooltip from 'react-tooltip';
 
 import keycapIcon from './keycap.png';
@@ -190,7 +192,7 @@ EventMarker.propTypes = {
 };
 
 const Events = ({events, timeElapsed, setFrameRange, clearHighlighting, highlightFrameRange}) => (
-    <div className={styles.flexRow}>
+    <div className={classNames(styles.flexRow, styles.rowMargin)}>
         {
             events.map((event, index) => (
                 <div

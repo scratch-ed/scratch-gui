@@ -186,7 +186,6 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                 {
                     testGroups.map((tests, index) => (
                         <Band
-                            className={styles.bandPadding}
                             key={index}
                             tests={tests}
                             timeElapsed={timeElapsed}

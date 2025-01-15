@@ -14,7 +14,7 @@ const TestTooltip = ({test}) => (
         className={styles.tooltip}
         effect="solid"
         id={test.id}
-        place="right"
+        place="left"
     >
         {test.feedback ? test.feedback : test.name}
     </ReactTooltip>
@@ -112,11 +112,8 @@ const MarkRectangle = ({begin, end, timeElapsed, tickSize, test, handleClick, cl
         onClick={handleClick}
     >
         <div
-            className={styles.markRectangle}
-            style={{
-                width: `${(end - begin) * 100 / tickSize}px`,
-                background: test.passed ? '#77d354' : '#f00d0d'
-            }}
+            className={classNames(styles.markRectangle, test.passed ? styles.testPassed : styles.testFailed)}
+            style={{width: `${(end - begin) * 100 / tickSize}px`}}
             data-for={test.id}
             data-tip=""
             onMouseEnter={setHighlighting}
@@ -148,51 +145,49 @@ const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange,
     clearHighlighting, highlightFrames, highlightFrameRange}) => (
 
     // eslint-disable-next-line react/jsx-indent
-    <div className={styles.bandPadding}>
-        <div className={styles.flexRow}>
-            {
-                tests.map(test => {
-                    if (typeof test.marker === 'number') {
-                        return (
-                            <Mark
-                                key={test.id}
-                                timestamp={test.marker}
-                                timeElapsed={timeElapsed}
-                                test={test}
-                                handleClick={() => setFrameMark(test.marker)}
-                                clearHighlighting={clearHighlighting}
-                                setHighlighting={() => highlightFrames([test.marker])}
-                            />
-                        );
-                    } else if (Array.isArray(test.marker)) {
-                        return (
-                            <MarkMultiple
-                                key={test.id}
-                                timestamps={test.marker}
-                                timeElapsed={timeElapsed}
-                                test={test}
-                                handleClick={setFrameMark}
-                                clearHighlighting={clearHighlighting}
-                                setHighlighting={() => highlightFrames(test.marker)}
-                            />
-                        );
-                    }
+    <div className={classNames(styles.flexRow, styles.rowMargin)}>
+        {
+            tests.map(test => {
+                if (typeof test.marker === 'number') {
                     return (
-                        <MarkRectangle
+                        <Mark
                             key={test.id}
-                            begin={test.marker.start}
-                            end={test.marker.end}
+                            timestamp={test.marker}
                             timeElapsed={timeElapsed}
-                            tickSize={tickSize}
                             test={test}
-                            handleClick={() => setFrameRange(test.marker.start, test.marker.end)}
+                            handleClick={() => setFrameMark(test.marker)}
                             clearHighlighting={clearHighlighting}
-                            setHighlighting={() => highlightFrameRange(test.marker.start, test.marker.end)}
+                            setHighlighting={() => highlightFrames([test.marker])}
                         />
                     );
-                })
-            }
-        </div>
+                } else if (Array.isArray(test.marker)) {
+                    return (
+                        <MarkMultiple
+                            key={test.id}
+                            timestamps={test.marker}
+                            timeElapsed={timeElapsed}
+                            test={test}
+                            handleClick={setFrameMark}
+                            clearHighlighting={clearHighlighting}
+                            setHighlighting={() => highlightFrames(test.marker)}
+                        />
+                    );
+                }
+                return (
+                    <MarkRectangle
+                        key={test.id}
+                        begin={test.marker.start}
+                        end={test.marker.end}
+                        timeElapsed={timeElapsed}
+                        tickSize={tickSize}
+                        test={test}
+                        handleClick={() => setFrameRange(test.marker.start, test.marker.end)}
+                        clearHighlighting={clearHighlighting}
+                        setHighlighting={() => highlightFrameRange(test.marker.start, test.marker.end)}
+                    />
+                );
+            })
+        }
     </div>
 );
 
