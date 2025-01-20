@@ -191,10 +191,12 @@ EventMarker.propTypes = {
     })
 };
 
+const shownEventTypes = ['click', 'key', 'broadcast', 'greenFlag'];
+
 const Events = ({events, timeElapsed, setFrameRange, clearHighlighting, highlightFrameRange}) => (
     <div className={classNames(styles.flexRow, styles.rowMargin)}>
         {
-            events.map((event, index) => (
+            events.filter(e => shownEventTypes.includes(e.type)).map((event, index) => (
                 <div
                     key={index}
                     className={styles.timelineItem}
