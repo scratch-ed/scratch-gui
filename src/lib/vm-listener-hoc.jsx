@@ -9,7 +9,7 @@ import {updateTargets} from '../reducers/targets';
 import {updateBlockDrag} from '../reducers/block-drag';
 import {updateMonitors} from '../reducers/monitors';
 import {setProjectChanged, setProjectUnchanged} from '../reducers/project-changed';
-import {setRunningState, setTurboState, setStartedState} from '../reducers/vm-status';
+import {setRunningState, setTurboState, setStartedState, setTestsLoadedState} from '../reducers/vm-status';
 import {showExtensionAlert} from '../reducers/alerts';
 import {updateMicIndicator} from '../reducers/mic-indicator';
 
@@ -44,6 +44,13 @@ const vmListenerHOC = function (WrappedComponent) {
             this.props.vm.on('PROJECT_CHANGED', this.handleProjectChanged);
             this.props.vm.on('RUNTIME_STARTED', this.props.onRuntimeStarted);
             this.props.vm.on('PROJECT_START', this.props.onGreenFlag);
+            this.props.vm.on('PROJECT_LOADED', () => {
+                // This check is necessary because PROJECT_LOADED comes after TESTS_LOADED in some browsers
+                if (!this.props.vm.testConfig) {
+                    this.props.onProjectLoaded();
+                }
+            });
+            this.props.vm.on('TESTS_LOADED', this.props.onTestsLoaded);
             this.props.vm.on('PERIPHERAL_CONNECTION_LOST_ERROR', this.props.onShowExtensionAlert);
             this.props.vm.on('MIC_LISTENING', this.props.onMicListeningUpdate);
         }
@@ -130,6 +137,8 @@ const vmListenerHOC = function (WrappedComponent) {
                 onProjectRunStart,
                 onProjectRunStop,
                 onProjectSaved,
+                onProjectLoaded,
+                onTestsLoaded,
                 onRuntimeStarted,
                 onTurboModeOff,
                 onTurboModeOn,
@@ -149,12 +158,14 @@ const vmListenerHOC = function (WrappedComponent) {
         onMicListeningUpdate: PropTypes.func.isRequired,
         onMonitorsUpdate: PropTypes.func.isRequired,
         onProjectChanged: PropTypes.func.isRequired,
+        onProjectLoaded: PropTypes.func.isRequired,
         onProjectRunStart: PropTypes.func.isRequired,
         onProjectRunStop: PropTypes.func.isRequired,
         onProjectSaved: PropTypes.func.isRequired,
         onRuntimeStarted: PropTypes.func.isRequired,
         onShowExtensionAlert: PropTypes.func.isRequired,
         onTargetsUpdate: PropTypes.func.isRequired,
+        onTestsLoaded: PropTypes.func.isRequired,
         onTurboModeOff: PropTypes.func.isRequired,
         onTurboModeOn: PropTypes.func.isRequired,
         projectChanged: PropTypes.bool,
@@ -196,6 +207,8 @@ const vmListenerHOC = function (WrappedComponent) {
         onRuntimeStarted: () => dispatch(setStartedState(true)),
         onTurboModeOn: () => dispatch(setTurboState(true)),
         onTurboModeOff: () => dispatch(setTurboState(false)),
+        onProjectLoaded: () => dispatch(setTestsLoadedState(false)),
+        onTestsLoaded: () => dispatch(setTestsLoadedState(true)),
         onShowExtensionAlert: data => {
             dispatch(showExtensionAlert(data));
         },

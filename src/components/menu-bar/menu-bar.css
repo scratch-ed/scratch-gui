@@ -35,6 +35,10 @@
     background-color: $ui-debug;
 }
 
+.test-mode {
+    background-color: $ui-test;
+}
+
 .main-menu {
     display: flex;
     flex-direction: row;

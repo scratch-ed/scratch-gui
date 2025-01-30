@@ -4,11 +4,13 @@ import PropTypes from 'prop-types';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
 import {
+    TimeSliderMode,
+    TimeSliderStates,
     setTimeFrame,
     setNumberOfFrames,
     setChanged,
     setRemoveFuture
-} from '../reducers/debugger.js';
+} from '../reducers/time-slider.js';
 import TimeInterfaceComponent from '../components/time-interface/time-interface.jsx';
 import omit from 'lodash.omit';
 
@@ -22,6 +24,7 @@ class TimeInterface extends React.Component {
 
         bindAll(this, [
             'handleTimeChange',
+            'handleFrameChange',
             'handleTimeMouseDown',
             'handleToggleResumeClick',
             'handleStepBackClick',
@@ -32,6 +35,10 @@ class TimeInterface extends React.Component {
 
     handleTimeChange (event) {
         this.props.setTimeFrame(parseInt(event.target.value, 10));
+    }
+
+    handleFrameChange (frame) {
+        this.props.setTimeFrame(frame);
     }
 
     handleTimeMouseDown () {
@@ -56,7 +63,8 @@ class TimeInterface extends React.Component {
             } else {
                 // Play history
                 const historyPlayingInterval = setInterval(() => {
-                    if (this.props.debugMode && this.props.timeFrame < this.props.numberOfFrames - 1) {
+                    if (this.props.timeSliderMode !== TimeSliderMode.OFF &&
+                        this.props.timeFrame < this.props.numberOfFrames - 1) {
                         this.props.setTimeFrame(this.props.timeFrame + 1);
                     } else {
                         clearInterval(this.state.historyPlayingInterval);
@@ -127,6 +135,7 @@ class TimeInterface extends React.Component {
                 {...componentProps}
                 paused={componentProps.paused && !this.state.historyPlayingInterval}
                 onTimeChange={this.handleTimeChange}
+                onFrameChange={this.handleFrameChange}
                 onTimeMouseDown={this.handleTimeMouseDown}
                 onToggleResumeClick={this.handleToggleResumeClick}
                 onStepBackClick={this.handleStepBackClick}
@@ -138,11 +147,11 @@ class TimeInterface extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.debugger.debugMode,
-    numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-    timeFrame: state.scratchGui.debugger.timeFrame,
-    paused: state.scratchGui.debugger.paused,
-    changed: state.scratchGui.debugger.changed
+    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
+    numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
+    timeFrame: state.scratchGui.timeSlider.timeFrame,
+    paused: state.scratchGui.timeSlider.paused,
+    changed: state.scratchGui.timeSlider.changed
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -153,7 +162,7 @@ const mapDispatchToProps = dispatch => ({
 });
 
 TimeInterface.propTypes = {
-    debugMode: PropTypes.bool.isRequired,
+    timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
     numberOfFrames: PropTypes.number.isRequired,
     timeFrame: PropTypes.number.isRequired,
     vm: PropTypes.instanceOf(VM).isRequired,
@@ -162,7 +171,7 @@ TimeInterface.propTypes = {
     setChanged: PropTypes.func.isRequired,
     setRemoveFuture: PropTypes.func.isRequired,
     paused: PropTypes.bool.isRequired,
-    changed: PropTypes.bool.isRequired
+    changed: PropTypes.bool.isRequired,
 };
 
 export default connect(

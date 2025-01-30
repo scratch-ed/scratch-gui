@@ -183,7 +183,6 @@ class Blocks extends React.Component {
             return;
         }
         // @todo hack to resize blockly manually in case resize happened while hidden
-        // @todo hack to reload the workspace due to gui bug #413
         if (this.props.isVisible) { // Scripts tab
             this.workspace.setVisible(true);
             if (prevProps.locale !== this.props.locale || this.props.locale !== this.props.vm.getLocale()) {
@@ -191,7 +190,6 @@ class Blocks extends React.Component {
                 // vm.getLocale() will be out of sync if locale was changed while not visible
                 this.setLocale();
             } else {
-                this.props.vm.refreshWorkspace();
                 this.requestToolboxUpdate();
             }
 
@@ -610,7 +608,6 @@ class Blocks extends React.Component {
             updateMetrics: updateMetricsProp,
             useCatBlocks,
             workspaceMetrics,
-            debugMode,
             ...props
         } = this.props;
         /* eslint-enable no-unused-vars */
@@ -659,7 +656,6 @@ Blocks.propTypes = {
     anyModalVisible: PropTypes.bool,
     canUseCloud: PropTypes.bool,
     customProceduresVisible: PropTypes.bool,
-    debugMode: PropTypes.bool.isRequired,
     extensionLibraryVisible: PropTypes.bool,
     isRtl: PropTypes.bool,
     isVisible: PropTypes.bool,
@@ -720,7 +716,6 @@ const mapStateToProps = state => ({
         Object.keys(state.scratchGui.modals).some(key => state.scratchGui.modals[key]) ||
         state.scratchGui.mode.isFullScreen
     ),
-    debugMode: state.scratchGui.debugger.debugMode,
     extensionLibraryVisible: state.scratchGui.modals.extensionLibrary,
     isRtl: state.locales.isRtl,
     locale: state.locales.locale,

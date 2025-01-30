@@ -1,8 +1,10 @@
 import bindAll from 'lodash.bindall';
+import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
+import {TimeSliderMode, TimeSliderStates, closeSlider} from '../reducers/time-slider.js';
 
 import ControlsComponent from '../components/controls/controls.jsx';
 
@@ -13,14 +15,15 @@ class Controls extends React.Component {
         bindAll(this, [
             'handleDebugModeClick',
             'handleGreenFlagClick',
-            'handleStopAllClick'
+            'handleStopAllClick',
+            'handleTestFlagClick'
         ]);
     }
 
     handleDebugModeClick (e) {
         e.preventDefault();
 
-        if (this.props.debugMode) {
+        if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
             this.props.vm.runtime.disableDebugMode();
         } else {
             this.props.vm.runtime.enableDebugMode();
@@ -29,6 +32,11 @@ class Controls extends React.Component {
 
     handleGreenFlagClick (e) {
         e.preventDefault();
+
+        if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
+            this.props.vm.runtime.disableTestMode();
+        }
+
         if (e.shiftKey) {
             this.props.vm.setTurboMode(!this.props.turbo);
         } else {
@@ -39,48 +47,70 @@ class Controls extends React.Component {
         }
     }
 
+    handleTestFlagClick (e) {
+        e.preventDefault();
+        if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
+            this.props.vm.runtime.stopTesting();
+        } else {
+            this.props.vm.runtime.startTesting();
+        }
+    }
+
     handleStopAllClick (e) {
         e.preventDefault();
 
-        this.props.vm.stopAll();
+        if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
+            this.props.vm.runtime.stopTesting();
+        } else if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
+            this.props.vm.runtime.disableTestMode();
+        } else {
+            this.props.vm.stopAll();
+        }
     }
 
     render () {
-        const {
-            vm, // eslint-disable-line no-unused-vars
-            projectRunning,
-            turbo,
-            ...props
-        } = this.props;
+        const componentProps = omit(this.props, [
+            'vm',
+            'projectRunning',
+            'turbo',
+            'testsLoaded',
+            'closeSlider'
+        ]);
 
         return (
             <ControlsComponent
-                {...props}
-                active={projectRunning}
-                turbo={turbo}
+                {...componentProps}
+                active={this.props.projectRunning}
+                turbo={this.props.turbo}
+                testsLoaded={this.props.testsLoaded}
                 onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onStopAllClick={this.handleStopAllClick}
+                onTestFlagClick={this.handleTestFlagClick}
             />
         );
     }
 }
 
 Controls.propTypes = {
-    debugMode: PropTypes.bool.isRequired,
+    timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
+    closeSlider: PropTypes.func.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
+    testsLoaded: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM),
     isStarted: PropTypes.bool
 };
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.debugger.debugMode,
+    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
     projectRunning: state.scratchGui.vmStatus.running,
-    turbo: state.scratchGui.vmStatus.turbo
+    turbo: state.scratchGui.vmStatus.turbo,
+    testsLoaded: state.scratchGui.vmStatus.testsLoaded
 });
 
-// no-op function to prevent dispatch prop being passed to component
-const mapDispatchToProps = () => ({});
+const mapDispatchToProps = dispatch => ({
+    closeSlider: () => dispatch(closeSlider())
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Controls);

@@ -4,9 +4,9 @@ import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import {Context} from 'itch';
 import {
-    setNumberOfFrames,
-    setTimeFrame
-} from '../reducers/debugger.js';
+    TimeSliderMode,
+    TimeSliderStates,
+} from '../reducers/time-slider.js';
 import {
     updateSpriteBubble,
     updateSpriteState,
@@ -18,11 +18,11 @@ import {
 } from './time-slider-utility.js';
 import VM from 'scratch-vm';
 
-const DebuggerTimeSliderHOC = function (WrappedComponent) {
-    class DebuggerTimeSliderWrapper extends React.Component {
+const DebugAndTestTimeSliderHOC = function (WrappedComponent) {
+    class DebugAndTestTimeSliderWrapper extends React.Component {
 
         shouldComponentUpdate (nextProps) {
-            return this.props.debugMode !== nextProps.debugMode ||
+            return this.props.timeSliderMode !== nextProps.timeSliderMode ||
                    this.props.timeFrame !== nextProps.timeFrame ||
                    this.props.numberOfFrames !== nextProps.numberOfFrames;
         }
@@ -32,16 +32,16 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                 return;
             }
 
-            if (this.props.debugMode) {
+            if (this.props.timeSliderMode !== TimeSliderMode.OFF) {
                 if (this.props.vm.runtime.isPaused() && prevProps.timeFrame !== this.props.timeFrame) {
                     this.loadLogFrame();
                 }
             }
         }
 
-        loadClones () {
-            for (const slog of this.props.context.log.ops[this.props.timeFrame].previous.sprites) {
-                const target = this.props.vm.runtime.getTargetById(slog.id);
+        loadClones (snapshot) {
+            for (const spriteLog of snapshot.sprites) {
+                const target = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (target && target.isOriginal) {
                     // Remove all clones of the current sprite that is not the sprite itself
@@ -51,7 +51,7 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                         if (clone.isOriginal) {
                             continue;
                         }
-                        const loggedClone = slog.clones.find(c => c.id === clone.id);
+                        const loggedClone = spriteLog.clones.find(c => c.id === clone.id);
                         if (loggedClone) {
                             clonesOnCanvas.add(loggedClone.id);
                         } else {
@@ -61,11 +61,11 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                     }
 
                     // Update the state of all clones in the log.
-                    for (const loggedClone of slog.clones) {
+                    for (const loggedClone of spriteLog.clones) {
                         let clone;
                         // Only create new clone if clone was not yet on the canvas.
                         if (clonesOnCanvas.has(loggedClone.id)) {
-                            clone = this.props.vm.runtime.getTargetById(slog.id);
+                            clone = this.props.vm.runtime.getTargetById(spriteLog.id);
                         } else {
                             clone = target.makeClone(loggedClone.id);
                             this.props.vm.runtime.addTarget(clone);
@@ -78,8 +78,8 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             }
         }
 
-        loadSprites () {
-            for (const spriteLog of this.props.context.log.ops[this.props.timeFrame].previous.sprites) {
+        loadSprites (snapshot) {
+            for (const spriteLog of snapshot.sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
@@ -87,14 +87,14 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
                 }
             }
 
-            const stageLog = this.props.context.log.ops[this.props.timeFrame].previous.stage;
+            const stageLog = snapshot.stage;
             if (stageLog) {
                 updateStageState(this.props.vm.runtime.getTargetForStage(), stageLog);
             }
         }
 
-        loadBubbles () {
-            for (const spriteLog of this.props.context.log.ops[this.props.timeFrame].previous.sprites) {
+        loadBubbles (snapshot) {
+            for (const spriteLog of snapshot.sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
 
                 if (sprite) {
@@ -111,24 +111,23 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
             }
         }
 
-        loadVariables () {
-            for (const spriteLog of this.props.context.log.ops[this.props.timeFrame].previous.sprites) {
+        loadVariables (snapshot) {
+            for (const spriteLog of snapshot.sprites) {
                 const sprite = this.props.vm.runtime.getTargetById(spriteLog.id);
                 if (sprite) {
                     updateTargetVariables(sprite, spriteLog.variables);
                 }
             }
 
-            const stageLog = this.props.context.log.ops[this.props.timeFrame].previous.stage;
+            const stageLog = snapshot.stage;
             const stage = this.props.vm.runtime.getTargetById(stageLog.id);
             if (stage) {
                 updateTargetVariables(stage, stageLog.variables);
             }
         }
 
-        loadMonitors () {
+        loadMonitors (snapshot) {
             const monitorState = this.props.context.vm.runtime.getMonitorState();
-            const snapshot = this.props.context.log.ops[this.props.timeFrame].previous;
             for (const monitorId of monitorState.keys()) {
                 const loggedTarget = snapshot.findTargetById(monitorId.substring(0, 20));
                 if (loggedTarget) {
@@ -140,28 +139,28 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
 
             // Restore answer
             const answerEvents = this.props.context.log.events.filter(e => e.type === 'answer');
-            const timestamp = this.props.context.log.ops[this.props.timeFrame].timestamp;
-            updateAnswerMonitor(this.props.context.vm.runtime, answerEvents, timestamp);
+            updateAnswerMonitor(this.props.context.vm.runtime, answerEvents, snapshot.timestamp);
         }
 
-        loadRuntime () {
+        loadRuntime (snapshot) {
             // load runtime at timeFrame
-            this.props.context.log.ops[this.props.timeFrame].previous.restoreRuntime(this.props.vm.runtime);
+            snapshot.restoreRuntime(this.props.vm.runtime);
         }
 
         loadLogFrame () {
-            this.loadClones();
-            this.loadSprites();
-            this.loadBubbles();
-            this.loadVariables();
-            this.loadMonitors();
-            this.loadRuntime();
+            const snapshot = this.props.context.log.snapshots[this.props.timeFrame];
+            this.loadClones(snapshot);
+            this.loadSprites(snapshot);
+            this.loadBubbles(snapshot);
+            this.loadVariables(snapshot);
+            this.loadMonitors(snapshot);
+            this.loadRuntime(snapshot);
         }
 
         render () {
             const componentProps = omit(this.props, [
                 'context',
-                'debugMode',
+                'timeSliderMode',
                 'numberOfFrames',
                 'timeFrame',
                 'vm'
@@ -173,33 +172,28 @@ const DebuggerTimeSliderHOC = function (WrappedComponent) {
         }
     }
 
-    DebuggerTimeSliderWrapper.propTypes = {
+    DebugAndTestTimeSliderWrapper.propTypes = {
         context: PropTypes.instanceOf(Context),
-        debugMode: PropTypes.bool.isRequired,
+        timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
         numberOfFrames: PropTypes.number.isRequired,
         timeFrame: PropTypes.number.isRequired,
-        vm: PropTypes.instanceOf(VM).isRequired,
-        setNumberOfFrames: PropTypes.func.isRequired,
-        setTimeFrame: PropTypes.func.isRequired
+        vm: PropTypes.instanceOf(VM).isRequired
     };
 
     const mapStateToProps = state => ({
-        context: state.scratchGui.debugger.context,
-        debugMode: state.scratchGui.debugger.debugMode,
-        numberOfFrames: state.scratchGui.debugger.numberOfFrames,
-        timeFrame: state.scratchGui.debugger.timeFrame,
+        context: state.scratchGui.timeSlider.context,
+        timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
+        numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
+        timeFrame: state.scratchGui.timeSlider.timeFrame,
         vm: state.scratchGui.vm
     });
 
-    const mapDispatchToProps = dispatch => ({
-        setNumberOfFrames: numberOfFrames => dispatch(setNumberOfFrames(numberOfFrames)),
-        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
-    });
+    const mapDispatchToProps = () => ({});
 
     return connect(
         mapStateToProps,
         mapDispatchToProps
-    )(DebuggerTimeSliderWrapper);
+    )(DebugAndTestTimeSliderWrapper);
 };
 
-export default DebuggerTimeSliderHOC;
+export default DebugAndTestTimeSliderHOC;

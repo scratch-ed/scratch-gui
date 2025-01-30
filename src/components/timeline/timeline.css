@@ -1,0 +1,216 @@
+@import "../../css/units.css";
+@import "../../css/colors.css";
+@import "../../css/z-index.css";
+
+$line-margin: 8px;
+$timeline-color: black;
+$background-color: white;
+
+.flex-row {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+.row-margin {
+    margin-bottom: 7px;
+}
+
+.scroll-details {
+    /* Must have some width (recalculated by flex-grow) in order to scroll */
+    width: 0;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    overflow-x: scroll;
+}
+
+.content {
+    padding: 20px;
+    margin: 10px auto;
+    display: block;
+    flex-direction: column;
+}
+
+.tick-height {
+    height: 10px;
+}
+
+.event-height {
+    height: 30px;
+}
+
+.event-key-data {
+    transform: translate(4px, -27px);
+    color: white;
+}
+
+.timeline-item {
+    position: relative;
+    width: 0;
+}
+
+.marker-icon {
+    width: 15px;
+    height: 15px;
+    user-select: none;
+}
+
+.event-icon {
+    width: 25px;
+    height: 25px;
+    transform: translatex(-3px);
+    user-select: none;
+}
+
+.test-passed {
+    border-color: #7ECE7E;
+    background: #B5E3B5;
+}
+
+.test-failed {
+    border-color: #FF99AA;
+    background: #FFCCD5;
+}
+
+
+.mark-rectangle {
+    min-height: 30px;
+    padding: 2px;
+    border-radius: 5px;
+    border-width: 2px;
+    border-style: solid;
+    font-size: 9pt;
+    font-weight: 500;
+    color: black;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* number of lines to show */
+            line-clamp: 2;
+    -webkit-box-orient: vertical;
+    user-select: none;
+}
+
+.mark-multiple {
+    content: "";
+    height: 30px;
+    width: 30px;
+    border-radius: 15px;
+    background: blue;
+}
+
+.highlight-frame {
+    box-shadow: 8px 0px 10px 10px #FFF200
+}
+
+.highlight-icon {
+    box-shadow: 0px 0px 10px 5px #FFF200
+}
+
+.line {
+    border-top: 2px solid $timeline-color;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    list-style: none;
+    padding: 0;
+    height: 0;
+}
+
+.dot {
+    position: relative;
+    margin-top: 10px;
+}
+
+.dot:first-child {
+    margin-left: -$line-margin;
+}
+
+.dot:last-child {
+    margin-right: -$line-margin;
+}
+
+.dot::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background: $background-color;
+    position: absolute;
+    border-radius: 10px;
+    top: -18px;
+    left: 50%;
+    /* transform: translatex(-50%); */
+    border: 2px solid $timeline-color;
+}
+
+.active::after,
+.dot:hover::after {
+    background: $timeline-color;
+}
+
+/*
+    @todo needs to be refactored with coming soon tooltip overrides.
+    The "!important"s are for the same reason as with coming soon, the library
+    is not very easy to style.
+*/
+.tooltip {
+    background-color: $looks-secondary !important;
+    opacity: 1 !important;
+    border: 1px solid hsla(0, 0%, 0%, .1) !important;
+    box-shadow: 0 0 .5rem hsla(0, 0%, 0%, .25) !important;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    user-select: none;
+}
+
+.tooltip:after {
+    background-color: $looks-secondary;
+}
+
+.tooltip {
+    border: 1px solid hsla(0, 0%, 0%, .1) !important;
+    border-radius: $form-radius !important;
+    box-shadow: 0 0 .5rem hsla(0, 0%, 0%, .25) !important;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    z-index: $z-index-tooltip !important;
+}
+
+$arrow-size: 0.5rem;
+$arrow-inset: -0.25rem;
+$arrow-rounding: 0.125rem;
+
+.tooltip:after {
+    content: "";
+    border-top: 1px solid hsla(0, 0%, 0%, .1) !important;
+    border-left: 0 !important;
+    border-bottom: 0 !important;
+    border-right: 1px solid hsla(0, 0%, 0%, .1) !important;
+    border-radius: $arrow-rounding;
+    height: $arrow-size !important;
+    width: $arrow-size !important;
+}
+
+.tooltip:global(.place-left):after {
+    margin-top: $arrow-inset !important;
+    right: $arrow-inset !important;
+    transform: rotate(45deg) !important;
+}
+
+.tooltip:global(.place-right):after {
+    margin-top: $arrow-inset !important;
+    left: $arrow-inset !important;
+    transform: rotate(-135deg) !important;
+}
+
+.tooltip:global(.place-top):after {
+    margin-right: $arrow-inset !important;
+    bottom: $arrow-inset !important;
+    transform: rotate(135deg) !important;
+}
+
+.tooltip:global(.place-bottom):after {
+    margin-left: $arrow-inset !important;
+    top: $arrow-inset !important;
+    transform: rotate(-45deg) !important;
+}

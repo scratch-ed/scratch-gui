@@ -15,7 +15,9 @@ import {
     activateTab,
     BLOCKS_TAB_INDEX,
     COSTUMES_TAB_INDEX,
-    SOUNDS_TAB_INDEX
+    SOUNDS_TAB_INDEX,
+    TEST_RESULTS_TAB_INDEX,
+    TIMELINE_TAB_INDEX
 } from '../reducers/editor-tab';
 
 import {
@@ -24,6 +26,7 @@ import {
     closeTelemetryModal,
     openExtensionLibrary
 } from '../reducers/modals';
+import {TimeSliderMode} from '../reducers/time-slider.js';
 
 import FontLoaderHOC from '../lib/font-loader-hoc.jsx';
 import LocalizationHOC from '../lib/localization-hoc.jsx';
@@ -40,8 +43,8 @@ import systemPreferencesHOC from '../lib/system-preferences-hoc.jsx';
 
 import GUIComponent from '../components/gui/gui.jsx';
 import {setIsScratchDesktop} from '../lib/isScratchDesktop.js';
-import DebuggerHOC from '../lib/debugger-hoc.jsx';
-import DebuggerTimeSliderHOC from '../lib/debugger-time-slider-hoc.jsx';
+import DebuggerAndTesterHOC from '../lib/debugger-tester-hoc.jsx';
+import DebugAndTestTimeSliderHOC from '../lib/debug-test-time-slider-hoc.jsx';
 
 // const {RequestMetadata, setMetadata, unsetMetadata} = storage.scratchFetch;
 
@@ -171,6 +174,13 @@ const mapStateToProps = state => {
             state.scratchGui.targets.stage.id === state.scratchGui.targets.editingTarget
         ),
         telemetryModalVisible: state.scratchGui.modals.telemetryModal,
+        testResultsTabVisible: state.scratchGui.editorTab.activeTabIndex === TEST_RESULTS_TAB_INDEX,
+        timelineTabVisible: state.scratchGui.editorTab.activeTabIndex === TIMELINE_TAB_INDEX,
+        testsLoaded: state.scratchGui.vmStatus.testsLoaded,
+        timelineActive: (
+            state.scratchGui.vmStatus.testsLoaded ||
+            state.scratchGui.timeSlider.timeSliderMode === TimeSliderMode.DEBUG
+        ),
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
         vm: state.scratchGui.vm
     };
@@ -181,6 +191,8 @@ const mapDispatchToProps = dispatch => ({
     onActivateTab: tab => dispatch(activateTab(tab)),
     onActivateCostumesTab: () => dispatch(activateTab(COSTUMES_TAB_INDEX)),
     onActivateSoundsTab: () => dispatch(activateTab(SOUNDS_TAB_INDEX)),
+    onActivateTestResultsTab: () => dispatch(activateTab(TEST_RESULTS_TAB_INDEX)),
+    onActivateTimelineTab: () => dispatch(activateTab(TIMELINE_TAB_INDEX)),
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())
@@ -195,10 +207,10 @@ const ConnectedGUI = injectIntl(connect(
 // the hierarchy of HOC constructor calls clearer here; it has nothing to do with redux's
 // ability to compose reducers.
 const WrappedGui = compose(
-    // Keep this order for DebuggerTimeSliderHOC and DebuggerHOC.
-    // This way DebuggerHOC always gets executed first.
-    DebuggerTimeSliderHOC,
-    DebuggerHOC,
+    // Keep this order for DebugAndTestTimeSliderHOC and DebuggerAndTesterHOC.
+    // This way DebuggerAndTesterHOC always gets executed first.
+    DebugAndTestTimeSliderHOC,
+    DebuggerAndTesterHOC,
     LocalizationHOC,
     ErrorBoundaryHOC('Top Level App'),
     FontLoaderHOC,

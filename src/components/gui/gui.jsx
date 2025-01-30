@@ -14,6 +14,8 @@ import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
+import TestResultsTab from '../../containers/test-results-tab.jsx';
+import TimelineTab from '../../containers/timeline-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
@@ -40,7 +42,10 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
+import testIcon from './icon--test.svg';
+import timeIcon from './icon--time.svg';
 import TimeInterface from '../../containers/time-interface.jsx';
+import {TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
 
 const messages = defineMessages({
     addExtension: {
@@ -83,7 +88,7 @@ const GUIComponent = props => {
         connectionModalVisible,
         costumeLibraryVisible,
         costumesTabVisible,
-        debugMode,
+        timeSliderMode,
         enableCommunity,
         intl,
         isCreating,
@@ -105,6 +110,8 @@ const GUIComponent = props => {
         onActivateCostumesTab,
         onActivateSoundsTab,
         onActivateTab,
+        onActivateTestResultsTab,
+        onActivateTimelineTab,
         onClickLogo,
         onExtensionButtonClick,
         onProjectTelemetryEvent,
@@ -123,6 +130,10 @@ const GUIComponent = props => {
         stageSizeMode,
         targetIsStage,
         telemetryModalVisible,
+        testResultsTabVisible,
+        timelineTabVisible,
+        timelineActive,
+        testsLoaded,
         theme,
         tipsLibraryVisible,
         vm,
@@ -305,6 +316,38 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
+                                    {timelineActive &&
+                                        <Tab
+                                            className={tabClassNames.tab}
+                                            onClick={onActivateTimelineTab}
+                                        >
+                                            <img
+                                                draggable={false}
+                                                src={timeIcon}
+                                            />
+                                            <FormattedMessage
+                                                defaultMessage="Timeline"
+                                                description="Button to get to the timeline panel"
+                                                id="gui.gui.timelineTab"
+                                            />
+                                        </Tab>
+                                    }
+                                    {testsLoaded &&
+                                        <Tab
+                                            className={tabClassNames.tab}
+                                            onClick={onActivateTestResultsTab}
+                                        >
+                                            <img
+                                                draggable={false}
+                                                src={testIcon}
+                                            />
+                                            <FormattedMessage
+                                                defaultMessage="Test Results"
+                                                description="Button to get to the test results panel"
+                                                id="gui.gui.testResultsTab"
+                                            />
+                                        </Tab>
+                                    }
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
@@ -344,6 +387,16 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
+                                {timelineActive &&
+                                    <TabPanel className={tabClassNames.tabPanel}>
+                                        {timelineTabVisible ? <TimelineTab vm={vm} /> : null}
+                                    </TabPanel>
+                                }
+                                {testsLoaded &&
+                                    <TabPanel className={tabClassNames.tabPanel}>
+                                        {testResultsTabVisible ? <TestResultsTab vm={vm} /> : null}
+                                    </TabPanel>
+                                }
                             </Tabs>
                             {backpackVisible ? (
                                 <Backpack host={backpackHost} />
@@ -357,7 +410,7 @@ const GUIComponent = props => {
                                 stageSize={stageSize}
                                 vm={vm}
                             />
-                            {debugMode ? <TimeInterface vm={vm} /> : null}
+                            {timeSliderMode !== TimeSliderMode.OFF && <TimeInterface vm={vm} />}
                             <Box className={styles.targetWrapper}>
                                 <TargetPane
                                     stageSize={stageSize}
@@ -400,7 +453,7 @@ GUIComponent.propTypes = {
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
     debuggerTabVisible: PropTypes.bool,
-    debugMode: PropTypes.bool,
+    timeSliderMode: PropTypes.oneOf(TimeSliderStates),
     enableCommunity: PropTypes.bool,
     intl: intlShape.isRequired,
     isCreating: PropTypes.bool,
@@ -415,6 +468,8 @@ GUIComponent.propTypes = {
     onActivateDebuggerTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
     onActivateTab: PropTypes.func,
+    onActivateTestResultsTab: PropTypes.func,
+    onActivateTimelineTab: PropTypes.func,
     onClickAccountNav: PropTypes.func,
     onClickLogo: PropTypes.func,
     onCloseAccountNav: PropTypes.func,
@@ -439,6 +494,10 @@ GUIComponent.propTypes = {
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
+    testResultsTabVisible: PropTypes.bool,
+    timelineTabVisible: PropTypes.bool,
+    timelineActive: PropTypes.bool,
+    testsLoaded: PropTypes.bool,
     theme: PropTypes.string,
     tipsLibraryVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
@@ -469,7 +528,7 @@ GUIComponent.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-    debugMode: state.scratchGui.debugger.debugMode,
+    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
     // This is the button's mode, as opposed to the actual current state
     blocksId: state.scratchGui.timeTravel.year.toString(),
     stageSizeMode: state.scratchGui.stageSize.stageSize,

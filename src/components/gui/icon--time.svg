@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   stroke="currentColor"
+   stroke-width="2"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="icon--time.svg"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="17.800488"
+     inkscape:cx="11.039023"
+     inkscape:cy="9.0446959"
+     inkscape:window-width="946"
+     inkscape:window-height="1040"
+     inkscape:window-x="7"
+     inkscape:window-y="29"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <circle
+     cx="11.928349"
+     cy="11.785047"
+     r="6.9385386"
+     id="circle1"
+     style="stroke-width:2.488;stroke-dasharray:none;stroke:#845cd6;stroke-opacity:1" />
+  <path
+     id="polyline1"
+     style="stroke:#845cd6;stroke-width:3.00927926;stroke-dasharray:none"
+     transform="matrix(0.69385385,0,0,0.69385385,3.6021026,3.4588002)"
+     d="M 11.919034,6.5667586 12,12 l 4,2"
+     sodipodi:nodetypes="ccc" />
+</svg>

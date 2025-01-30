@@ -1,0 +1,78 @@
+@import "../../css/units.css";
+@import "../../css/colors.css";
+
+$caret-width: 15px;
+
+.wrapper {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    border: 1px solid $ui-black-transparent;
+    background: white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.95rem;
+    color: $text-primary;
+    font-weight: bold;
+}
+
+[dir="ltr"] .wrapper {
+    border-top-right-radius: $space;
+    border-bottom-right-radius: $space;
+}
+
+[dir="rtl"] .wrapper {
+    border-top-left-radius: $space;
+    border-bottom-left-radius: $space;
+}
+
+.test-details {
+    /* Must have some height (recalculated by flex-grow) in order to scroll */
+    height: 0;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    overflow-y: scroll;
+}
+
+.feedback-tree {
+    margin: 10px 10px 0px 20px;
+}
+
+.feedback-icon {
+    width: 15px;
+    height: 15px;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.feedback-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.caret-open::before {
+    width: $caret-width;
+    content: "\25B6";
+    display: inline-block;
+    transform: rotate(90deg);
+}
+
+.caret-closed::before {
+    width: $caret-width;
+    content: "\25B6";
+    display: inline-block;
+}
+
+.caret-padding {
+    width: $caret-width;
+}
+
+[dir="rtl"] .caret-closed::before {
+    transform: rotate(180deg);
+}
+
+.hidden {
+    display: none;
+}

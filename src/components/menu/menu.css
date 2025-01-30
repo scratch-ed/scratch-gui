@@ -37,6 +37,10 @@
     background-color: $ui-debug;
 }
 
+.test-mode {
+    background-color: $ui-test;
+}
+
 .menu-item.active,
 .menu-item:hover,
 .menu-item.expanded {
