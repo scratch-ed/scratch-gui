@@ -78,7 +78,7 @@ const generateTimelineCuts = (timestamps, size) => {
     return Array.from(cuts).sort((a, b) => a - b);
 };
 
-const getCompressedPlotPosition = (timestamp, ticks, size) => {
+const getCompressedWidth = (timestamp, ticks, size) => {
     if (ticks.length < 2 || timestamp < ticks[0]) return 0;
 
     let visibleTimeElapsed = 0;
@@ -100,7 +100,15 @@ const getCompressedPlotPosition = (timestamp, ticks, size) => {
         }
     }
 
-    const totalVisibleSpan = size * (ticks.length - 1);
+    return visibleTimeElapsed;
+};
+
+const getCompressedPlotPosition = (timestamp, ticks, lastTimeStamp, size) => {
+    if (ticks.length < 2 || timestamp < ticks[0]) return 0;
+
+    const visibleTimeElapsed = getCompressedWidth(timestamp, ticks, size);
+    const totalVisibleSpan = (size * (ticks.length - 2)) + (lastTimeStamp % size);
+
     return (visibleTimeElapsed / totalVisibleSpan) * 100;
 };
 
@@ -113,6 +121,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
     const timeElapsed = timestamps[numberOfFrames - 1];
     const tickSize = 100;
     const timeTicks = generateTimelineCuts(timestamps, tickSize);
+    const lastTimeStamp = timestamps[timestamps.length - 1];
 
     const filteredTests = vm.getMarkedTests()
         .filter(t => {
@@ -178,11 +187,11 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
         <div className={styles.scrollDetails}>
             <div className={styles.content}>
                 <div className={classNames(styles.flexRow, styles.tickHeight)}>
-                    {timeTicks.map(tick => (
+                    {timeTicks.slice(0, -1).map(tick => (
                         <div
                             key={tick}
                             className={styles.timelineItem}
-                            style={{left: `${getCompressedPlotPosition(tick, timeTicks, tickSize)}%`}}
+                            style={{left: `${getCompressedPlotPosition(tick, timeTicks, lastTimeStamp, tickSize)}%`}}
                         >{tick}
                         </div>
                     ))}
@@ -190,7 +199,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
 
                 <div
                     className={styles.flexRow}
-                    style={{width: `${(tickSize * timeTicks.length) / tickSize * 100}px`}}
+                    style={{width: `${(timeTicks.length - 2) * 100}px`}}
                 >
                     <ul className={styles.line}>
                         {timestamps.map((timestamp, index) => (
@@ -200,7 +209,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                                     // Highlight frames when hovering over items
                                     [styles.highlightFrame]: highlight.includes(timestamp)
                                 })}
-                                style={{left: `${getCompressedPlotPosition(timestamp, timeTicks, tickSize)}%`}}
+                                style={{left: `${getCompressedPlotPosition(timestamp, timeTicks, lastTimeStamp, tickSize)}%`}}
                             >
                                 <li
                                     onClick={() => setFrameIndex(index)}
@@ -215,7 +224,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                 <Events
                     events={filteredEvents}
                     // timeElapsed={timeElapsed}
-                    mapTime={(timestamp) => getCompressedPlotPosition(timestamp, timeTicks, tickSize)}
+                    mapTime={(timestamp) => getCompressedPlotPosition(timestamp, timeTicks, lastTimeStamp, tickSize)}
                     setFrameRange={setFrameRange}
                     clearHighlighting={clearHighlighting}
                     highlightFrameRange={highlightFrameRange}
@@ -226,7 +235,8 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                         <Band
                             key={index}
                             tests={tests}
-                            mapTime={(timestamp) => getCompressedPlotPosition(timestamp, timeTicks, tickSize)}
+                            mapTime={(timestamp) => getCompressedPlotPosition(timestamp, timeTicks, lastTimeStamp, tickSize)}
+                            mapWidth={(timestamp) => getCompressedWidth(timestamp, timeTicks, tickSize)}
                             tickSize={tickSize}
                             groupid={`testgroup-${index}`}
                             setFrameMark={setFrameMark}

@@ -103,7 +103,7 @@ MarkMultiple.propTypes = {
     setHighlighting: PropTypes.func
 };
 
-const MarkRectangle = ({begin, end, mapTime, tickSize, test, handleClick, clearHighlighting, setHighlighting}) => (
+const MarkRectangle = ({begin, end, mapTime, mapWidth, tickSize, test, handleClick, clearHighlighting, setHighlighting}) => (
     <div
         className={styles.timelineItem}
         style={{left: `${mapTime(begin)}%`}}
@@ -111,7 +111,7 @@ const MarkRectangle = ({begin, end, mapTime, tickSize, test, handleClick, clearH
     >
         <div
             className={classNames(styles.markRectangle, test.passed ? styles.testPassed : styles.testFailed)}
-            style={{width: `${mapTime(end - begin) * 100 / tickSize}px`}}
+            style={{width: `${(mapWidth(end) - mapWidth(begin)) * 100 / tickSize}px`}}
             data-for={test.id}
             data-tip=""
             onMouseEnter={setHighlighting}
@@ -131,6 +131,7 @@ MarkRectangle.propTypes = {
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     }),
     mapTime: PropTypes.func,
+    mapWidth: PropTypes.func,
     tickSize: PropTypes.number,
     begin: PropTypes.number,
     end: PropTypes.number,
@@ -139,7 +140,7 @@ MarkRectangle.propTypes = {
     setHighlighting: PropTypes.func
 };
 
-const Band = ({tests, mapTime, tickSize, setFrameMark, setFrameRange,
+const Band = ({tests, mapTime, mapWidth, tickSize, setFrameMark, setFrameRange,
     clearHighlighting, highlightFrames, highlightFrameRange}) => (
 
     // eslint-disable-next-line react/jsx-indent
@@ -176,6 +177,7 @@ const Band = ({tests, mapTime, tickSize, setFrameMark, setFrameRange,
                         begin={test.marker.start}
                         end={test.marker.end}
                         mapTime={mapTime}
+                        mapWidth={mapWidth}
                         tickSize={tickSize}
                         test={test}
                         handleClick={() => setFrameRange(test.marker.start, test.marker.end)}
@@ -197,6 +199,7 @@ Band.propTypes = {
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     })),
     mapTime: PropTypes.func,
+    mapWidth: PropTypes.func,
     tickSize: PropTypes.number,
     setFrameMark: PropTypes.func,
     setFrameRange: PropTypes.func,
