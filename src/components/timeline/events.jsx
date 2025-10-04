@@ -193,14 +193,14 @@ EventMarker.propTypes = {
 
 const shownEventTypes = ['click', 'key', 'broadcast', 'greenFlag'];
 
-const Events = ({events, timeElapsed, setFrameRange, clearHighlighting, highlightFrameRange}) => (
+const Events = ({events, mapTime, setFrameRange, clearHighlighting, highlightFrameRange}) => (
     <div className={classNames(styles.flexRow, styles.rowMargin)}>
         {
             events.filter(e => shownEventTypes.includes(e.type)).map((event, index) => (
                 <div
                     key={index}
                     className={styles.timelineItem}
-                    style={{left: `${event.timestamp / timeElapsed * 100}%`}}
+                    style={{left: `${mapTime(event.timestamp)}%`}}
                 >
                     <div
                         className={styles.eventIcon}
@@ -235,7 +235,8 @@ Events.propTypes = {
         end: PropTypes.number,
         sprites: PropTypes.arrayOf(PropTypes.string)
     })),
-    timeElapsed: PropTypes.number,
+    // timeElapsed: PropTypes.number,
+    mapTime: PropTypes.func,
     setFrameRange: PropTypes.func,
     clearHighlighting: PropTypes.func,
     highlightFrameRange: PropTypes.func

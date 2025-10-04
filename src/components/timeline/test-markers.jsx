@@ -29,10 +29,10 @@ TestTooltip.propTypes = {
     })
 };
 
-const Mark = ({timestamp, timeElapsed, test, handleClick, clearHighlighting, setHighlighting, highlighted}) => (
+const Mark = ({timePlaced, test, handleClick, clearHighlighting, setHighlighting, highlighted}) => (
     <div
         className={styles.timelineItem}
-        style={{left: `${timestamp / timeElapsed * 100}%`}}
+        style={{left: `${timePlaced}%`}}
         onClick={handleClick}
     >
         <img
@@ -58,22 +58,20 @@ Mark.propTypes = {
         passed: PropTypes.bool,
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     }),
-    timeElapsed: PropTypes.number,
-    timestamp: PropTypes.number,
+    timePlaced: PropTypes.number,
     handleClick: PropTypes.func,
     clearHighlighting: PropTypes.func,
     setHighlighting: PropTypes.func,
     highlighted: PropTypes.bool
 };
 
-const MarkMultiple = ({timestamps, timeElapsed, test, handleClick, clearHighlighting, setHighlighting}) => {
+const MarkMultiple = ({timestamps, mapTime, test, handleClick, clearHighlighting, setHighlighting}) => {
     const [highlighted, setHighlighted] = useState(false);
     return (<div className={styles.flexRow}>
         {timestamps.map(timestamp => (
             <Mark
                 key={timestamp}
-                timestamp={timestamp}
-                timeElapsed={timeElapsed}
+                timePlaced={mapTime(timestamp)}
                 test={test}
                 handleClick={() => handleClick(timestamp)}
                 highlighted={highlighted}
@@ -98,22 +96,22 @@ MarkMultiple.propTypes = {
         passed: PropTypes.bool,
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     }),
-    timeElapsed: PropTypes.number,
+    mapTime: PropTypes.func,
     timestamps: PropTypes.arrayOf(PropTypes.number),
     handleClick: PropTypes.func,
     clearHighlighting: PropTypes.func,
     setHighlighting: PropTypes.func
 };
 
-const MarkRectangle = ({begin, end, timeElapsed, tickSize, test, handleClick, clearHighlighting, setHighlighting}) => (
+const MarkRectangle = ({begin, end, mapTime, tickSize, test, handleClick, clearHighlighting, setHighlighting}) => (
     <div
         className={styles.timelineItem}
-        style={{left: `${begin / timeElapsed * 100}%`}}
+        style={{left: `${mapTime(begin)}%`}}
         onClick={handleClick}
     >
         <div
             className={classNames(styles.markRectangle, test.passed ? styles.testPassed : styles.testFailed)}
-            style={{width: `${(end - begin) * 100 / tickSize}px`}}
+            style={{width: `${mapTime(end - begin) * 100 / tickSize}px`}}
             data-for={test.id}
             data-tip=""
             onMouseEnter={setHighlighting}
@@ -132,7 +130,7 @@ MarkRectangle.propTypes = {
         passed: PropTypes.bool,
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     }),
-    timeElapsed: PropTypes.number,
+    mapTime: PropTypes.func,
     tickSize: PropTypes.number,
     begin: PropTypes.number,
     end: PropTypes.number,
@@ -141,7 +139,7 @@ MarkRectangle.propTypes = {
     setHighlighting: PropTypes.func
 };
 
-const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange,
+const Band = ({tests, mapTime, tickSize, setFrameMark, setFrameRange,
     clearHighlighting, highlightFrames, highlightFrameRange}) => (
 
     // eslint-disable-next-line react/jsx-indent
@@ -152,8 +150,7 @@ const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange,
                     return (
                         <Mark
                             key={test.id}
-                            timestamp={test.marker}
-                            timeElapsed={timeElapsed}
+                            timePlaced={mapTime(test.marker)}
                             test={test}
                             handleClick={() => setFrameMark(test.marker)}
                             clearHighlighting={clearHighlighting}
@@ -165,7 +162,7 @@ const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange,
                         <MarkMultiple
                             key={test.id}
                             timestamps={test.marker}
-                            timeElapsed={timeElapsed}
+                            mapTime={mapTime}
                             test={test}
                             handleClick={setFrameMark}
                             clearHighlighting={clearHighlighting}
@@ -178,7 +175,7 @@ const Band = ({tests, timeElapsed, tickSize, setFrameMark, setFrameRange,
                         key={test.id}
                         begin={test.marker.start}
                         end={test.marker.end}
-                        timeElapsed={timeElapsed}
+                        mapTime={mapTime}
                         tickSize={tickSize}
                         test={test}
                         handleClick={() => setFrameRange(test.marker.start, test.marker.end)}
@@ -199,7 +196,7 @@ Band.propTypes = {
         passed: PropTypes.bool,
         marker: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number), PropTypes.object])
     })),
-    timeElapsed: PropTypes.number,
+    mapTime: PropTypes.func,
     tickSize: PropTypes.number,
     setFrameMark: PropTypes.func,
     setFrameRange: PropTypes.func,

@@ -63,6 +63,47 @@ const separateTests = tests => {
     return groups;
 };
 
+const generateTimelineCuts = (timestamps, size) => {
+    const cuts = new Set();
+    cuts.add(0);
+
+    for (const N of timestamps) {
+        const lower = Math.floor(N / size) * size;
+        cuts.add(lower);
+
+        const upper = Math.ceil(N / size) * size;
+        cuts.add(upper);
+    }
+
+    return Array.from(cuts).sort((a, b) => a - b);
+};
+
+const getCompressedPlotPosition = (timestamp, ticks, size) => {
+    if (ticks.length < 2 || timestamp < ticks[0]) return 0;
+
+    let visibleTimeElapsed = 0;
+
+    for (let i = 0; i < ticks.length - 1; i++) {
+        const startCut = ticks[i];
+        const endCut = ticks[i + 1];
+
+        if (timestamp > startCut) {
+            if (timestamp >= endCut) {
+                visibleTimeElapsed += size;
+            } else {
+                const timeIntoSpan = timestamp - startCut;
+                visibleTimeElapsed += timeIntoSpan;
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+
+    const totalVisibleSpan = size * (ticks.length - 1);
+    return (visibleTimeElapsed / totalVisibleSpan) * 100;
+};
+
 const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events}) => {
     const [highlight, setHighlight] = useState([]);
 
@@ -70,12 +111,8 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
         return null;
     }
     const timeElapsed = timestamps[numberOfFrames - 1];
-    let timeTicks = [];
-    let tickSize = 10;
-    if (timeElapsed) {
-        tickSize = (Math.round(timeElapsed / numberOfFrames / 10) + 1) * 10;
-        timeTicks = Array(...Array(Math.floor(timeElapsed / tickSize) + 1)).map((_, index) => index * tickSize);
-    }
+    const tickSize = 100;
+    const timeTicks = generateTimelineCuts(timestamps, tickSize);
 
     const filteredTests = vm.getMarkedTests()
         .filter(t => {
@@ -145,7 +182,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                         <div
                             key={tick}
                             className={styles.timelineItem}
-                            style={{left: `${tick / timeElapsed * 100}%`}}
+                            style={{left: `${getCompressedPlotPosition(tick, timeTicks, tickSize)}%`}}
                         >{tick}
                         </div>
                     ))}
@@ -153,7 +190,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
 
                 <div
                     className={styles.flexRow}
-                    style={{width: `${timeElapsed / tickSize * 100}px`}}
+                    style={{width: `${(tickSize * timeTicks.length) / tickSize * 100}px`}}
                 >
                     <ul className={styles.line}>
                         {timestamps.map((timestamp, index) => (
@@ -163,7 +200,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                                     // Highlight frames when hovering over items
                                     [styles.highlightFrame]: highlight.includes(timestamp)
                                 })}
-                                style={{left: `${timestamp / timeElapsed * 100}%`}}
+                                style={{left: `${getCompressedPlotPosition(timestamp, timeTicks, tickSize)}%`}}
                             >
                                 <li
                                     onClick={() => setFrameIndex(index)}
@@ -177,7 +214,8 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
 
                 <Events
                     events={filteredEvents}
-                    timeElapsed={timeElapsed}
+                    // timeElapsed={timeElapsed}
+                    mapTime={(timestamp) => getCompressedPlotPosition(timestamp, timeTicks, tickSize)}
                     setFrameRange={setFrameRange}
                     clearHighlighting={clearHighlighting}
                     highlightFrameRange={highlightFrameRange}
@@ -188,7 +226,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
                         <Band
                             key={index}
                             tests={tests}
-                            timeElapsed={timeElapsed}
+                            mapTime={(timestamp) => getCompressedPlotPosition(timestamp, timeTicks, tickSize)}
                             tickSize={tickSize}
                             groupid={`testgroup-${index}`}
                             setFrameMark={setFrameMark}
