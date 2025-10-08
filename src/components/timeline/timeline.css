@@ -235,11 +235,17 @@ $arrow-rounding: 0.125rem;
 
 .zoomInButton {
     z-index: 12;
-    bottom: 5rem;
+    bottom: 8.5rem;
 }
 
 .zoomOutButton {
-    z-index: 11;
+    z-index: 12;
+    bottom: 5rem;
+}
+
+.zoomResetButton {
+    z-index: 12;
+    bottom: 1.5rem;
 }
 
 .zoomButton img {

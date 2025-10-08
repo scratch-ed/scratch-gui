@@ -112,16 +112,19 @@ const getCompressedPlotPosition = (timestamp, ticks, lastTimeStamp, size) => {
     return (visibleTimeElapsed / totalVisibleSpan) * 100;
 };
 
-const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events}) => {
+const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events, zoomLevel}) => {
     const [highlight, setHighlight] = useState([]);
 
     if (!numberOfFrames) {
         return null;
     }
     const timeElapsed = timestamps[numberOfFrames - 1];
-    const tickSize = 100;
+    const tickSize = Math.round(100 * zoomLevel);
     const timeTicks = generateTimelineCuts(timestamps, tickSize);
     const lastTimeStamp = timestamps[timestamps.length - 1];
+
+    console.log("timestamps", timestamps);
+    console.log("events", events);
 
     const filteredTests = vm.getMarkedTests()
         .filter(t => {
@@ -259,7 +262,8 @@ Timeline.propTypes = {
     numberOfFrames: PropTypes.number,
     setFrame: PropTypes.func,
     timestamps: PropTypes.arrayOf(PropTypes.number),
-    events: PropTypes.arrayOf(PropTypes.object)
+    events: PropTypes.arrayOf(PropTypes.object),
+    zoomLevel: PropTypes.number
 };
 
 const mapStateToProps = state => ({
@@ -268,7 +272,8 @@ const mapStateToProps = state => ({
     timeFrame: state.scratchGui.timeSlider.timeFrame,
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timestamps: state.scratchGui.timeSlider.timestamps,
-    events: state.scratchGui.timeSlider.events
+    events: state.scratchGui.timeSlider.events,
+    zoomLevel: state.scratchGui.timeSlider.zoomLevel
 });
 
 const mapDispatchToProps = dispatch => ({

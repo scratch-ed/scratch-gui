@@ -11,6 +11,9 @@ const SET_PAUSED = 'scratch-gui/time-slider/SET_PAUSED';
 const SET_CHANGED = 'scratch-gui/time-slider/SET_CHANGED';
 const SET_REMOVE_FUTURE = 'scratch-gui/time-slider/SET_REMOVE_FUTURE';
 const SET_TIME_FRAME = 'scratch-gui/time-slider/SET_TIME_FRAME';
+const ZOOM_IN = 'scratch-gui/time-slider/ZOOM_IN';
+const ZOOM_OUT = 'scratch-gui/time-slider/ZOOM_OUT';
+const ZOOM_RESET = 'scratch-gui/time-slider/ZOOM_RESET';
 
 const TimeSliderMode = Object.freeze({
     OFF: 'off',
@@ -31,7 +34,11 @@ const initialState = {
     paused: false,
     changed: false,
     removeFuture: false,
-    timeFrame: 0
+    timeFrame: 0,
+    zoomLevel: 1,
+    minZoomLevel: 0.1,
+    maxZoomLevel: 2,
+    zoomStep: 0.1
 };
 
 const reducer = function (state, action) {
@@ -89,6 +96,18 @@ const reducer = function (state, action) {
     case SET_TIME_FRAME:
         return Object.assign({}, state, {
             timeFrame: action.timeFrame
+        });
+    case ZOOM_IN:
+        return Object.assign({}, state, {
+            zoomLevel: Math.max(state.zoomLevel - state.zoomStep, state.minZoomLevel)
+        });
+    case ZOOM_OUT:
+        return Object.assign({}, state, {
+            zoomLevel: Math.min(state.zoomLevel + state.zoomStep, state.maxZoomLevel)
+        });
+    case ZOOM_RESET:
+        return Object.assign({}, state, {
+            zoomLevel: 1
         });
     default:
         return state;
@@ -182,6 +201,24 @@ const setTimeFrame = function (timeFrame) {
     };
 };
 
+const zoomIn = function () {
+    return {
+        type: ZOOM_IN
+    };
+};
+
+const zoomOut = function () {
+    return {
+        type: ZOOM_OUT
+    };
+};
+
+const zoomReset = function () {
+    return {
+        type: ZOOM_RESET
+    };
+};
+
 export {
     reducer as default,
     initialState as timeSliderInitialState,
@@ -199,5 +236,8 @@ export {
     setPaused,
     setChanged,
     setRemoveFuture,
-    setTimeFrame
+    setTimeFrame,
+    zoomIn,
+    zoomOut,
+    zoomReset
 };
