@@ -235,7 +235,6 @@ Events.propTypes = {
         end: PropTypes.number,
         sprites: PropTypes.arrayOf(PropTypes.string)
     })),
-    // timeElapsed: PropTypes.number,
     mapTime: PropTypes.func,
     setFrameRange: PropTypes.func,
     clearHighlighting: PropTypes.func,
