@@ -113,13 +113,14 @@ const getCompressedPlotPosition = (timestamp, ticks, lastTimeStamp, size) => {
 };
 
 const Timeline = ({
-    vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events, zoomLevel, locateActiveBullet, onLocateActiveBullet
+    vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events,
+    zoomLevel, locateActive, onLocateActiveBullet
 }) => {
     const [highlight, setHighlight] = useState([]);
     const containerRef = useRef(null);
 
     useEffect(() => {
-        if (locateActiveBullet && containerRef.current) {
+        if (locateActive && containerRef.current) {
             const activeDot = containerRef.current.querySelector(`.${styles.active}`);
             if (activeDot) {
                 activeDot.scrollIntoView({
@@ -130,7 +131,7 @@ const Timeline = ({
             }
             onLocateActiveBullet(false);
         }
-    }, [locateActiveBullet, onLocateActiveBullet]);
+    }, [locateActive, onLocateActiveBullet]);
 
     if (!numberOfFrames) {
         return null;
@@ -281,7 +282,7 @@ Timeline.propTypes = {
     timestamps: PropTypes.arrayOf(PropTypes.number),
     events: PropTypes.arrayOf(PropTypes.object),
     zoomLevel: PropTypes.number,
-    locateActiveBullet: PropTypes.bool,
+    locateActive: PropTypes.bool,
     onLocateActiveBullet: PropTypes.func
 };
 
@@ -293,7 +294,7 @@ const mapStateToProps = state => ({
     timestamps: state.scratchGui.timeSlider.timestamps,
     events: state.scratchGui.timeSlider.events,
     zoomLevel: state.scratchGui.timeSlider.zoomLevel,
-    locateActiveBullet: state.scratchGui.timeSlider.locateActiveBullet,
+    locateActive: state.scratchGui.timeSlider.locateActiveBullet,
 });
 
 const mapDispatchToProps = dispatch => ({
