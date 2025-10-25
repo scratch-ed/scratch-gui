@@ -5,17 +5,19 @@ import Timeline from '../components/timeline/timeline.jsx';
 import zoomInButton from '../components/timeline/zoom-in.png';
 import zoomOutButton from '../components/timeline/zoom-out.png';
 import zoomResetButton from '../components/timeline/zoom-reset.png';
+import locateActiveBulletButton from '../components/timeline/targeting.png';
 
 import styles from '../components/test-results/test-results.css';
 import timelineStyles from '../components/timeline/timeline.css';
 import {connect} from "react-redux";
-import {zoomIn, zoomOut, zoomReset} from "../reducers/time-slider";
+import PropTypes from 'prop-types';
+import {locateActiveBullet, zoomIn, zoomOut, zoomReset} from "../reducers/time-slider";
 
-const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom}) => (
+const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet}) => (
     <Box className={styles.wrapper}>
         <Timeline />
         <button
-            className={`${timelineStyles.zoomButton} ${timelineStyles.zoomInButton}`}
+            className={`${timelineStyles.floatButton} ${timelineStyles.zoomInButton}`}
             onClick={onZoomIn}
         >
             <img
@@ -25,7 +27,7 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom}) => (
             />
         </button>
         <button
-            className={`${timelineStyles.zoomButton} ${timelineStyles.zoomOutButton}`}
+            className={`${timelineStyles.floatButton} ${timelineStyles.zoomOutButton}`}
             onClick={onZoomOut}
         >
             <img
@@ -35,7 +37,7 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom}) => (
             />
         </button>
         <button
-            className={`${timelineStyles.zoomButton} ${timelineStyles.zoomResetButton}`}
+            className={`${timelineStyles.floatButton} ${timelineStyles.zoomResetButton}`}
             onClick={onResetZoom}
         >
             <img
@@ -44,8 +46,25 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom}) => (
                 alt="Zoom-Reset"
             />
         </button>
+        <button
+            className={`${timelineStyles.floatButton} ${timelineStyles.locateActiveButton}`}
+            onClick={onLocateActiveBullet}
+        >
+            <img
+                draggable={false}
+                src={locateActiveBulletButton}
+                alt="Locate-Active-Bullet"
+            />
+        </button>
     </Box>
 );
+
+TimelineTab.propTypes = {
+    onZoomIn: PropTypes.func.isRequired,
+    onZoomOut: PropTypes.func.isRequired,
+    onResetZoom: PropTypes.func.isRequired,
+    onLocateActiveBullet: PropTypes.func.isRequired
+};
 
 const mapStateToProps = state => ({
     // nothing needed for now
@@ -54,7 +73,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     onZoomIn: () => dispatch(zoomIn()),
     onZoomOut: () => dispatch(zoomOut()),
-    onResetZoom: () => dispatch(zoomReset())
+    onResetZoom: () => dispatch(zoomReset()),
+    onLocateActiveBullet: () => dispatch(locateActiveBullet())
 });
 
 export default connect(

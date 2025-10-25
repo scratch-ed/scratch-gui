@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
@@ -10,7 +10,7 @@ import Events from './events.jsx';
 
 import styles from './timeline.css';
 
-import {setTimeFrame} from '../../reducers/time-slider.js';
+import {locateActiveBullet, setTimeFrame} from '../../reducers/time-slider.js';
 
 const testsOverlap = (test1, test2) => {
     let start1;
@@ -112,8 +112,25 @@ const getCompressedPlotPosition = (timestamp, ticks, lastTimeStamp, size) => {
     return (visibleTimeElapsed / totalVisibleSpan) * 100;
 };
 
-const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events, zoomLevel}) => {
+const Timeline = ({
+    vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events, zoomLevel, locateActiveBullet, onLocateActiveBullet
+}) => {
     const [highlight, setHighlight] = useState([]);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        if (locateActiveBullet && containerRef.current) {
+            const activeDot = containerRef.current.querySelector(`.${styles.active}`);
+            if (activeDot) {
+                activeDot.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }
+            onLocateActiveBullet(false);
+        }
+    }, [locateActiveBullet, onLocateActiveBullet]);
 
     if (!numberOfFrames) {
         return null;
@@ -186,7 +203,7 @@ const Timeline = ({vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame
         setHighlight(timestamps.filter(t => t >= frame1 && t <= frame2));
     };
 
-    return (<div className={styles.flexRow}>
+    return (<div className={styles.flexRow} ref={containerRef}>
         <div className={styles.scrollDetails}>
             <div className={styles.content}>
                 <div className={classNames(styles.flexRow, styles.tickHeight)}>
@@ -263,7 +280,9 @@ Timeline.propTypes = {
     setFrame: PropTypes.func,
     timestamps: PropTypes.arrayOf(PropTypes.number),
     events: PropTypes.arrayOf(PropTypes.object),
-    zoomLevel: PropTypes.number
+    zoomLevel: PropTypes.number,
+    locateActiveBullet: PropTypes.bool,
+    onLocateActiveBullet: PropTypes.func
 };
 
 const mapStateToProps = state => ({
@@ -273,11 +292,13 @@ const mapStateToProps = state => ({
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timestamps: state.scratchGui.timeSlider.timestamps,
     events: state.scratchGui.timeSlider.events,
-    zoomLevel: state.scratchGui.timeSlider.zoomLevel
+    zoomLevel: state.scratchGui.timeSlider.zoomLevel,
+    locateActiveBullet: state.scratchGui.timeSlider.locateActiveBullet,
 });
 
 const mapDispatchToProps = dispatch => ({
-    setFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
+    setFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
+    onLocateActiveBullet: locate => dispatch(locateActiveBullet(locate))
 });
 
 export default connect(

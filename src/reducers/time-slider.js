@@ -14,6 +14,7 @@ const SET_TIME_FRAME = 'scratch-gui/time-slider/SET_TIME_FRAME';
 const ZOOM_IN = 'scratch-gui/time-slider/ZOOM_IN';
 const ZOOM_OUT = 'scratch-gui/time-slider/ZOOM_OUT';
 const ZOOM_RESET = 'scratch-gui/time-slider/ZOOM_RESET';
+const LOCATE_ACTIVE_BULLET = 'scratch-gui/time-slider/LOCATE_ACTIVE_BULLET';
 
 const TimeSliderMode = Object.freeze({
     OFF: 'off',
@@ -38,7 +39,8 @@ const initialState = {
     zoomLevel: 1,
     minZoomLevel: 0.1,
     maxZoomLevel: 2,
-    zoomStep: 0.1
+    zoomStep: 0.1,
+    locateActiveBullet: false
 };
 
 const reducer = function (state, action) {
@@ -108,6 +110,10 @@ const reducer = function (state, action) {
     case ZOOM_RESET:
         return Object.assign({}, state, {
             zoomLevel: 1
+        });
+    case LOCATE_ACTIVE_BULLET:
+        return Object.assign({}, state, {
+            locateActiveBullet: action.locateActiveBullet
         });
     default:
         return state;
@@ -219,6 +225,13 @@ const zoomReset = function () {
     };
 };
 
+const locateActiveBullet = function (locate = true) {
+    return {
+        type: LOCATE_ACTIVE_BULLET,
+        locateActiveBullet: locate
+    };
+};
+
 export {
     reducer as default,
     initialState as timeSliderInitialState,
@@ -239,5 +252,6 @@ export {
     setTimeFrame,
     zoomIn,
     zoomOut,
-    zoomReset
+    zoomReset,
+    locateActiveBullet
 };
