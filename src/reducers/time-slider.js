@@ -1,4 +1,5 @@
 const SET_CONTEXT = 'scratch-gui/time-slider/SET_CONTEXT';
+const SET_LOG = 'scratch-gui/time-slider/SET_LOG';
 const START_DEBUG = 'scratch-gui/time-slider/START_DEBUG';
 const START_TEST = 'scratch-gui/time-slider/START_TEST';
 const FINISH_TEST = 'scratch-gui/time-slider/FINISH_TEST';
@@ -27,6 +28,7 @@ const TimeSliderStates = Object.values(TimeSliderMode);
 const initialState = {
     // State related to the debugger and tester time slider.
     context: null,
+    log: null,
     timeSliderMode: TimeSliderMode.OFF,
     numberOfFrames: 0,
     timestamps: [],
@@ -47,6 +49,10 @@ const reducer = function (state, action) {
     case SET_CONTEXT:
         return Object.assign({}, state, {
             context: action.context
+        });
+    case SET_LOG:
+        return Object.assign({}, state, {
+            log: action.log
         });
     case START_DEBUG:
         return Object.assign({}, state, {
@@ -118,6 +124,13 @@ const setContext = function (context) {
     return {
         type: SET_CONTEXT,
         context: context
+    };
+};
+
+const setLog = function (log) {
+    return {
+        type: SET_LOG,
+        log: log
     };
 };
 
@@ -225,6 +238,7 @@ export {
     TimeSliderMode,
     TimeSliderStates,
     setContext,
+    setLog,
     startDebugging,
     startTesting,
     finishTesting,

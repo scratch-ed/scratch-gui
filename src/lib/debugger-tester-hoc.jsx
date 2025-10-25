@@ -7,6 +7,7 @@ import {
     TimeSliderMode,
     TimeSliderStates,
     setContext,
+    setLog,
     startDebugging,
     startTesting,
     finishTesting,
@@ -20,7 +21,9 @@ import {
     setTimeFrame,
     setRemoveFuture
 } from '../reducers/time-slider.js';
-import {createContextWithVm, Context, snapshotFromVm, snapshotFromSb3, runWithContext} from 'itch';
+import {
+    createLogWithVm, createContextWithVm, Context, Log, snapshotFromVm, snapshotFromSb3, runWithContext
+} from 'itch';
 import omit from 'lodash.omit';
 import bindAll from 'lodash.bindall';
 
@@ -49,6 +52,10 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         componentDidMount () {
             this.addListeners();
 
+            const log = createLogWithVm(this.props.vm);
+            this.props.setLog(log);
+
+            // TODO: remove? Doesn't seem possible to enter
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
                 this.proxyRegisterEvent(this.props.context);
                 this.proxyRegisterSnapshot(this.props.context);
@@ -77,14 +84,9 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         componentWillUnmount () {
             this.removeListeners();
 
-            if (this.props.context) {
-                if (typeof this.oldRegisterEvent !== 'undefined') {
-                    this.props.context.log.registerEvent = this.oldRegisterEvent;
-                }
-                if (typeof this.oldRegisterSnapshot !== 'undefined') {
-                    this.props.context.log.registerSnapshot = this.oldRegisterSnapshot;
-                }
-            }
+            console.log("Unmountingggggggggggggggggggggggggg....");
+
+            this.removeDebugProxies();
         }
 
         addListeners () {
@@ -127,6 +129,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
         handleTestingStopped () {
             this.props.finishTesting();
+
+            console.log("handleTestingStopped", this.props.context.log);
 
             if (this.props.context) {
                 this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
@@ -203,9 +207,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         proxyRegisterSnapshot (context) {
             // Increase the length of the time slider every time a new frame gets added to the log.
             this.oldRegisterSnapshot = context.log.registerSnapshot;
+            console.log("proxyRegisterSnapshot", this.oldRegisterSnapshot);
             context.log.registerSnapshot = new Proxy(this.oldRegisterSnapshot, {
                 apply: (target, thisArg, argArray) => {
                     const added = target.apply(thisArg, argArray);
+                    console.log("applying register snapshot", added);
                     if (added && this.props.context) {
                         // The UI needs to reflect the new log entry
                         if (this.props.changed) {
@@ -227,6 +233,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.oldRegisterEvent = context.log.registerEvent;
             context.log.registerEvent = new Proxy(this.oldRegisterEvent, {
                 apply: (target, thisArg, argArray) => {
+                    console.log("applying register logging");
                     const added = target.apply(thisArg, argArray);
                     if (added && this.props.context) {
                         const {nextSnapshot, previousSnapshot, ...event} = argArray[0];
@@ -239,6 +246,17 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                     return added;
                 }
             });
+        }
+
+        removeDebugProxies () {
+            if (this.props.log) {
+                if (typeof this.oldRegisterEvent !== 'undefined') {
+                    this.props.log.registerEvent = this.oldRegisterEvent;
+                }
+                if (typeof this.oldRegisterSnapshot !== 'undefined') {
+                    this.props.log.registerSnapshot = this.oldRegisterSnapshot;
+                }
+            }
         }
 
         async changeMode (prevMode) {
@@ -254,9 +272,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 return;
             }
 
-            if (this.props.timeSliderMode === TimeSliderMode.OFF ||
-                prevMode !== TimeSliderMode.OFF) {
-
+            if (this.props.timeSliderMode === TimeSliderMode.OFF || prevMode !== TimeSliderMode.OFF) {
                 await this.props.context.deinstrumentVm();
                 this.props.setContext(null);
                 this.props.setNumberOfFrames(0);
@@ -264,10 +280,15 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setEvents([]);
             }
 
+            if (prevMode === TimeSliderMode.DEBUG && this.props.timeSliderMode !== TimeSliderMode.DEBUG) {
+                this.removeDebugProxies();
+            }
+
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
                 this.props.vm.clearTestResults();
 
-                const context = await createContextWithVm(this.props.vm);
+                this.props.log.reset();
+                const context = await createContextWithVm(this.props.vm, this.props.log);
                 context.instrumentVm('debugger');
                 context.log.started = true;
                 const snapshot = snapshotFromVm(this.props.vm);
@@ -280,12 +301,16 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             } else if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
                 this.props.vm.clearTestResults();
 
-                const context = await createContextWithVm(this.props.vm, this.props.testCallback);
+                this.props.log.reset();
+                const context = await createContextWithVm(this.props.vm, this.props.log, this.props.testCallback);
+                console.log("snapshotssss", context.log.snapshots);
+
                 const submission = snapshotFromVm(this.props.vm);
                 const template = snapshotFromSb3(this.props.vm.testTemplate);
                 context.instrumentVm('tester');
                 context.log.started = true;
                 context.log.registerStartSnapshots(template, submission);
+                console.log("registered start snapshots: ", context.log.snapshots, template, submission);
 
                 this.props.setContext(context);
 
@@ -307,6 +332,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'timeFrame',
                 'vm',
                 'setContext',
+                'setLog',
                 'startDebugging',
                 'startTesting',
                 'finishTesting',
@@ -333,11 +359,13 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
     DebuggerAndTesterWrapper.propTypes = {
         activeTab: PropTypes.number.isRequired,
         context: PropTypes.instanceOf(Context),
+        log: PropTypes.instanceOf(Log),
         timeSliderMode: PropTypes.oneOf(TimeSliderStates).isRequired,
         numberOfFrames: PropTypes.number.isRequired,
         timeFrame: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
         setContext: PropTypes.func.isRequired,
+        setLog: PropTypes.func.isRequired,
         startDebugging: PropTypes.func.isRequired,
         startTesting: PropTypes.func.isRequired,
         finishTesting: PropTypes.func.isRequired,
@@ -358,6 +386,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
     const mapStateToProps = state => ({
         activeTab: state.scratchGui.editorTab.activeTabIndex,
         context: state.scratchGui.timeSlider.context,
+        log: state.scratchGui.timeSlider.log,
         timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
         numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
         timeFrame: state.scratchGui.timeSlider.timeFrame,
@@ -369,6 +398,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
     const mapDispatchToProps = dispatch => ({
         setContext: context => dispatch(setContext(context)),
+        setLog: log => dispatch(setLog(log)),
         startDebugging: () => dispatch(startDebugging()),
         startTesting: () => dispatch(startTesting()),
         finishTesting: () => dispatch(finishTesting()),
