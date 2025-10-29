@@ -52,8 +52,10 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         componentDidMount () {
             this.addListeners();
 
-            const log = createLogWithVm(this.props.vm);
-            this.props.setLog(log);
+            if (!this.props.log) {
+                const log = createLogWithVm(this.props.vm);
+                this.props.setLog(log);
+            }
 
             // TODO: remove? Doesn't seem possible to enter
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
@@ -300,6 +302,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
             } else if (this.props.timeSliderMode === TimeSliderMode.TEST_RUNNING) {
                 this.props.vm.clearTestResults();
+
+                if (prevMode !== TimeSliderMode.TEST_FINISHED) {
+                    this.setState({refreshed: true});
+                    this.props.vm.emitWorkspaceUpdate();
+                }
 
                 this.props.log.reset();
                 const context = await createContextWithVm(this.props.vm, this.props.log, this.props.testCallback);
