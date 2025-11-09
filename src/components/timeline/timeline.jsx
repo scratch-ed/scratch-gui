@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useLayoutEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
@@ -119,19 +119,26 @@ const Timeline = ({
     const [highlight, setHighlight] = useState([]);
     const containerRef = useRef(null);
 
-    useEffect(() => {
-        if (locateActive && containerRef.current) {
-            const activeDot = containerRef.current.querySelector(`.${styles.active}`);
-            if (activeDot) {
-                activeDot.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center',
-                    inline: 'center'
-                });
-            }
-            onLocateActiveBullet(false);
+    useLayoutEffect(() => {
+        if ((locateActive || currentFrame !== -1) && containerRef.current) {
+            // Small timeout to ensure the DOM is fully updated
+            const timer = setTimeout(() => {
+                const activeDot = containerRef.current.querySelector(`.${styles.active}`);
+                if (activeDot) {
+                    activeDot.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'center'
+                    });
+                }
+                if (locateActive) {
+                    onLocateActiveBullet(false);
+                }
+            }, 0);
+
+            return () => clearTimeout(timer);
         }
-    }, [locateActive, onLocateActiveBullet]);
+    }, [locateActive, currentFrame, onLocateActiveBullet]);
 
     if (!numberOfFrames) {
         return null;
