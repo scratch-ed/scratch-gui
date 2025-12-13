@@ -83,21 +83,22 @@ const getCompressedWidth = (timestamp, ticks, size) => {
 
     let visibleTimeElapsed = 0;
 
-    for (let i = 0; i < ticks.length - 1; i++) {
+    let spanFound = false;
+    let i = 0;
+    while (!spanFound && i < ticks.length - 1 && ticks[i] < timestamp) {
         const startCut = ticks[i];
         const endCut = ticks[i + 1];
 
-        if (timestamp > startCut) {
-            if (timestamp >= endCut) {
-                visibleTimeElapsed += size;
-            } else {
-                const timeIntoSpan = timestamp - startCut;
-                visibleTimeElapsed += timeIntoSpan;
-                break;
-            }
+        if (timestamp >= endCut) {
+            visibleTimeElapsed += size;
         } else {
-            break;
+            const timeIntoSpan = timestamp - startCut;
+            visibleTimeElapsed += timeIntoSpan;
+
+            spanFound = true;
         }
+
+        i++;
     }
 
     return visibleTimeElapsed;
@@ -147,9 +148,6 @@ const Timeline = ({
     const tickSize = Math.round(100 * zoomLevel);
     const timeTicks = generateTimelineCuts(timestamps, tickSize);
     const lastTimeStamp = timestamps[timestamps.length - 1];
-
-    console.log("timestamps", timestamps);
-    console.log("events", events);
 
     const filteredTests = vm.getMarkedTests()
         .filter(t => {

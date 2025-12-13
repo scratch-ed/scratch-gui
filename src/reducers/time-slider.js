@@ -7,6 +7,7 @@ const SET_NUMBER_OF_FRAMES = 'scratch-gui/time-slider/SET_NUMBER_OF_FRAMES';
 const SET_TIMESTAMPS = 'scratch-gui/time-slider/SET_TIMESTAMPS';
 const ADD_EVENT = 'scratch-gui/time-slider/ADD_EVENT';
 const SET_EVENTS = 'scratch-gui/time-slider/SET_EVENTS';
+const SET_ACTIVE_THREADS = 'scratch-gui/time-slider/SET_ACTIVE_THREADS';
 const SET_PAUSED = 'scratch-gui/time-slider/SET_PAUSED';
 const SET_CHANGED = 'scratch-gui/time-slider/SET_CHANGED';
 const SET_REMOVE_FUTURE = 'scratch-gui/time-slider/SET_REMOVE_FUTURE';
@@ -32,6 +33,7 @@ const initialState = {
     numberOfFrames: 0,
     timestamps: [],
     events: [],
+    activeThreads: new Map(),
     paused: false,
     changed: false,
     removeFuture: false,
@@ -82,6 +84,10 @@ const reducer = function (state, action) {
     case SET_EVENTS:
         return Object.assign({}, state, {
             events: action.events
+        });
+    case SET_ACTIVE_THREADS:
+        return Object.assign({}, state, {
+            activeThreads: action.threads
         });
     case SET_PAUSED:
         return Object.assign({}, state, {
@@ -179,6 +185,13 @@ const setEvents = function (events) {
     };
 };
 
+const setActiveThreads = function (threads) {
+    return {
+        type: SET_ACTIVE_THREADS,
+        threads: threads
+    };
+};
+
 const setPaused = function (paused) {
     return {
         type: SET_PAUSED,
@@ -246,6 +259,7 @@ export {
     setTimestamps,
     addEvent,
     setEvents,
+    setActiveThreads,
     setPaused,
     setChanged,
     setRemoveFuture,

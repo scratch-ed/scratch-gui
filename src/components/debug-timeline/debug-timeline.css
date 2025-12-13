@@ -1,0 +1,281 @@
+.flex-row {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+.scroll-details {
+    width: 0;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    overflow-x: scroll;
+}
+
+.content {
+    padding: 20px;
+    margin: 10px auto;
+    display: block;
+    flex-direction: column;
+}
+
+/** DEBUG CSS */
+.debug {
+    display: flex;
+    flex-direction: row;
+
+    width: fit-content;
+
+    padding: 1rem;
+}
+
+/** RULER CSS */
+.ruler-wrapper {
+    box-sizing: border-box;
+
+    width: fit-content;
+
+    background-color: #f1f5f9;
+}
+
+.ruler-main-container {
+    position: relative;
+    box-sizing: border-box;
+
+    height: 64px;
+}
+
+.ruler-track-container {
+    display: flex;
+    flex-direction: row;
+
+    height: 100%;
+}
+
+.ruler-bar {
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    gap: 1rem;
+    border-left: 1px solid #64748b;
+}
+
+.ruler-bar-last {
+    border-right: 1px solid #64748b;
+}
+
+.ruler-bar-label {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+
+    font-size: 0.75rem;
+
+    color: #334155;
+}
+
+.ruler-bar-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 100%;
+
+    /*background-color: white;*/
+    color: black;
+}
+
+.ruler-subbar-container {
+    display: flex;
+    flex-direction: row;
+
+    height: 40%;
+}
+
+.ruler-subbar {
+    position: relative;
+
+    height: 100%;
+}
+
+.ruler-subbar-border {
+    opacity: 0.5;
+
+    border-right: 1px solid #64748b;
+}
+
+.ruler-thumb {
+    position: absolute;
+    bottom: 0;
+    width: 0;
+    height: 0;
+
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 16px solid black;
+
+    transition: left 0.2s linear;
+    z-index: 20;
+}
+
+/* GRID CSS */
+.grid-container {
+    position: relative;
+
+    display: flex;
+    flex-direction: row;
+
+    height: 80px;
+}
+
+.grid-bar {
+    box-sizing: border-box;
+    opacity: 0.5;
+
+    display: flex;
+    flex-direction: column;
+
+    border-left: 1px solid #94a3b8;
+
+    height: 100%;
+}
+
+.grid-bar-last {
+    border-right: 1px solid #94a3b8;
+}
+
+.grid-subbar-row {
+    display: flex;
+    flex-direction: row;
+
+    height: 100%;
+}
+
+.grid-item {
+    flex-grow: 1;
+    height: 100%;
+
+    border-right: 1px dashed rgba(129, 129, 129, 0.75);
+}
+
+.grid-item:last-child {
+    border-right: none;
+}
+
+.grid-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 100%;
+
+    /*background-color: white;*/
+    color: black;
+}
+
+/* TRACK CSS */
+.track-container {
+    display: flex;
+    flex-direction: row;
+
+    /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
+}
+
+.track-bar-container {
+    position: absolute;
+    z-index: 100;
+}
+
+.track-bar {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+}
+
+.track-bar-content {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    height: 100%;
+    opacity: 0.75;
+
+    border-radius: 0.375em;
+    background-color: #0f172a;
+}
+
+/* CATEGORY CSS */
+.category-list-container {
+    display: flex;
+
+    max-width: 18rem;
+    min-width: 18rem;
+
+    padding-top: 64px;
+
+    overflow-y: scroll;
+}
+
+.category-list {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+
+    gap: 1rem;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    /*background-color: #d4d4d8;*/
+    background-color: #f4f4f5;
+
+    width: 100%;
+}
+
+.category-item-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 15%;
+    height: 100%;
+
+    border-right: 1px solid #0f172a;
+}
+
+.event-icon {
+    width: 25px;
+    height: 25px;
+    transform: translatex(-3px);
+    user-select: none;
+}
+
+.category-item-color {
+    width: 0.25rem;
+    height: 100%;
+}
+
+/** COLORS */
+.color-even {
+    background-color: #dddddd;
+}
+.color-odd {
+    background-color: #cbcbcb;
+}
+
+.green-flag {
+    background-color: #4cbf56;
+}
+
+.broadcast {
+    background-color: #ffbf00;
+}

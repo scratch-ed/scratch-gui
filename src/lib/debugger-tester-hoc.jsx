@@ -18,7 +18,8 @@ import {
     addEvent,
     setEvents,
     setTimeFrame,
-    setRemoveFuture
+    setRemoveFuture,
+    setActiveThreads
 } from '../reducers/time-slider.js';
 import {createContextWithVm, Context, snapshotFromVm, snapshotFromSb3, runWithContext} from 'itch';
 import omit from 'lodash.omit';
@@ -59,7 +60,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
         shouldComponentUpdate (nextProps) {
             return this.props.timeSliderMode !== nextProps.timeSliderMode ||
-                this.props.removeFuture !== nextProps.removeFuture;
+                this.props.removeFuture !== nextProps.removeFuture ||
+                this.props.editingTarget !== nextProps.editingTarget;
         }
 
         async componentDidUpdate (prevProps) {
@@ -71,6 +73,10 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 // If changed, remove full history
                 this.removeFuture();
                 this.props.setRemoveFuture(false);
+            }
+
+            if (prevProps.editingTarget !== this.props.editingTarget) {
+                this.initActiveThreads();
             }
         }
 
@@ -200,6 +206,105 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             }
         }
 
+        getTopBlockName = (id, blocks) => {
+            const block = blocks[id];
+
+            if (block) {
+                return block.opcode;
+            }
+
+            return '';
+        };
+
+        getTargetNameAndTopBlockName = (editingTarget, topBlock, sprites, stage) => {
+            if (stage.id === editingTarget) {
+                return {
+                    name: stage.name,
+                    topBlockName: this.getTopBlockName(topBlock, stage.blocks)
+                };
+            }
+
+            const sprite = sprites[editingTarget];
+            if (sprite) {
+                return {
+                    name: sprite.name,
+                    topBlockName: this.getTopBlockName(topBlock, sprite.blocks)
+                };
+            }
+
+            return {
+                name: '',
+                topBlockName: ''
+            };
+        };
+
+        initActiveThreads () {
+            if (this.props.context === null) {
+                return;
+            }
+
+            const snapshots = this.props.context.log.snapshots;
+            const threadMap = new Map();
+
+            let previousTopBlocks = [];
+            for (const snapshot of snapshots) {
+                if (snapshot.runtimeSnapshot === null) {
+                    continue;
+                }
+
+                const threads = snapshot.runtimeSnapshot.threads;
+
+                const processed = [];
+                for (const thread of threads) {
+                    const jsonThread = JSON.parse(thread);
+
+                    if (jsonThread.targetId === this.props.editingTarget) {
+                        if (threadMap.has(jsonThread.topBlock)) {
+                            const activeList = threadMap.get(jsonThread.topBlock);
+                            if (activeList[activeList.length - 1].hasEnded) {
+                                const target = this.getTargetNameAndTopBlockName(
+                                    jsonThread.targetId, jsonThread.topBlock, this.props.sprites, this.props.stage
+                                );
+                                activeList.push({
+                                    targetName: target.name,
+                                    topBlockName: target.topBlockName,
+                                    start: snapshot.timestamp,
+                                    end: null,
+                                    hasEnded: false
+                                });
+                            }
+                        } else {
+                            const target = this.getTargetNameAndTopBlockName(
+                                jsonThread.targetId, jsonThread.topBlock, this.props.sprites, this.props.stage
+                            );
+                            threadMap.set(jsonThread.topBlock, [{
+                                targetName: target.name,
+                                topBlockName: target.topBlockName,
+                                start: snapshot.timestamp,
+                                end: null,
+                                hasEnded: false
+                            }]);
+                        }
+
+                        processed.push(jsonThread.topBlock);
+                    }
+                }
+
+                const topBlocksDone = previousTopBlocks.filter(thread => !processed.includes(thread));
+                for (const topBlock of topBlocksDone) {
+                    const list = threadMap.get(topBlock);
+                    const lastItem = list[list.length - 1];
+
+                    lastItem.end = snapshot.timestamp;
+                    lastItem.hasEnded = true;
+                }
+
+                previousTopBlocks = processed;
+            }
+
+            this.props.setActiveThreads(threadMap);
+        }
+
         proxyRegisterSnapshot (context) {
             // Increase the length of the time slider every time a new frame gets added to the log.
             this.oldRegisterSnapshot = context.log.registerSnapshot;
@@ -212,10 +317,12 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                             // If changed, remove full history
                             this.removeFullHistory();
                             this.props.setChanged(false);
+                            this.props.setActiveThreads(new Map());
                         }
                         this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
                         this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
                         this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
+                        this.initActiveThreads();
                     }
                     return added;
                 }
@@ -262,6 +369,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setNumberOfFrames(0);
                 this.props.setTimeFrame(0);
                 this.props.setEvents([]);
+                this.props.setActiveThreads(new Map());
             }
 
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
@@ -306,6 +414,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'numberOfFrames',
                 'timeFrame',
                 'vm',
+                'editingTarget',
+                'activeThreads',
                 'setContext',
                 'startDebugging',
                 'startTesting',
@@ -315,6 +425,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'setTimestamps',
                 'addEvent',
                 'setEvents',
+                'setActiveThreads',
                 'setPaused',
                 'setChanged',
                 'setRemoveFuture',
@@ -337,6 +448,12 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         numberOfFrames: PropTypes.number.isRequired,
         timeFrame: PropTypes.number.isRequired,
         vm: PropTypes.instanceOf(VM).isRequired,
+        editingTarget: PropTypes.string,
+        activeThreads: PropTypes.instanceOf(Map).isRequired,
+        // eslint-disable-next-line react/forbid-prop-types
+        sprites: PropTypes.object.isRequired,
+        // eslint-disable-next-line react/forbid-prop-types
+        stage: PropTypes.object.isRequired,
         setContext: PropTypes.func.isRequired,
         startDebugging: PropTypes.func.isRequired,
         startTesting: PropTypes.func.isRequired,
@@ -346,6 +463,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setTimestamps: PropTypes.func.isRequired,
         addEvent: PropTypes.func.isRequired,
         setEvents: PropTypes.func.isRequired,
+        setActiveThreads: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setChanged: PropTypes.func.isRequired,
         setRemoveFuture: PropTypes.func.isRequired,
@@ -364,7 +482,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         changed: state.scratchGui.timeSlider.changed,
         removeFuture: state.scratchGui.timeSlider.removeFuture,
         vm: state.scratchGui.vm,
-        testCallback: state.scratchGui.vm.processTestFeedback.bind(state.scratchGui.vm)
+        testCallback: state.scratchGui.vm.processTestFeedback.bind(state.scratchGui.vm),
+        editingTarget: state.scratchGui.targets.editingTarget,
+        activeThreads: state.scratchGui.timeSlider.activeThreads,
+        sprites: state.scratchGui.targets.sprites,
+        stage: state.scratchGui.targets.stage
     });
 
     const mapDispatchToProps = dispatch => ({
@@ -377,6 +499,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setTimestamps: timestamps => dispatch(setTimestamps(timestamps)),
         addEvent: event => dispatch(addEvent(event)),
         setEvents: events => dispatch(setEvents(events)),
+        setActiveThreads: threads => dispatch(setActiveThreads(threads)),
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),
         setRemoveFuture: removeFuture => dispatch(setRemoveFuture(removeFuture)),
