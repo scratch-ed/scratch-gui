@@ -90,12 +90,14 @@ const Ruler = ({timeTicks, currentTick, tickSize, isGap}) => {
                         );
                     })}
                 </div>
-                {currentTick &&
-                    <RulerIndicator
-                        currentTick={currentTick}
-                        timeTicks={timeTicks}
-                        tickSize={tickSize}
-                    />
+                {currentTick !== undefined &&
+                    (
+                        <RulerIndicator
+                            currentTick={currentTick}
+                            timeTicks={timeTicks}
+                            tickSize={tickSize}
+                        />
+                    )
                 }
             </div>
         </div>

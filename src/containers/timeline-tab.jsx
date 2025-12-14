@@ -14,9 +14,7 @@ import PropTypes from 'prop-types';
 import {locateActiveBullet, TimeSliderMode, zoomIn, zoomOut, zoomReset} from "../reducers/time-slider";
 import DebugTimeline from "../components/debug-timeline/debug-timeline.jsx";
 
-const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, editingTarget, timeSliderMode}) => {
-    console.log(editingTarget, timeSliderMode);
-
+const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, timeSliderMode}) => {
     const [debugMode, setDebugMode] = React.useState(false);
 
     const toggleDebugMode = () => {
@@ -117,7 +115,6 @@ TimelineTab.propTypes = {
 };
 
 const mapStateToProps = state => ({
-    editingTarget: state.scratchGui.targets.editingTarget,
     timeSliderMode: state.scratchGui.timeSlider.timeSliderMode
 });
 
