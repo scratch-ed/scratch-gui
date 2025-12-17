@@ -77,7 +77,7 @@ const DebugTimeline = ({
 }) => {
     const categories = getCategories(activeThreads);
 
-    const tickSize = 100 * zoomLevel;
+    const tickSize = Math.round(100 * zoomLevel);
     const timeTicks = generateTimelineCuts(activeThreads, tickSize);
 
     const isGap = (tick, nextTick) => {
