@@ -241,7 +241,28 @@
     width: 100%;
 }
 
+.category-item-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    flex-direction: column;
+}
+
+.category-item-broadcast {
+    max-width: 12rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 2px;
+    text-align: center;
+}
+
 .category-item-icon {
+    position: relative;
+
     display: flex;
     justify-content: center;
     align-items: center;
@@ -250,6 +271,14 @@
     height: 100%;
 
     border-right: 1px solid #0f172a;
+}
+
+.event-key-data {
+    position: absolute;
+    top: 50%;
+    left: 25%;
+    color: white;
+    transform: translate(10%, -50%);
 }
 
 .event-icon {

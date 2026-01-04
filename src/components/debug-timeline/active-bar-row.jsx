@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {EVENT_TYPES, getCompressedPlotPosition, TRACK_HEIGHT} from './constants.ts';
+import {EVENT_INFO, TRACK_HEIGHT} from './constants.ts';
+import {getCompressedPlotPosition} from './helpers.ts';
 import styles from './debug-timeline.css';
 
 const ActiveBarRow = ({
@@ -14,7 +15,7 @@ const ActiveBarRow = ({
     const left = getCompressedPlotPosition(activeThread.start, timeTicks, tickSize);
     const width = getCompressedPlotPosition(end, timeTicks, tickSize) - left;
 
-    const colorClass = styles[EVENT_TYPES[activeThread.topBlockName].color];
+    const colorClass = styles[EVENT_INFO[activeThread.topBlockName].color];
 
     return (
         <div
@@ -24,7 +25,7 @@ const ActiveBarRow = ({
                 width: `${width}px`,
                 height: `${TRACK_HEIGHT}px`
             }}
-            title={`${activeThread.targetName}: ${EVENT_TYPES[activeThread.topBlockName].name}`}
+            title={`${activeThread.targetName}: ${EVENT_INFO[activeThread.topBlockName].name}`}
         >
             <div className={styles.trackBar}>
                 <div

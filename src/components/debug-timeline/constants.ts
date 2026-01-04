@@ -1,6 +1,8 @@
 import keycapIcon from '../timeline/keycap.png';
 import mouseClickIcon from '../timeline/mouseClick.png';
 import broadcastIcon from '../timeline/broadcast.png';
+import backdropIcon2 from '../timeline/backdrop2.png';
+import isGreaterThanIcon from '../timeline/is-greater-than.png';
 import greenFlagIcon from '../green-flag/icon--green-flag.svg';
 
 export const TRACK_HEIGHT = 80;
@@ -9,105 +11,56 @@ export const SUB_BAR_NUM = 4;
 export const BAR_WIDTH = 80;
 
 export const EVENT_TYPES = Object.freeze({
-    'event_whenflagclicked': {
-        name: 'Green Flag',
+    FLAG: 1,
+    KEY: 2,
+    SPRITE_CLICKED: 3,
+    STAGE_CLICKED: 4,
+    BACKDROP_SWITCHED: 5,
+    GREATER_THAN: 6,
+    BROADCAST: 7
+});
+
+export const EVENT_INFO = Object.freeze({
+    event_whenflagclicked: {
+        id: EVENT_TYPES.FLAG,
+        name: 'Green flag',
         icon: greenFlagIcon,
         color: 'green-flag'
     },
-    'event_whenkeypressed': {
-        name: 'Key Pressed',
+    event_whenkeypressed: {
+        id: EVENT_TYPES.KEY,
+        name: 'Key pressed',
         icon: keycapIcon,
         color: 'broadcast'
     },
-    'event_whenthisspriteclicked': {
-        name: 'Sprite Clicked',
+    event_whenthisspriteclicked: {
+        id: EVENT_TYPES.SPRITE_CLICKED,
+        name: 'Sprite clicked',
         icon: mouseClickIcon,
         color: 'broadcast'
     },
-    'event_whenstageclicked': {
-        name: 'Stage Clicked',
+    event_whenstageclicked: {
+        id: EVENT_TYPES.STAGE_CLICKED,
+        name: 'Stage clicked',
         icon: mouseClickIcon,
         color: 'broadcast'
     },
-    'event_whenbackdropswitchesto': {
-        name: 'Backdrop Switched To',
-        icon: '!',
+    event_whenbackdropswitchesto: {
+        id: EVENT_TYPES.BACKDROP_SWITCHED,
+        name: 'Backdrop switched to',
+        icon: backdropIcon2,
         color: 'broadcast'
     },
-    'event_whengreaterthan': {
-        name: 'Greater Than',
-        icon: '!',
+    event_whengreaterthan: {
+        id: EVENT_TYPES.GREATER_THAN,
+        name: 'Greater than',
+        icon: isGreaterThanIcon,
         color: 'broadcast'
     },
-    'event_whenbroadcastreceived': {
-        name: 'Broadcast Received',
+    event_whenbroadcastreceived: {
+        id: EVENT_TYPES.BROADCAST,
+        name: 'Broadcast received: ',
         icon: broadcastIcon,
         color: 'broadcast'
     }
 });
-
-export const TRACK_COLORS = [
-    'green-flag',
-    'broadcast'
-];
-
-export const getKeyOnIcon = (key) => {
-    switch (key) {
-    case ' ':
-    case 'SPACE':
-        return ' ';
-    case 'ArrowLeft':
-    case 'LEFT ARROW':
-        return '⬅';
-    case 'ArrowRight':
-    case 'RIGHT ARROW':
-        return '➡';
-    case 'ArrowUp':
-    case 'UP ARROW':
-        return '⬆';
-    case 'ArrowDown':
-    case 'DOWN ARROW':
-        return '⬇';
-    default:
-        return key.toUpperCase();
-    }
-};
-
-const getCompressedWidth = (timestamp, ticks, size) => {
-    if (ticks.length < 2 || timestamp < ticks[0]) return 0;
-
-    let visibleTimeElapsed = 0;
-
-    let spanFound = false;
-    let i = 0;
-    while (!spanFound && i < ticks.length - 1 && ticks[i] < timestamp) {
-        const startCut = ticks[i];
-        const endCut = ticks[i + 1];
-
-        if (timestamp >= endCut) {
-            visibleTimeElapsed += size;
-        } else {
-            let timeIntoSpan = 0;
-            if ((endCut - startCut) - size < 1e-6) {
-                timeIntoSpan = timestamp - startCut;
-            } else {
-                timeIntoSpan = size / 2;
-            }
-
-            visibleTimeElapsed += timeIntoSpan;
-
-            spanFound = true;
-        }
-
-        i++;
-    }
-
-    return visibleTimeElapsed;
-};
-
-export const getCompressedPlotPosition = (timestamp, ticks, size) => {
-    if (ticks.length < 2 || timestamp < ticks[0]) return 0;
-
-    const visibleTimeElapsed = getCompressedWidth(timestamp, ticks, size);
-    return (visibleTimeElapsed * BAR_WIDTH) / size;
-};

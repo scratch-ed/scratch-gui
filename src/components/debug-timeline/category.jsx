@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './debug-timeline.css';
-import {TRACK_HEIGHT} from './constants.ts';
+import {EVENT_TYPES, TRACK_HEIGHT} from './constants.ts';
+import {getKeyOnIcon} from './helpers.ts';
 import PropTypes from 'prop-types';
 
 const CategoryItem = ({category}) => {
@@ -21,8 +22,23 @@ const CategoryItem = ({category}) => {
                     draggable={false}
                     src={category.icon}
                 />
+                {category.id === EVENT_TYPES.KEY &&
+                    <div className={styles.eventKeyData}>
+                        <span>{getKeyOnIcon(category.options.key.value)}</span>
+                    </div>
+                }
             </div>
-            <span>{category.name}</span>
+            <div className={styles.categoryItemText}>
+                <span>{category.name}</span>
+                {category.id === EVENT_TYPES.BROADCAST &&
+                    <div
+                        className={styles.categoryItemBroadcast}
+                        title={category.options.broadcastName.value}
+                    >
+                        <span>{category.options.broadcastName.value}</span>
+                    </div>
+                }
+            </div>
             <div
                 className={`${styles.categoryItemColor} ${colorClass}`}
             />
@@ -32,6 +48,7 @@ const CategoryItem = ({category}) => {
 
 CategoryItem.propTypes = {
     category: PropTypes.shape({
+        id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         icon: PropTypes.string.isRequired,
         color: PropTypes.string.isRequired
@@ -51,9 +68,12 @@ const Category = ({categories}) => (
 
 Category.propTypes = {
     categories: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         icon: PropTypes.string.isRequired,
-        color: PropTypes.string.isRequired
+        color: PropTypes.string.isRequired,
+        // eslint-disable-next-line react/forbid-prop-types
+        options: PropTypes.object.isRequired
     })).isRequired
 };
 

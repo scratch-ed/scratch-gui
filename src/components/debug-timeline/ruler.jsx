@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {BAR_WIDTH, getCompressedPlotPosition, SUB_BAR_NUM} from './constants.ts';
+import {BAR_WIDTH, SUB_BAR_NUM} from './constants.ts';
+import {getCompressedPlotPosition} from './helpers.ts';
 import styles from './debug-timeline.css';
 
 const EmptyRulerBar = () => (

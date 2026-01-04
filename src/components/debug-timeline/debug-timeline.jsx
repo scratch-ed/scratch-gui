@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import Ruler from './ruler.jsx';
 import ActiveBarRow from './active-bar-row.jsx';
 import Grid from './grid.jsx';
-import {EVENT_TYPES} from './constants.ts';
+import {EVENT_INFO} from './constants.ts';
 import styles from './debug-timeline.css';
 import Category from './category.jsx';
 import PropTypes from 'prop-types';
@@ -13,16 +13,20 @@ const getCategories = activeThreads => {
     const names = [];
 
     for (const value of activeThreads.values()) {
-        const codeName = value[0].topBlockName;
-        names.push(EVENT_TYPES[codeName]);
+        const codeName = value.periods[0].topBlockName;
+        const category = EVENT_INFO[codeName];
+        names.push({
+            ...category,
+            options: value.options
+        });
     }
 
     return names;
 };
 
 const generateTimelineCuts = (activeThreads, size) => {
-    let combined = Array.from(activeThreads.values()).flatMap(activeList =>
-        activeList.map(activeElement => [activeElement.start, activeElement.end])
+    let combined = Array.from(activeThreads.values()).flatMap(threadData =>
+        threadData.periods.map(activeElement => [activeElement.start, activeElement.end])
     );
 
     if (combined.length === 0) {
@@ -84,6 +88,9 @@ const DebugTimeline = ({
         return Math.abs((nextTick - tick) - tickSize) > 1e-12;
     };
 
+    console.log(activeThreads);
+    console.log(events);
+
     return (
         <div className={styles.flexRow}>
             <div className={styles.scrollDetails}>
@@ -100,7 +107,7 @@ const DebugTimeline = ({
                                 isGap={isGap}
                             />
                             <div style={{position: 'relative', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                                {Array.from(activeThreads.entries()).map(([threadId, threadList]) => (
+                                {Array.from(activeThreads.entries()).map(([threadId, {periods}]) => (
                                     <div
                                         key={`track-container-${threadId}`}
                                         className={styles.trackContainer}
@@ -111,7 +118,7 @@ const DebugTimeline = ({
                                             tickSize={tickSize}
                                             isGap={isGap}
                                         />
-                                        {threadList.map((threadData, index) => (
+                                        {periods.map((threadData, index) => (
                                             <ActiveBarRow
                                                 key={`${threadId}-${index}-track`}
                                                 activeThread={threadData}

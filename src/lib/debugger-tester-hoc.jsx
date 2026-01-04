@@ -206,35 +206,46 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             }
         }
 
-        getTopBlockName = (id, blocks) => {
+        getOptions = (editingTarget, sprites, stage, id, topBlockName) => {
+            let blocks = {};
+            if (stage.id === editingTarget) {
+                blocks = stage.blocks;
+            } else {
+                blocks = sprites[editingTarget].blocks;
+            }
+
             const block = blocks[id];
 
-            if (block) {
-                return block.opcode;
+            if (block && topBlockName === 'event_whenkeypressed') {
+                return {
+                    key: block.fields.KEY_OPTION
+                };
+            } else if (block && topBlockName === 'event_whenbroadcastreceived') {
+                return {
+                    broadcastName: block.fields.BROADCAST_OPTION
+                };
             }
 
-            return '';
+            return {};
         };
 
-        getTargetNameAndTopBlockName = (editingTarget, topBlock, sprites, stage) => {
-            if (stage.id === editingTarget) {
-                return {
-                    name: stage.name,
-                    topBlockName: this.getTopBlockName(topBlock, stage.blocks)
-                };
-            }
+        getDataTarget = (editingTarget, topBlock, sprites, stage) => {
+            let name = '';
+            let topBlockName = '';
 
-            const sprite = sprites[editingTarget];
-            if (sprite) {
-                return {
-                    name: sprite.name,
-                    topBlockName: this.getTopBlockName(topBlock, sprite.blocks)
-                };
+            if (stage.id === editingTarget) {
+                name = stage.name;
+                topBlockName = stage.blocks[topBlock].opcode;
+            } else if (sprites[editingTarget]) {
+                const sprite = sprites[editingTarget];
+
+                name = sprite.name;
+                topBlockName = sprite.blocks[topBlock].opcode;
             }
 
             return {
-                name: '',
-                topBlockName: ''
+                targetName: name,
+                topBlockName: topBlockName
             };
         };
 
@@ -260,30 +271,40 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                     if (jsonThread.targetId === this.props.editingTarget) {
                         if (threadMap.has(jsonThread.topBlock)) {
-                            const activeList = threadMap.get(jsonThread.topBlock);
+                            const activeObject = threadMap.get(jsonThread.topBlock);
+                            const activeList = activeObject.periods;
                             if (activeList[activeList.length - 1].hasEnded) {
-                                const target = this.getTargetNameAndTopBlockName(
+                                const target = this.getDataTarget(
                                     jsonThread.targetId, jsonThread.topBlock, this.props.sprites, this.props.stage
                                 );
                                 activeList.push({
-                                    targetName: target.name,
-                                    topBlockName: target.topBlockName,
+                                    ...target,
                                     start: snapshot.timestamp,
                                     end: null,
                                     hasEnded: false
                                 });
                             }
                         } else {
-                            const target = this.getTargetNameAndTopBlockName(
+                            const target = this.getDataTarget(
                                 jsonThread.targetId, jsonThread.topBlock, this.props.sprites, this.props.stage
                             );
-                            threadMap.set(jsonThread.topBlock, [{
-                                targetName: target.name,
-                                topBlockName: target.topBlockName,
+                            const activeArray = [{
+                                ...target,
                                 start: snapshot.timestamp,
                                 end: null,
                                 hasEnded: false
-                            }]);
+                            }];
+
+                            threadMap.set(jsonThread.topBlock, {
+                                periods: activeArray,
+                                options: this.getOptions(
+                                    jsonThread.targetId,
+                                    this.props.sprites,
+                                    this.props.stage,
+                                    jsonThread.topBlock,
+                                    target.topBlockName
+                                )
+                            });
                         }
 
                         processed.push(jsonThread.topBlock);
@@ -292,7 +313,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                 const topBlocksDone = previousTopBlocks.filter(thread => !processed.includes(thread));
                 for (const topBlock of topBlocksDone) {
-                    const list = threadMap.get(topBlock);
+                    const list = threadMap.get(topBlock).periods;
                     const lastItem = list[list.length - 1];
 
                     lastItem.end = snapshot.timestamp;
