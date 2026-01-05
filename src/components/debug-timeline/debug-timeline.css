@@ -282,7 +282,7 @@
     top: 50%;
     left: 25%;
     color: white;
-    transform: translate(10%, -50%);
+    transform: translate(-40%, -50%);
 }
 
 .event-icon {
