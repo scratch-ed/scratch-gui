@@ -1,16 +1,24 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import Ruler from './ruler.jsx';
+import Row from './row.jsx';
 import ActiveBarRow from './active-bar-row.jsx';
-import Grid from './grid.jsx';
 import {EVENT_INFO} from './constants.ts';
 import styles from './debug-timeline.css';
 import Category from './category.jsx';
 import PropTypes from 'prop-types';
 import {locateActiveBullet} from '../../reducers/time-slider';
+import EventsBarRow from './events-bar-row.jsx';
 
 const getCategories = activeThreads => {
     const names = [];
+
+    if (activeThreads.size > 0) {
+        names.push({
+            ...EVENT_INFO.events,
+            options: {}
+        });
+    }
 
     for (const value of activeThreads.values()) {
         const codeName = value.periods[0].topBlockName;
@@ -107,27 +115,34 @@ const DebugTimeline = ({
                                 isGap={isGap}
                             />
                             <div style={{position: 'relative', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                                <Row
+                                    id={'events'}
+                                    timeTicks={timeTicks}
+                                    tickSize={tickSize}
+                                    isGap={isGap}
+                                >
+                                    <EventsBarRow
+                                        events={events || []}
+                                        timeTicks={timeTicks}
+                                        tickSize={tickSize}
+                                    />
+                                </Row>
                                 {Array.from(activeThreads.entries()).map(([threadId, {periods}]) => (
-                                    <div
-                                        key={`track-container-${threadId}`}
-                                        className={styles.trackContainer}
+                                    <Row
+                                        key={`row-${threadId}`}
+                                        id={threadId}
+                                        timeTicks={timeTicks}
+                                        tickSize={tickSize}
+                                        isGap={isGap}
                                     >
-                                        <Grid
-                                            key={`${threadId}-grid`}
+                                        <ActiveBarRow
+                                            threadId={threadId}
+                                            periods={periods}
                                             timeTicks={timeTicks}
                                             tickSize={tickSize}
-                                            isGap={isGap}
+                                            onSelectBar={() => {}}
                                         />
-                                        {periods.map((threadData, index) => (
-                                            <ActiveBarRow
-                                                key={`${threadId}-${index}-track`}
-                                                activeThread={threadData}
-                                                timeTicks={timeTicks}
-                                                tickSize={tickSize}
-                                                onSelectBar={() => {}}
-                                            />
-                                        ))}
-                                    </div>
+                                    </Row>
                                 ))}
                             </div>
                         </div>

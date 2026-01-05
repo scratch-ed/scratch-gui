@@ -4,6 +4,7 @@ import broadcastIcon from '../timeline/broadcast.png';
 import backdropIcon2 from '../timeline/backdrop2.png';
 import isGreaterThanIcon from '../timeline/is-greater-than.png';
 import greenFlagIcon from '../green-flag/icon--green-flag.svg';
+import calendarIcon from '../timeline/calendar.png';
 
 export const TRACK_HEIGHT = 80;
 
@@ -11,6 +12,7 @@ export const SUB_BAR_NUM = 4;
 export const BAR_WIDTH = 80;
 
 export const EVENT_TYPES = Object.freeze({
+    EVENTS: 0,
     FLAG: 1,
     KEY: 2,
     SPRITE_CLICKED: 3,
@@ -21,6 +23,12 @@ export const EVENT_TYPES = Object.freeze({
 });
 
 export const EVENT_INFO = Object.freeze({
+    events: {
+        id: EVENT_TYPES.EVENTS,
+        name: 'Events',
+        icon: calendarIcon,
+        color: 'events'
+    },
     event_whenflagclicked: {
         id: EVENT_TYPES.FLAG,
         name: 'Green flag',
@@ -63,4 +71,13 @@ export const EVENT_INFO = Object.freeze({
         icon: broadcastIcon,
         color: 'broadcast'
     }
+});
+
+export const EVENTS_TO_ICON = Object.freeze({
+    key: keycapIcon,
+    click: mouseClickIcon,
+    broadcast: broadcastIcon,
+    greenFlag: greenFlagIcon,
+    greaterThan: isGreaterThanIcon,
+    backdrop: backdropIcon2
 });

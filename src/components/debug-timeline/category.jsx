@@ -1,8 +1,8 @@
 import React from 'react';
 import styles from './debug-timeline.css';
 import {EVENT_TYPES, TRACK_HEIGHT} from './constants.ts';
-import {getKeyOnIcon} from './helpers.ts';
 import PropTypes from 'prop-types';
+import Icon from './icons.jsx';
 
 const CategoryItem = ({category}) => {
     const colorClass = styles[category.color];
@@ -16,17 +16,10 @@ const CategoryItem = ({category}) => {
             }}
         >
             <div className={styles.categoryItemIcon}>
-                <img
-                    alt="Icon of event"
-                    className={styles.eventIcon}
-                    draggable={false}
-                    src={category.icon}
+                <Icon
+                    category={category}
+                    isEvent={false}
                 />
-                {category.id === EVENT_TYPES.KEY &&
-                    <div className={styles.eventKeyData}>
-                        <span>{getKeyOnIcon(category.options.key.value)}</span>
-                    </div>
-                }
             </div>
             <div className={styles.categoryItemText}>
                 <span>{category.name}</span>
@@ -51,7 +44,9 @@ CategoryItem.propTypes = {
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         icon: PropTypes.string.isRequired,
-        color: PropTypes.string.isRequired
+        color: PropTypes.string.isRequired,
+        // eslint-disable-next-line react/forbid-prop-types
+        options: PropTypes.object.isRequired
     }).isRequired
 };
 

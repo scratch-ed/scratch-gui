@@ -177,8 +177,12 @@
 
 /* TRACK CSS */
 .track-container {
+    position: relative;
+
     display: flex;
     flex-direction: row;
+
+    height: 100%;
 
     /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
 }
@@ -307,4 +311,8 @@
 
 .broadcast {
     background-color: #ffbf00;
+}
+
+.events {
+    background-color: #ff4d6a;
 }

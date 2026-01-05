@@ -4,7 +4,7 @@ import {EVENT_INFO, TRACK_HEIGHT} from './constants.ts';
 import {getCompressedPlotPosition} from './helpers.ts';
 import styles from './debug-timeline.css';
 
-const ActiveBarRow = ({
+const ActiveBarElement = ({
     activeThread,
     timeTicks,
     tickSize,
@@ -37,7 +37,7 @@ const ActiveBarRow = ({
     );
 };
 
-ActiveBarRow.propTypes = {
+ActiveBarElement.propTypes = {
     activeThread: PropTypes.shape({
         targetName: PropTypes.string.isRequired,
         topBlockName: PropTypes.string.isRequired,
@@ -47,7 +47,33 @@ ActiveBarRow.propTypes = {
     }).isRequired,
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
     tickSize: PropTypes.number.isRequired,
-    // When double-clicking on a bar, the stack of code corresponding to the sprites hat block should be highlighted
+    onSelectBar: PropTypes.func.isRequired
+};
+
+const ActiveBarRow = ({
+    threadId,
+    periods,
+    timeTicks,
+    tickSize,
+    onSelectBar
+}) => (
+    periods.map((threadData, index) => (
+        <ActiveBarElement
+            key={`${threadId}-${index}-track`}
+            activeThread={threadData}
+            timeTicks={timeTicks}
+            tickSize={tickSize}
+            onSelectBar={onSelectBar}
+        />
+    ))
+);
+
+ActiveBarRow.propTypes = {
+    threadId: PropTypes.string.isRequired,
+    periods: PropTypes.arrayOf(PropTypes.object).isRequired,
+    timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
+    tickSize: PropTypes.number.isRequired,
+    // TODO: When double-clicking on a bar, the stack of code corresponding to the sprites hat block should be highlighted
     onSelectBar: PropTypes.func.isRequired
 };
 
