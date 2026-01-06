@@ -9,6 +9,7 @@ import Category from './category.jsx';
 import PropTypes from 'prop-types';
 import {locateActiveBullet} from '../../reducers/time-slider';
 import EventsBarRow from './events-bar-row.jsx';
+import GridProvider from './grid-provider.jsx';
 
 const getCategories = activeThreads => {
     const names = [];
@@ -120,9 +121,6 @@ const DebugTimeline = ({
         }
     }, [locateActive, timeFrame, onLocateActiveBullet]);
 
-    console.log(activeThreads);
-    console.log(events);
-
     return (
         <div className={styles.flexRow} ref={rulerIndicatorRef}>
             <div className={styles.scrollDetails}>
@@ -139,35 +137,36 @@ const DebugTimeline = ({
                                 isGap={isGap}
                             />
                             <div style={{position: 'relative', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                                <Row
-                                    id={'events'}
+                                <GridProvider
                                     timeTicks={timeTicks}
                                     tickSize={tickSize}
                                     isGap={isGap}
                                 >
-                                    <EventsBarRow
-                                        events={events || []}
-                                        timeTicks={timeTicks}
-                                        tickSize={tickSize}
-                                    />
-                                </Row>
-                                {Array.from(activeThreads.entries()).map(([threadId, {periods}]) => (
                                     <Row
-                                        key={`row-${threadId}`}
-                                        id={threadId}
-                                        timeTicks={timeTicks}
-                                        tickSize={tickSize}
-                                        isGap={isGap}
+                                        id={'events'}
                                     >
-                                        <ActiveBarRow
-                                            threadId={threadId}
-                                            periods={periods}
+                                        <EventsBarRow
+                                            events={events || []}
                                             timeTicks={timeTicks}
                                             tickSize={tickSize}
-                                            onSelectBar={() => {}}
                                         />
                                     </Row>
-                                ))}
+                                    {Array.from(activeThreads.entries()).map(([threadId, {periods}]) => (
+                                        <Row
+                                            key={`row-${threadId}`}
+                                            id={threadId}
+                                        >
+                                            <ActiveBarRow
+                                                threadId={threadId}
+                                                periods={periods}
+                                                timeTicks={timeTicks}
+                                                tickSize={tickSize}
+                                                onSelectBar={() => {
+                                                }}
+                                            />
+                                        </Row>
+                                    ))}
+                                </GridProvider>
                             </div>
                         </div>
                     </div>
