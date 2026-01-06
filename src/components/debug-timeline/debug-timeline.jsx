@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import {connect} from 'react-redux';
 import Ruler from './ruler.jsx';
 import Row from './row.jsx';
@@ -32,10 +32,15 @@ const getCategories = activeThreads => {
     return names;
 };
 
-const generateTimelineCuts = (activeThreads, size) => {
+const generateTimelineCuts = (activeThreads, events, size) => {
     let combined = Array.from(activeThreads.values()).flatMap(threadData =>
         threadData.periods.map(activeElement => [activeElement.start, activeElement.end])
     );
+
+    if (events && events.length > 0) {
+        // add the last event to the combined array to make sure no icon is out of bounds
+        combined.push([events[events.length - 1].begin, events[events.length - 1].end]);
+    }
 
     if (combined.length === 0) {
         return [];
@@ -90,17 +95,36 @@ const DebugTimeline = ({
     const categories = getCategories(activeThreads);
 
     const tickSize = Math.round(100 * zoomLevel);
-    const timeTicks = generateTimelineCuts(activeThreads, tickSize);
+    const timeTicks = generateTimelineCuts(activeThreads, events, tickSize);
 
     const isGap = (tick, nextTick) => {
         return Math.abs((nextTick - tick) - tickSize) > 1e-12;
     };
 
+    const rulerIndicatorRef = useRef(null);
+    useEffect(() => {
+        if ((locateActive || timeFrame !== -1) && rulerIndicatorRef.current) {
+            const timer = setTimeout(() => {
+                const rulerIndicator = rulerIndicatorRef.current.querySelector(`.${styles.rulerThumb}`);
+                rulerIndicator.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+                if (locateActive) {
+                    onLocateActiveBullet(false);
+                }
+            }, 0);
+
+            return () => clearTimeout(timer);
+        }
+    }, [locateActive, timeFrame, onLocateActiveBullet]);
+
     console.log(activeThreads);
     console.log(events);
 
     return (
-        <div className={styles.flexRow}>
+        <div className={styles.flexRow} ref={rulerIndicatorRef}>
             <div className={styles.scrollDetails}>
                 <div className={styles.content}>
                     <div className={styles.debug}>
