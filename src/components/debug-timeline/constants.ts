@@ -67,7 +67,7 @@ export const EVENT_INFO = Object.freeze({
     },
     event_whenbroadcastreceived: {
         id: EVENT_TYPES.BROADCAST,
-        name: 'Broadcast received: ',
+        name: 'Broadcast received',
         icon: broadcastIcon,
         color: 'broadcast'
     }

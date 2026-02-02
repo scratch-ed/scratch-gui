@@ -25,7 +25,7 @@ const ActiveBarElement = ({
                 width: `${width}px`,
                 height: `${TRACK_HEIGHT}px`
             }}
-            title={`${activeThread.targetName}: ${EVENT_INFO[activeThread.topBlockName].name}`}
+            title={`${activeThread.targetName} reacted on: ${EVENT_INFO[activeThread.topBlockName].name.toLowerCase()}`}
         >
             <div className={styles.trackBar}>
                 <div
