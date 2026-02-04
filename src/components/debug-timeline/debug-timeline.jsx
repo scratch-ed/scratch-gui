@@ -159,7 +159,7 @@ const DebugTimeline = ({
         if ((locateActive || timeFrame !== -1) && rulerIndicatorRef.current) {
             const timer = setTimeout(() => {
                 const rulerIndicator = rulerIndicatorRef.current.querySelector(`.${styles.rulerThumb}`);
-                if (rulerIndicator) {
+                if (rulerIndicator !== null) {
                     rulerIndicator.scrollIntoView({
                         behavior: 'smooth',
                         block: 'center',
@@ -169,7 +169,7 @@ const DebugTimeline = ({
                 if (locateActive) {
                     onLocateActiveBullet(false);
                 }
-            }, 0);
+            }, 200);
 
             return () => clearTimeout(timer);
         }
