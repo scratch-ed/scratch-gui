@@ -30,7 +30,7 @@ const ActiveBarElement = ({
             <div className={styles.trackBar}>
                 <div
                     className={`${styles.trackBarContent} ${colorClass}`}
-                    onDoubleClick={() => onSelectBar(activeThread)}
+                    onClick={() => onSelectBar(activeThread.start, end)}
                 />
             </div>
         </div>
@@ -73,7 +73,6 @@ ActiveBarRow.propTypes = {
     periods: PropTypes.arrayOf(PropTypes.object).isRequired,
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
     tickSize: PropTypes.number.isRequired,
-    // TODO: When double-clicking on a bar, the stack of code corresponding to the sprites hat block should be highlighted
     onSelectBar: PropTypes.func.isRequired
 };
 

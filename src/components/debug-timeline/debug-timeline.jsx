@@ -7,14 +7,15 @@ import {EVENT_INFO} from './constants.ts';
 import styles from './debug-timeline.css';
 import Category from './category.jsx';
 import PropTypes from 'prop-types';
-import {locateActiveBullet} from '../../reducers/time-slider';
+import {locateActiveBullet, setTimeFrame} from '../../reducers/time-slider';
 import EventsBarRow from './events-bar-row.jsx';
 import GridProvider from './grid-provider.jsx';
+import VM from "scratch-vm";
 
-const getCategories = activeThreads => {
+const getCategories = (activeThreads, hasEvents) => {
     const names = [];
 
-    if (activeThreads.size > 0) {
+    if (hasEvents) {
         names.push({
             ...EVENT_INFO.events,
             options: {}
@@ -91,12 +92,30 @@ const generateTimelineCuts = (activeThreads, events, size) => {
 };
 
 const DebugTimeline = ({
-    activeThreads, zoomLevel, timeFrame, timestamps, events, locateActive, onLocateActiveBullet
+    vm, paused, activeThreads, zoomLevel, timeFrame, timestamps, events, locateActive, setFrame, onLocateActiveBullet
 }) => {
-    const categories = getCategories(activeThreads);
+    const categories = getCategories(activeThreads, events !== null && events.length > 0);
 
     const tickSize = Math.round(100 * zoomLevel);
     const timeTicks = generateTimelineCuts(activeThreads, events, tickSize);
+
+    const timestampToIndex = timestamps.reduce((map, item, index) => {
+        map[item] = index;
+        return map;
+    }, {});
+
+    const setFrameRange = (start, end) => {
+        if (!paused) {
+            vm.runtime.pause();
+        }
+        const index1 = timestampToIndex[start];
+        const index2 = timestampToIndex[end];
+        if (timeFrame < index1 || timeFrame >= index2) {
+            setFrame(index1);
+        } else {
+            setFrame(timeFrame + 1);
+        }
+    };
 
     const isGap = (tick, nextTick) => {
         return Math.abs((nextTick - tick) - tickSize) > 1e-12;
@@ -107,11 +126,13 @@ const DebugTimeline = ({
         if ((locateActive || timeFrame !== -1) && rulerIndicatorRef.current) {
             const timer = setTimeout(() => {
                 const rulerIndicator = rulerIndicatorRef.current.querySelector(`.${styles.rulerThumb}`);
-                rulerIndicator.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center',
-                    inline: 'center'
-                });
+                if (rulerIndicator) {
+                    rulerIndicator.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'center'
+                    });
+                }
                 if (locateActive) {
                     onLocateActiveBullet(false);
                 }
@@ -161,8 +182,7 @@ const DebugTimeline = ({
                                                 periods={periods}
                                                 timeTicks={timeTicks}
                                                 tickSize={tickSize}
-                                                onSelectBar={() => {
-                                                }}
+                                                onSelectBar={setFrameRange}
                                             />
                                         </Row>
                                     ))}
@@ -177,8 +197,12 @@ const DebugTimeline = ({
 };
 
 DebugTimeline.propTypes = {
+    vm: PropTypes.instanceOf(VM).isRequired,
+    paused: PropTypes.bool,
     activeThreads: PropTypes.instanceOf(Map).isRequired,
     timeFrame: PropTypes.number,
+    numberOfFrames: PropTypes.number,
+    setFrame: PropTypes.func,
     timestamps: PropTypes.arrayOf(PropTypes.number),
     events: PropTypes.arrayOf(PropTypes.object),
     zoomLevel: PropTypes.number,
@@ -187,8 +211,11 @@ DebugTimeline.propTypes = {
 };
 
 const mapStateToProps = state => ({
+    vm: state.scratchGui.vm,
+    paused: state.scratchGui.timeSlider.paused,
     activeThreads: state.scratchGui.timeSlider.activeThreads,
     timeFrame: state.scratchGui.timeSlider.timeFrame,
+    numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timestamps: state.scratchGui.timeSlider.timestamps,
     events: state.scratchGui.timeSlider.events,
     zoomLevel: state.scratchGui.timeSlider.zoomLevel,
@@ -196,6 +223,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
+    setFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
     onLocateActiveBullet: locate => dispatch(locateActiveBullet(locate))
 });
 
