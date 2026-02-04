@@ -11,6 +11,8 @@ const ActiveBarElement = ({
     onSelectBar
 }) => {
     const end = activeThread.hasEnded ? activeThread.end : timeTicks[timeTicks.length - 1];
+    console.log(timeTicks);
+    console.log(end);
 
     const left = getCompressedPlotPosition(activeThread.start, timeTicks, tickSize);
     const width = getCompressedPlotPosition(end, timeTicks, tickSize) - left;

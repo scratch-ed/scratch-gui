@@ -34,7 +34,36 @@ const getCategories = (activeThreads, hasEvents) => {
     return names;
 };
 
-const generateTimelineCuts = (activeThreads, events, size) => {
+const timelineFiller = (timeTicks, minElements, size) => {
+    if (timeTicks.length >= minElements) {
+        return timeTicks;
+    }
+
+    const result = [...timeTicks];
+
+    // add elements before the first element (apart from the standard 0), must be bigger than 0
+    let addedToLeft = 0;
+    const firstElement = result[1];
+    while (result.length < minElements && firstElement - ((addedToLeft + 1) * size) >= 0) {
+        result.unshift(firstElement - ((addedToLeft + 1) * size));
+        addedToLeft++;
+    }
+
+    // add elements after the last element
+    let addedToRight = 0;
+    const lastElement = result[result.length - 1];
+    while (result.length < minElements) {
+        const newElement = lastElement + ((addedToRight + 1) * size);
+        if (!result.includes(newElement)) {
+            result.push(newElement);
+        }
+        addedToRight++;
+    }
+
+    return result.sort((a, b) => a - b);
+};
+
+const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
     let combined = Array.from(activeThreads.values()).flatMap(threadData =>
         threadData.periods.map(activeElement => [activeElement.start, activeElement.end])
     );
@@ -85,10 +114,12 @@ const generateTimelineCuts = (activeThreads, events, size) => {
         for (let valueInRange = lower + size; valueInRange < upper; valueInRange += size) {
             timeTicks.add(valueInRange);
         }
-
     }
 
-    return Array.from(timeTicks).sort((a, b) => a - b);
+    timeTicks.add(timestampEnd);
+
+    const ticks = Array.from(timeTicks).sort((a, b) => a - b);
+    return timelineFiller(ticks, 12, size);
 };
 
 const DebugTimeline = ({
@@ -97,7 +128,9 @@ const DebugTimeline = ({
     const categories = getCategories(activeThreads, events !== null && events.length > 0);
 
     const tickSize = Math.round(100 * zoomLevel);
-    const timeTicks = generateTimelineCuts(activeThreads, events, tickSize);
+
+    const timestampEnd = Math.ceil(timestamps[timestamps.length - 1] / tickSize) * tickSize;
+    const timeTicks = generateTimelineCuts(activeThreads, events, timestampEnd, tickSize);
 
     const timestampToIndex = timestamps.reduce((map, item, index) => {
         map[item] = index;
