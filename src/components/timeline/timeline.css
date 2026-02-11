@@ -219,9 +219,9 @@ $arrow-rounding: 0.125rem;
     position: absolute;
     right: 1.5rem;
     bottom: 1.5rem;
-    width: 2.75rem;
-    height: 2.75rem;
-    padding: 0.75rem;
+    width: 2rem;
+    height: 2rem;
+    padding: 0.5rem;
     background: white;
     border: 1px solid #ddd;
     border-radius: 50%;
@@ -235,22 +235,42 @@ $arrow-rounding: 0.125rem;
 
 .zoomInButton {
     z-index: 12;
-    bottom: 12rem;
+    bottom: 8.5rem;
 }
 
 .zoomOutButton {
     z-index: 12;
-    bottom: 8.5rem;
+    bottom: 6rem;
 }
 
 .zoomResetButton {
     z-index: 12;
-    bottom: 5rem;
+    bottom: 3.5rem;
 }
 
 .locateActiveButton {
     z-index: 12;
-    bottom: 1.5rem;
+    bottom: 1rem;
+}
+
+.codeButton {
+    position: absolute;
+    z-index: 12;
+    top: 1rem;
+    left: 1rem;
+    width: auto;
+    height: 2rem;
+    padding: 0.75rem;
+
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5%;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease;
 }
 
 .floatButton img {
@@ -266,4 +286,11 @@ $arrow-rounding: 0.125rem;
 
 .floatButton:active {
     transform: scale(0.98);
+}
+
+.mode {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }

@@ -119,7 +119,7 @@ const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
     timeTicks.add(timestampEnd);
 
     const ticks = Array.from(timeTicks).sort((a, b) => a - b);
-    return timelineFiller(ticks, 12, size);
+    return timelineFiller(ticks, 14, size);
 };
 
 const DebugTimeline = ({

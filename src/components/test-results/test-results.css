@@ -4,15 +4,23 @@
 $caret-width: 15px;
 
 .wrapper {
+    position: relative;
     display: flex;
-    flex-grow: 1;
+    flex: 1;
     flex-direction: column;
+
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+
     border: 1px solid $ui-black-transparent;
     background: white;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 0.95rem;
     color: $text-primary;
     font-weight: bold;
+
+    overflow: hidden;
 }
 
 [dir="ltr"] .wrapper {

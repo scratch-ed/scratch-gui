@@ -14,7 +14,7 @@ import PropTypes from 'prop-types';
 import {locateActiveBullet, TimeSliderMode, zoomIn, zoomOut, zoomReset} from "../reducers/time-slider";
 import DebugTimeline from "../components/debug-timeline/debug-timeline.jsx";
 
-const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, timeSliderMode}) => {
+const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, timeSliderMode, onToggleSplit}) => {
     const [debugMode, setDebugMode] = React.useState(false);
 
     const toggleDebugMode = () => {
@@ -34,26 +34,20 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, ti
                         marginBottom: "20px",
                     }}>
                         <button
+                            className={timelineStyles.mode}
                             style={{
                                 backgroundColor: debugMode ? "#f4f3f1" : "#4CAF50",
                                 color: debugMode ? "black" : "white",
-                                padding: "10px 20px",
-                                border: "none",
-                                borderRadius: "5px",
-                                cursor: "pointer"
                             }}
                             onClick={toggleDebugMode}
                         >
                             Standard Mode
                         </button>
                         <button
+                            className={timelineStyles.mode}
                             style={{
                                 backgroundColor: debugMode ? "#4CAF50" : "#f4f3f1",
                                 color: debugMode ? "white" : "black",
-                                padding: "10px 20px",
-                                border: "none",
-                                borderRadius: "5px",
-                                cursor: "pointer"
                             }}
                             onClick={toggleDebugMode}
                         >
@@ -62,7 +56,7 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, ti
                     </div>
                 )
             }
-            {timeSliderMode === TimeSliderMode.DEBUG && debugMode ? <DebugTimeline /> : <Timeline />}
+            {timeSliderMode === TimeSliderMode.DEBUG && debugMode ? <DebugTimeline/> : <Timeline/>}
             <button
                 className={`${timelineStyles.floatButton} ${timelineStyles.zoomInButton}`}
                 onClick={onZoomIn}
@@ -111,7 +105,8 @@ TimelineTab.propTypes = {
     onZoomIn: PropTypes.func.isRequired,
     onZoomOut: PropTypes.func.isRequired,
     onResetZoom: PropTypes.func.isRequired,
-    onLocateActiveBullet: PropTypes.func.isRequired
+    onLocateActiveBullet: PropTypes.func.isRequired,
+    onToggleSplit: PropTypes.func
 };
 
 const mapStateToProps = state => ({
