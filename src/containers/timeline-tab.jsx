@@ -6,6 +6,7 @@ import zoomInButton from '../components/timeline/zoom-in.png';
 import zoomOutButton from '../components/timeline/zoom-out.png';
 import zoomResetButton from '../components/timeline/zoom-reset.png';
 import locateActiveBulletButton from '../components/timeline/targeting.png';
+import codeIcon from '../components/gui/icon--code.svg';
 
 import styles from '../components/test-results/test-results.css';
 import timelineStyles from '../components/timeline/timeline.css';
@@ -14,7 +15,7 @@ import PropTypes from 'prop-types';
 import {locateActiveBullet, TimeSliderMode, zoomIn, zoomOut, zoomReset} from "../reducers/time-slider";
 import DebugTimeline from "../components/debug-timeline/debug-timeline.jsx";
 
-const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, timeSliderMode}) => {
+const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, timeSliderMode, onToggleSplit}) => {
     const [debugMode, setDebugMode] = React.useState(false);
 
     const toggleDebugMode = () => {
@@ -23,6 +24,18 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, ti
 
     return (
         <Box className={styles.wrapper}>
+            <button
+                className={timelineStyles.codeButton}
+                onClick={onToggleSplit}
+            >
+                <span>{'Show'}</span>
+                <img
+                    draggable={false}
+                    src={codeIcon}
+                    alt="Toggle-Split"
+                />
+                <span>{'Code'}</span>
+            </button>
             {
                 timeSliderMode === TimeSliderMode.DEBUG && (
                     <div style={{
@@ -106,6 +119,7 @@ TimelineTab.propTypes = {
     onZoomOut: PropTypes.func.isRequired,
     onResetZoom: PropTypes.func.isRequired,
     onLocateActiveBullet: PropTypes.func.isRequired,
+    onToggleSplit: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({

@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, {useState} from 'react';
 import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
 import {connect} from 'react-redux';
 import MediaQuery from 'react-responsive';
@@ -60,6 +60,8 @@ const messages = defineMessages({
 let isRendererSupported = null;
 
 const GUIComponent = props => {
+    const [isTimelineSplit, setIsTimelineSplit] = useState(false);
+
     const {
         accountNavOpen,
         activeTabIndex,
@@ -389,7 +391,30 @@ const GUIComponent = props => {
                                 </TabPanel>
                                 {timelineActive &&
                                     <TabPanel className={tabClassNames.tabPanel}>
-                                        {timelineTabVisible ? <TimelineTab vm={vm} /> : null}
+                                        {
+                                            timelineTabVisible ?
+                                                <Box className={styles.splitTimelineContainer}>
+                                                    <Box className={styles.timelineTop}>
+                                                        <TimelineTab vm={vm} onToggleSplit={() => setIsTimelineSplit(!isTimelineSplit)} />
+                                                    </Box>
+                                                    {isTimelineSplit && (
+                                                        <Box className={styles.timelineBottom}>
+                                                            <Blocks
+                                                                key={`${blocksId}/${theme}`}
+                                                                canUseCloud={canUseCloud}
+                                                                grow={1}
+                                                                isVisible={true}
+                                                                options={{
+                                                                    media: `${basePath}static/${themeMap[theme].blocksMediaFolder}/`
+                                                                }}
+                                                                stageSize={stageSize}
+                                                                theme={theme}
+                                                                vm={vm}
+                                                            />
+                                                        </Box>
+                                                    )}
+                                                </Box> : null
+                                        }
                                     </TabPanel>
                                 }
                                 {testsLoaded &&
