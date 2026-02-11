@@ -389,7 +389,14 @@ const GUIComponent = props => {
                                 </TabPanel>
                                 {timelineActive &&
                                     <TabPanel className={tabClassNames.tabPanel}>
-                                        {timelineTabVisible ? <TimelineTab vm={vm} /> : null}
+                                        {timelineTabVisible ?
+                                            <Box className={styles.timelineContainer}>
+                                                <Box className={styles.timelineScroll}>
+                                                    <TimelineTab vm={vm}/>
+                                                </Box>
+                                            </Box>
+                                            :null
+                                        }
                                     </TabPanel>
                                 }
                                 {testsLoaded &&

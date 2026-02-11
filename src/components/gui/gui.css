@@ -6,6 +6,24 @@
     height: 100%;
 }
 
+.timeline-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.timeline-scroll {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    /*overflow: auto;*/
+}
+
 .body-wrapper {
     height: calc(100% - $menu-bar-height);
     background-color: $ui-primary;
