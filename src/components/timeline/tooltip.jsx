@@ -32,7 +32,7 @@ const TooltipContents = ({event}) => {
             text = event.data.key.toUpperCase();
         }
         if (event.sprites.length > 0) {
-            message = `${formatter.format(event.sprites)} reacted`;
+            message = `${formatter.format([...new Set(event.sprites)])} reacted`;
         } else {
             message = `and nothing happened`;
         }

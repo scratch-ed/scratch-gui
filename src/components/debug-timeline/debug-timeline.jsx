@@ -142,7 +142,7 @@ const DebugTimeline = ({
             vm.runtime.pause();
         }
         const index1 = timestampToIndex[start];
-        const index2 = timestampToIndex[end];
+        const index2 = timestampToIndex[end] ? timestampToIndex[end] : timestamps.length - 1;
         if (timeFrame < index1 || timeFrame >= index2) {
             setFrame(index1);
         } else {
