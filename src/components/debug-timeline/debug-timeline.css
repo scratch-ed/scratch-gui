@@ -305,6 +305,18 @@
     height: 100%;
 }
 
+.gap-tooltip {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    gap: 0.2rem;
+}
+
+.gap-tooltip-remaining {
+    font-style: italic;
+}
+
 /** COLORS */
 .color-even {
     background-color: #dddddd;

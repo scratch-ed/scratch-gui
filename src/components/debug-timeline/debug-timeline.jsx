@@ -11,6 +11,7 @@ import {locateActiveBullet, setTimeFrame} from '../../reducers/time-slider';
 import EventsBarRow from './events-bar-row.jsx';
 import GridProvider from './grid-provider.jsx';
 import VM from "scratch-vm";
+import {getBounds} from "./helpers.ts";
 
 const getCategories = (activeThreads, hasEvents) => {
     const names = [];
@@ -154,6 +155,11 @@ const DebugTimeline = ({
         return Math.abs((nextTick - tick) - tickSize) > 1e-12;
     };
 
+    const eventIsInGap = eventTime => {
+        const bounds = getBounds(eventTime, tickSize);
+        return !timeTicks.includes(bounds.lower) || !timeTicks.includes(bounds.upper);
+    };
+
     const rulerIndicatorRef = useRef(null);
     useEffect(() => {
         if ((locateActive || timeFrame !== -1) && rulerIndicatorRef.current) {
@@ -203,6 +209,7 @@ const DebugTimeline = ({
                                             events={events || []}
                                             timeTicks={timeTicks}
                                             tickSize={tickSize}
+                                            eventIsInGap={eventIsInGap}
                                         />
                                     </Row>
                                     {Array.from(activeThreads.entries()).map(([threadId, {periods}]) => (

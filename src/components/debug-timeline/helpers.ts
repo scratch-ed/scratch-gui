@@ -20,6 +20,16 @@ export const getKeyOnIcon = (key) => {
     }
 };
 
+export const getBounds = (time, size) => {
+    const lower = Math.floor(time / size) * size;
+    const upper = Math.ceil(time / size) * size;
+
+    return {
+        lower: lower,
+        upper: upper
+    };
+};
+
 export const getCompressedPlotPosition = (timestamp, ticks, size) => {
     if (ticks.length < 2 || timestamp < ticks[0]) return 0;
 

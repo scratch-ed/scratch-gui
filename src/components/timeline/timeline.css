@@ -215,6 +215,23 @@ $arrow-rounding: 0.125rem;
     transform: rotate(-45deg) !important;
 }
 
+.tooltip-data,
+.tooltip-data-gap
+{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.tooltip-data-gap {
+    width: 16px;
+    height: 16px;
+    background-color: #ff6b6b;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
 .floatButton {
     position: absolute;
     right: 1.5rem;
