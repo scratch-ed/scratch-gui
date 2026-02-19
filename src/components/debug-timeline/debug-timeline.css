@@ -290,14 +290,22 @@
     top: 50%;
     left: 25%;
     color: white;
-    transform: translate(-40%, -50%);
+    transform: translate(20%, -50%);
+}
+
+.icon-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
 }
 
 .event-icon {
     width: 25px;
     height: 25px;
-    transform: translatex(-3px);
-    user-select: none;
+    user-select: none
 }
 
 .category-item-color {

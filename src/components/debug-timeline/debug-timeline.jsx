@@ -13,6 +13,14 @@ import GridProvider from './grid-provider.jsx';
 import VM from "scratch-vm";
 import {getBounds} from "./helpers.ts";
 
+const getActiveTargetName = (editingTarget, sprites, stage) => {
+    if (editingTarget === stage.id) {
+        return stage.name;
+    }
+
+    return sprites[editingTarget].name;
+};
+
 const getCategories = (activeThreads, hasEvents) => {
     const names = [];
 
@@ -124,8 +132,10 @@ const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
 };
 
 const DebugTimeline = ({
-    vm, paused, activeThreads, zoomLevel, timeFrame, timestamps, events, locateActive, setFrame, onLocateActiveBullet
+    vm, paused, activeThreads, zoomLevel, timeFrame, editingTarget, sprites, stage, timestamps, events, locateActive, setFrame, onLocateActiveBullet
 }) => {
+    const activeTargetName = getActiveTargetName(editingTarget, sprites, stage);
+
     const categories = getCategories(activeThreads, events !== null && events.length > 0);
 
     const tickSize = Math.round(100 * zoomLevel);
@@ -206,6 +216,7 @@ const DebugTimeline = ({
                                         id={'events'}
                                     >
                                         <EventsBarRow
+                                            activeTargetName={activeTargetName}
                                             events={events || []}
                                             timeTicks={timeTicks}
                                             tickSize={tickSize}
@@ -242,7 +253,11 @@ DebugTimeline.propTypes = {
     paused: PropTypes.bool,
     activeThreads: PropTypes.instanceOf(Map).isRequired,
     timeFrame: PropTypes.number,
-    numberOfFrames: PropTypes.number,
+    editingTarget: PropTypes.string,
+    // eslint-disable-next-line react/forbid-prop-types
+    sprites: PropTypes.object.isRequired,
+    // eslint-disable-next-line react/forbid-prop-types
+    stage: PropTypes.object.isRequired,
     setFrame: PropTypes.func,
     timestamps: PropTypes.arrayOf(PropTypes.number),
     events: PropTypes.arrayOf(PropTypes.object),
@@ -256,6 +271,9 @@ const mapStateToProps = state => ({
     paused: state.scratchGui.timeSlider.paused,
     activeThreads: state.scratchGui.timeSlider.activeThreads,
     timeFrame: state.scratchGui.timeSlider.timeFrame,
+    editingTarget: state.scratchGui.targets.editingTarget,
+    sprites: state.scratchGui.targets.sprites,
+    stage: state.scratchGui.targets.stage,
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timestamps: state.scratchGui.timeSlider.timestamps,
     events: state.scratchGui.timeSlider.events,

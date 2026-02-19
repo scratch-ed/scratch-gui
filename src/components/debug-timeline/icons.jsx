@@ -24,7 +24,7 @@ const Icon = ({
     }
 
     return (
-        <div style={{position: 'relative'}}>
+        <div className={styles.iconContainer}>
             <img
                 alt="Icon of event"
                 className={styles.eventIcon}

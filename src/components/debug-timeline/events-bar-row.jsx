@@ -36,12 +36,17 @@ const groupEventsByGaps = (events, timeTicks, tickSize, eventIsInGap) => {
 };
 
 const EventsBarRow = ({
+    activeTargetName,
     events,
     timeTicks,
     tickSize,
     eventIsInGap
 }) => {
     const {visibleEvents, gapEvents} = groupEventsByGaps(events, timeTicks, tickSize, eventIsInGap);
+
+    const eventAffectsActiveTarget = (event) => {
+        return event.sprites.includes(activeTargetName);
+    };
 
     return (
         <>
@@ -64,10 +69,12 @@ const EventsBarRow = ({
                                 left: `${left}px`
                             }}
                         >
-                            <Icon
-                                event={event}
-                                isEvent={true}
-                            />
+                            <div className={styles.eventIconContainer} style={{backgroundColor: eventAffectsActiveTarget(event) ? '#7ece7e' : '#ff6b6b'}}>
+                                <Icon
+                                    event={event}
+                                    isEvent={true}
+                                />
+                            </div>
                         </div>
                         <ReactTooltip
                             id={`event-${index}`}
@@ -110,6 +117,7 @@ const EventsBarRow = ({
 };
 
 EventsBarRow.propTypes = {
+    activeTargetName: PropTypes.string,
     events: PropTypes.arrayOf(PropTypes.object),
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
     tickSize: PropTypes.number.isRequired,

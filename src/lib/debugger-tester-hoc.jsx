@@ -370,6 +370,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         }
 
         async changeMode (prevMode) {
+            console.log("target", this.props.editingTarget);
             if (this.props.timeSliderMode === TimeSliderMode.TEST_FINISHED) {
                 if (this.props.context) {
                     this.setState({refreshed: true});

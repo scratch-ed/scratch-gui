@@ -35,10 +35,12 @@ const GapTooltip = ({gapGroup}) => {
             </div>
             {displayValues.map(({count, sampleEvent, key}) => (
                 <div key={`${key}`} className={styles.gapTooltip}>
-                    <Icon
-                        event={sampleEvent}
-                        isEvent={true}
-                    />
+                    <div>
+                        <Icon
+                            event={sampleEvent}
+                            isEvent={true}
+                        />
+                    </div>
                     <span style={{marginLeft: '8px', fontWeight: 'bold'}}>
                         {count} time{count === 1 ? '' : 's'}
                     </span>
