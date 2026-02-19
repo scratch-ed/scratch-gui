@@ -42,7 +42,6 @@ const EventsBarRow = ({
     eventIsInGap
 }) => {
     const {visibleEvents, gapEvents} = groupEventsByGaps(events, timeTicks, tickSize, eventIsInGap);
-    console.log(gapEvents);
 
     return (
         <>

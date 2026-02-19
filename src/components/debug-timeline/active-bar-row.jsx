@@ -7,10 +7,11 @@ import styles from './debug-timeline.css';
 const ActiveBarElement = ({
     activeThread,
     timeTicks,
+    lastTimestamp,
     tickSize,
     onSelectBar
 }) => {
-    const end = activeThread.hasEnded ? activeThread.end : timeTicks[timeTicks.length - 1];
+    const end = activeThread.hasEnded ? activeThread.end : lastTimestamp;
 
     const left = getCompressedPlotPosition(activeThread.start, timeTicks, tickSize);
     const width = getCompressedPlotPosition(end, timeTicks, tickSize) - left;
@@ -25,7 +26,7 @@ const ActiveBarElement = ({
                 width: `${width}px`,
                 height: `${TRACK_HEIGHT}px`
             }}
-            title={`${activeThread.targetName} reacted on: ${EVENT_INFO[activeThread.topBlockName].name.toLowerCase()}`}
+            title={`${activeThread.start}-${end}: ${activeThread.targetName} reacted on ${EVENT_INFO[activeThread.topBlockName].name.toLowerCase()}`}
         >
             <div className={styles.trackBar}>
                 <div
@@ -46,6 +47,7 @@ ActiveBarElement.propTypes = {
         hasEnded: PropTypes.bool.isRequired
     }).isRequired,
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
+    lastTimestamp: PropTypes.number.isRequired,
     tickSize: PropTypes.number.isRequired,
     onSelectBar: PropTypes.func.isRequired
 };
@@ -54,6 +56,7 @@ const ActiveBarRow = ({
     threadId,
     periods,
     timeTicks,
+    lastTimestamp,
     tickSize,
     onSelectBar
 }) => (
@@ -62,6 +65,7 @@ const ActiveBarRow = ({
             key={`${threadId}-${index}-track`}
             activeThread={threadData}
             timeTicks={timeTicks}
+            lastTimestamp={lastTimestamp}
             tickSize={tickSize}
             onSelectBar={onSelectBar}
         />
@@ -72,6 +76,7 @@ ActiveBarRow.propTypes = {
     threadId: PropTypes.string.isRequired,
     periods: PropTypes.arrayOf(PropTypes.object).isRequired,
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
+    lastTimestamp: PropTypes.number.isRequired,
     tickSize: PropTypes.number.isRequired,
     onSelectBar: PropTypes.func.isRequired
 };

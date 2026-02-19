@@ -16,19 +16,19 @@ import {getBounds} from "./helpers.ts";
 const getCategories = (activeThreads, hasEvents) => {
     const names = [];
 
-    if (hasEvents) {
-        names.push({
-            ...EVENT_INFO.events,
-            options: {}
-        });
-    }
-
     for (const value of activeThreads.values()) {
         const codeName = value.periods[0].topBlockName;
         const category = EVENT_INFO[codeName];
         names.push({
             ...category,
             options: value.options
+        });
+    }
+
+    if (hasEvents || names.length > 0) {
+        names.unshift({
+            ...EVENT_INFO.events,
+            options: {}
         });
     }
 
@@ -45,7 +45,7 @@ const timelineFiller = (timeTicks, minElements, size) => {
     // add elements before the first element (apart from the standard 0), must be bigger than 0
     let addedToLeft = 0;
     const firstElement = result[1];
-    while (result.length < minElements && firstElement - ((addedToLeft + 1) * size) >= 0) {
+    while (result.length < minElements && firstElement - ((addedToLeft + 1) * size) > 0) {
         result.unshift(firstElement - ((addedToLeft + 1) * size));
         addedToLeft++;
     }
@@ -221,6 +221,7 @@ const DebugTimeline = ({
                                                 threadId={threadId}
                                                 periods={periods}
                                                 timeTicks={timeTicks}
+                                                lastTimestamp={timestamps ? timestamps[timestamps.length - 1] : 0}
                                                 tickSize={tickSize}
                                                 onSelectBar={setFrameRange}
                                             />
