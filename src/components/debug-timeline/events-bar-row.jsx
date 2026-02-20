@@ -69,7 +69,10 @@ const EventsBarRow = ({
                                 left: `${left}px`
                             }}
                         >
-                            <div className={styles.eventIconContainer} style={{backgroundColor: eventAffectsActiveTarget(event) ? '#7ece7e' : '#ff6b6b'}}>
+                            <div
+                                className={styles.eventIconContainer}
+                                style={{backgroundColor: eventAffectsActiveTarget(event) ? 'rgba(126, 206, 126, 0.5)' : 'rgba(255, 107, 107, 0.5)'}}
+                            >
                                 <Icon
                                     event={event}
                                     isEvent={true}
