@@ -1,11 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {getCompressedPlotPosition} from './helpers.ts';
-import Icon from './icons.jsx';
 import ReactTooltip from "react-tooltip";
 import styles from '../timeline/timeline.css';
-import TooltipContents from '../timeline/tooltip.jsx';
 import GapTooltip from "./gap-tooltip.jsx";
+import Event from "./event.jsx";
 
 const groupEventsByGaps = (events, timeTicks, tickSize, eventIsInGap) => {
     const visibleEvents = [];
@@ -44,10 +43,6 @@ const EventsBarRow = ({
 }) => {
     const {visibleEvents, gapEvents} = groupEventsByGaps(events, timeTicks, tickSize, eventIsInGap);
 
-    const eventAffectsActiveTarget = (event) => {
-        return event.sprites.includes(activeTargetName);
-    };
-
     return (
         <>
             {visibleEvents.map((event, index) => {
@@ -58,36 +53,14 @@ const EventsBarRow = ({
                 );
 
                 return (
-                    <div
-                        key={`event-${index}`}
-                    >
-                        <div
-                            className={styles.tooltipData}
-                            data-for={`event-${index}`}
-                            data-tip=""
-                            style={{
-                                left: `${left}px`
-                            }}
-                        >
-                            <div
-                                className={styles.eventIconContainer}
-                                style={{backgroundColor: eventAffectsActiveTarget(event) ? 'rgba(126, 206, 126, 0.5)' : 'rgba(255, 107, 107, 0.5)'}}
-                            >
-                                <Icon
-                                    event={event}
-                                    isEvent={true}
-                                />
-                            </div>
-                        </div>
-                        <ReactTooltip
-                            id={`event-${index}`}
-                            className={styles.tooltip}
-                            effect="solid"
-                            place="left"
-                        >
-                            <TooltipContents event={event} />
-                        </ReactTooltip>
-                    </div>
+                    <Event
+                        key={index}
+                        index={index}
+                        activeTargetName={activeTargetName}
+                        position={left}
+                        event={event}
+                        transparent={false}
+                    />
                 );
             })}
             {Array.from(gapEvents.values()).map((gapGroup, index) => {

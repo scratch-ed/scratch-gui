@@ -131,12 +131,32 @@ const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
     return timelineFiller(ticks, 14, size);
 };
 
+const createBroadcastEventMap = (events, target) => {
+    const broadcastMap = new Map();
+
+    events.forEach(event => {
+        if (event.type === 'broadcast' && event.data.source === target && event.data.topBlockIdSource) {
+            const blockId = event.data.topBlockIdSource;
+
+            if (!broadcastMap.has(blockId)) {
+                broadcastMap.set(blockId, []);
+            }
+
+            broadcastMap.get(blockId).push(event);
+        }
+    });
+
+    return broadcastMap;
+};
+
 const DebugTimeline = ({
     vm, paused, activeThreads, zoomLevel, timeFrame, editingTarget, sprites, stage, timestamps, events, locateActive, setFrame, onLocateActiveBullet
 }) => {
-    const activeTargetName = getActiveTargetName(editingTarget, sprites, stage);
 
     const categories = getCategories(activeThreads, events !== null && events.length > 0);
+
+    const activeTargetName = getActiveTargetName(editingTarget, sprites, stage);
+    const broadcastEventMap = createBroadcastEventMap(events, activeTargetName);
 
     const tickSize = Math.round(100 * zoomLevel);
 
@@ -232,6 +252,7 @@ const DebugTimeline = ({
                                                 threadId={threadId}
                                                 periods={periods}
                                                 timeTicks={timeTicks}
+                                                broadcastsSent={broadcastEventMap.get(threadId) || []}
                                                 lastTimestamp={timestamps ? timestamps[timestamps.length - 1] : 0}
                                                 tickSize={tickSize}
                                                 onSelectBar={setFrameRange}

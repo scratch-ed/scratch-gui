@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import {EVENT_INFO, TRACK_HEIGHT} from './constants.ts';
 import {getCompressedPlotPosition} from './helpers.ts';
 import styles from './debug-timeline.css';
+import Event from './event.jsx';
 
 const ActiveBarElement = ({
     activeThread,
@@ -52,23 +53,58 @@ ActiveBarElement.propTypes = {
     onSelectBar: PropTypes.func.isRequired
 };
 
+const BroadcastsOnRow = ({
+    broadcastsSent,
+    timeTicks,
+    tickSize
+}) => (
+    <div>
+        {broadcastsSent.map((event, index) => (
+            <Event
+                key={index}
+                index={index}
+                activeTargetName={''}
+                position={getCompressedPlotPosition(event.begin, timeTicks, tickSize)}
+                event={event}
+                transparent={true}
+            />
+        ))}
+    </div>
+);
+
+BroadcastsOnRow.propTypes = {
+    broadcastsSent: PropTypes.arrayOf(PropTypes.object).isRequired,
+    timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
+    tickSize: PropTypes.number.isRequired
+};
+
 const ActiveBarRow = ({
     threadId,
     periods,
     timeTicks,
+    broadcastsSent,
     lastTimestamp,
     tickSize,
     onSelectBar
 }) => (
     periods.map((threadData, index) => (
-        <ActiveBarElement
-            key={`${threadId}-${index}-track`}
-            activeThread={threadData}
-            timeTicks={timeTicks}
-            lastTimestamp={lastTimestamp}
-            tickSize={tickSize}
-            onSelectBar={onSelectBar}
-        />
+        <div key={index}>
+            <ActiveBarElement
+                key={`${threadId}-${index}-track`}
+                activeThread={threadData}
+                timeTicks={timeTicks}
+                lastTimestamp={lastTimestamp}
+                tickSize={tickSize}
+                onSelectBar={onSelectBar}
+            />
+            {broadcastsSent.length > 0 &&
+                <BroadcastsOnRow
+                    broadcastsSent={broadcastsSent}
+                    timeTicks={timeTicks}
+                    tickSize={tickSize}
+                />
+            }
+        </div>
     ))
 );
 
@@ -76,6 +112,7 @@ ActiveBarRow.propTypes = {
     threadId: PropTypes.string.isRequired,
     periods: PropTypes.arrayOf(PropTypes.object).isRequired,
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
+    broadcastsSent: PropTypes.arrayOf(PropTypes.object).isRequired,
     lastTimestamp: PropTypes.number.isRequired,
     tickSize: PropTypes.number.isRequired,
     onSelectBar: PropTypes.func.isRequired

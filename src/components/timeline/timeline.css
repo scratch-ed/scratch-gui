@@ -223,6 +223,10 @@ $arrow-rounding: 0.125rem;
     transform: translateY(-50%);
 }
 
+.tooltip-data {
+    z-index: 15;
+}
+
 .tooltip-data-gap {
     width: 16px;
     height: 16px;

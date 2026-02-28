@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './debug-timeline.css';
 import {EVENT_TYPES, TRACK_HEIGHT} from './constants.ts';
 import PropTypes from 'prop-types';
-import Icon from './icons.jsx';
+import Icon from './icon.jsx';
 
 const CategoryItem = ({category}) => {
     const colorClass = styles[category.color];

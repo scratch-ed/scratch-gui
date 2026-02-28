@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Icon from "./icons.jsx";
+import Icon from "./icon.jsx";
 import styles from './debug-timeline.css';
 
 const GapTooltip = ({gapGroup}) => {
