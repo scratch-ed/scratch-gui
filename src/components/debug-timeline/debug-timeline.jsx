@@ -74,8 +74,22 @@ const timelineFiller = (timeTicks, minElements, size) => {
 
 const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
     let combined = Array.from(activeThreads.values()).flatMap(threadData =>
-        threadData.periods.map(activeElement => [activeElement.start, activeElement.end])
+        threadData.periods.map(activeElement =>
+            (activeElement.end === null ? [activeElement.start, timestampEnd] : [activeElement.start, activeElement.end])
+        )
     );
+
+    if (combined.length === 1) {
+        const [start, end] = combined[0];
+        const roundedStart = Math.floor(start / size) * size;
+        const roundedEnd = Math.ceil(end / size) * size;
+
+        const tickCount = Math.ceil((roundedEnd - roundedStart) / size) + 1;
+        const ticks = Array.from({ length: tickCount }, (_, i) => roundedStart + (i * size));
+
+        return timelineFiller(ticks, 14, size);
+    }
+
 
     if (events && events.length > 0) {
         // add the last event to the combined array to make sure no icon is out of bounds
@@ -152,7 +166,6 @@ const createBroadcastEventMap = (events, target) => {
 const DebugTimeline = ({
     vm, paused, activeThreads, zoomLevel, timeFrame, editingTarget, sprites, stage, timestamps, events, locateActive, setFrame, onLocateActiveBullet
 }) => {
-
     const categories = getCategories(activeThreads, events !== null && events.length > 0);
 
     const activeTargetName = getActiveTargetName(editingTarget, sprites, stage);
