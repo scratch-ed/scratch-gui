@@ -19,7 +19,8 @@ import {
     setEvents,
     setTimeFrame,
     setRemoveFuture,
-    setActiveThreads
+    setActiveThreads,
+    resetExportTrigger
 } from '../reducers/time-slider.js';
 import {createContextWithVm, Context, snapshotFromVm, snapshotFromSb3, runWithContext} from 'itch';
 import omit from 'lodash.omit';
@@ -39,7 +40,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'handleProjectLoaded',
                 'handleProjectPaused',
                 'handleProjectResumed',
-                'handleProjectChanged'
+                'handleProjectChanged',
+                'handleExportLogsDebug'
             ]);
 
             this.state = {
@@ -61,7 +63,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         shouldComponentUpdate (nextProps) {
             return this.props.timeSliderMode !== nextProps.timeSliderMode ||
                 this.props.removeFuture !== nextProps.removeFuture ||
-                this.props.editingTarget !== nextProps.editingTarget;
+                this.props.editingTarget !== nextProps.editingTarget ||
+                this.props.exportTrigger !== nextProps.exportTrigger;
         }
 
         async componentDidUpdate (prevProps) {
@@ -77,6 +80,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
             if (prevProps.editingTarget !== this.props.editingTarget) {
                 this.initActiveThreads();
+            }
+
+            if (this.props.exportTrigger !== prevProps.exportTrigger && this.props.exportTrigger) {
+                this.handleExportLogsDebug();
+                this.props.resetExportTrigger();
             }
         }
 
@@ -187,6 +195,40 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             } else if (this.props.timeSliderMode !== TimeSliderMode.OFF) {
                 this.props.closeSlider();
             }
+        }
+
+        handleExportLogsDebug () {
+            if (!this.props.context) return;
+
+            const exportData = this.processLogDataForExport();
+            if (exportData) {
+                const jsonString = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([jsonString], {type: 'application/json'});
+
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `debug-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            }
+        }
+
+        processLogDataForExport () {
+            const spriteNames = Object.values(this.props.sprites).map(sprite => sprite.name);
+
+            const debugData = {
+                timestamp: new Date().toISOString(),
+                debugMode: true,
+                projectInfo: {
+                    sprites: spriteNames,
+                    stage: this.props.stage.name
+                },
+                logs: this.props.context.log.exportLogs(spriteNames)
+            };
+
+            return debugData;
         }
 
         removeFuture () {
@@ -447,6 +489,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'addEvent',
                 'setEvents',
                 'setActiveThreads',
+                'sprites',
+                'stage',
+                'setExportData',
+                'exportTrigger',
+                'resetExportTrigger',
                 'setPaused',
                 'setChanged',
                 'setRemoveFuture',
@@ -489,6 +536,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setChanged: PropTypes.func.isRequired,
         setRemoveFuture: PropTypes.func.isRequired,
         setTimeFrame: PropTypes.func.isRequired,
+        resetExportTrigger: PropTypes.func.isRequired,
+        exportTrigger: PropTypes.bool.isRequired,
         changed: PropTypes.bool.isRequired,
         testCallback: PropTypes.func.isRequired,
         removeFuture: PropTypes.bool.isRequired
@@ -502,6 +551,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         timeFrame: state.scratchGui.timeSlider.timeFrame,
         changed: state.scratchGui.timeSlider.changed,
         removeFuture: state.scratchGui.timeSlider.removeFuture,
+        exportTrigger: state.scratchGui.timeSlider.exportTrigger,
         vm: state.scratchGui.vm,
         testCallback: state.scratchGui.vm.processTestFeedback.bind(state.scratchGui.vm),
         editingTarget: state.scratchGui.targets.editingTarget,
@@ -524,7 +574,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),
         setRemoveFuture: removeFuture => dispatch(setRemoveFuture(removeFuture)),
-        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame))
+        setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
+        resetExportTrigger: () => dispatch(resetExportTrigger())
     });
 
     return connect(

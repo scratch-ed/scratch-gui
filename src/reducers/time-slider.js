@@ -16,6 +16,7 @@ const ZOOM_IN = 'scratch-gui/time-slider/ZOOM_IN';
 const ZOOM_OUT = 'scratch-gui/time-slider/ZOOM_OUT';
 const ZOOM_RESET = 'scratch-gui/time-slider/ZOOM_RESET';
 const LOCATE_ACTIVE_BULLET = 'scratch-gui/time-slider/LOCATE_ACTIVE_BULLET';
+const SET_EXPORT_TRIGGER = 'scratch-gui/time-slider/SET_EXPORT_TRIGGER';
 
 const TimeSliderMode = Object.freeze({
     OFF: 'off',
@@ -42,7 +43,8 @@ const initialState = {
     minZoomLevel: 0.1,
     maxZoomLevel: 2,
     zoomStep: 0.1,
-    locateActiveBullet: false
+    locateActiveBullet: false,
+    exportTrigger: false
 };
 
 const reducer = function (state, action) {
@@ -120,6 +122,10 @@ const reducer = function (state, action) {
     case LOCATE_ACTIVE_BULLET:
         return Object.assign({}, state, {
             locateActiveBullet: action.locateActiveBullet
+        });
+    case SET_EXPORT_TRIGGER:
+        return Object.assign({}, state, {
+            exportTrigger: action.exportTrigger
         });
     default:
         return state;
@@ -245,6 +251,20 @@ const locateActiveBullet = function (locate = true) {
     };
 };
 
+const resetExportTrigger = function () {
+    return {
+        type: SET_EXPORT_TRIGGER,
+        exportTrigger: false
+    };
+};
+
+const triggerExportLogs = function () {
+    return {
+        type: SET_EXPORT_TRIGGER,
+        exportTrigger: true
+    };
+};
+
 export {
     reducer as default,
     initialState as timeSliderInitialState,
@@ -267,5 +287,7 @@ export {
     zoomIn,
     zoomOut,
     zoomReset,
-    locateActiveBullet
+    locateActiveBullet,
+    resetExportTrigger,
+    triggerExportLogs
 };

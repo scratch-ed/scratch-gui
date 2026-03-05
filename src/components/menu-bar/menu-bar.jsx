@@ -71,7 +71,7 @@ import {
     openSettingsMenu,
     closeSettingsMenu
 } from '../../reducers/menus';
-import {TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
+import {triggerExportLogs, TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
 
 import collectMetadata from '../../lib/collect-metadata';
 
@@ -177,6 +177,7 @@ class MenuBar extends React.Component {
             'handleClickRemix',
             'handleClickSave',
             'handleClickSaveAsCopy',
+            'handleExportLogsDebug',
             'handleClickSeeCommunity',
             'handleClickShare',
             'handleSetMode',
@@ -218,6 +219,9 @@ class MenuBar extends React.Component {
     handleClickSaveAsCopy () {
         this.props.onClickSaveAsCopy();
         this.props.onRequestCloseFile();
+    }
+    handleExportLogsDebug () {
+        this.props.triggerExportLogs();
     }
     handleClickSeeCommunity (waitForUpdate) {
         if (this.props.shouldSaveBeforeTransition()) {
@@ -568,6 +572,17 @@ class MenuBar extends React.Component {
                                             )}
                                         </MenuItem>
                                     )}</TurboMode>
+                                </MenuSection>
+                                <MenuSection>
+                                    {this.props.timeSliderMode === TimeSliderMode.DEBUG && (
+                                        <MenuItem onClick={this.handleExportLogsDebug}>
+                                            <FormattedMessage
+                                                defaultMessage="Export logs in JSON"
+                                                description="Menu bar item for exporting debug data as JSON"
+                                                id="gui.menuBar.exportLogsDebugJson"
+                                            />
+                                        </MenuItem>
+                                    )}
                                 </MenuSection>
                             </MenuBarMenu>
 
@@ -927,6 +942,7 @@ MenuBar.propTypes = {
     settingsMenuOpen: PropTypes.bool,
     shouldSaveBeforeTransition: PropTypes.func,
     showComingSoon: PropTypes.bool,
+    triggerExportLogs: PropTypes.func,
     username: PropTypes.string,
     userOwnsProject: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
@@ -990,7 +1006,8 @@ const mapDispatchToProps = dispatch => ({
     onClickSave: () => dispatch(manualUpdateProject()),
     onClickSaveAsCopy: () => dispatch(saveProjectAsCopy()),
     onSeeCommunity: () => dispatch(setPlayer(true)),
-    onSetTimeTravelMode: mode => dispatch(setTimeTravel(mode))
+    onSetTimeTravelMode: mode => dispatch(setTimeTravel(mode)),
+    triggerExportLogs: () => dispatch(triggerExportLogs())
 });
 
 export default compose(
