@@ -282,6 +282,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 const sprite = sprites[editingTarget];
 
                 name = sprite.name;
+
+                if (!sprite.blocks[topBlock]) {
+                    return null;
+                }
+
                 topBlockName = sprite.blocks[topBlock].opcode;
             }
 
@@ -330,6 +335,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                             const target = this.getDataTarget(
                                 jsonThread.targetId, jsonThread.topBlock, this.props.sprites, this.props.stage
                             );
+
+                            if (!target) {
+                                continue;
+                            }
+
                             const activeArray = [{
                                 ...target,
                                 start: snapshot.timestamp,
