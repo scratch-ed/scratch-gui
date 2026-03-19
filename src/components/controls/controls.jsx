@@ -9,6 +9,7 @@ import TestFlag from '../test-flag/test-flag.jsx';
 import DebugMode from '../debugger-buttons/debug-mode/debug-mode.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
 import HeatmapButton from '../heatmap-button/heatmap-button.jsx';
+import HeatmapIntensitySlider from '../heatmap-intensity-slider/heatmap-intensity-slider.jsx';
 import {TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
 
 import styles from './controls.css';
@@ -50,11 +51,13 @@ const Controls = function (props) {
         onDebugModeClick,
         onGreenFlagClick,
         onHeatmapToggle,
+        onHeatmapIntensityChange,
         onStopAllClick,
         onTestFlagClick,
         turbo,
         testsLoaded,
         heatmapVisible,
+        heatmapIntensity,
         ...componentProps
     } = props;
 
@@ -85,6 +88,12 @@ const Controls = function (props) {
                     onClick={onHeatmapToggle}
                 />
             }
+            { timeSliderMode === TimeSliderMode.DEBUG && heatmapVisible &&
+                <HeatmapIntensitySlider
+                    intensity={heatmapIntensity}
+                    onIntensityChange={onHeatmapIntensityChange}
+                />
+            }
             {testsLoaded &&
                 <TestFlag
                     active={timeSliderMode === TimeSliderMode.TEST_RUNNING}
@@ -107,18 +116,21 @@ Controls.propTypes = {
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
     onHeatmapToggle: PropTypes.func.isRequired,
+    onHeatmapIntensityChange: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
     onTestFlagClick: PropTypes.func.isRequired,
     turbo: PropTypes.bool,
     testsLoaded: PropTypes.bool,
-    heatmapVisible: PropTypes.bool
+    heatmapVisible: PropTypes.bool,
+    heatmapIntensity: PropTypes.number
 };
 
 Controls.defaultProps = {
     active: false,
     turbo: false,
     testsLoaded: false,
-    heatmapVisible: false
+    heatmapVisible: false,
+    heatmapIntensity: 10
 };
 
 export default injectIntl(Controls);

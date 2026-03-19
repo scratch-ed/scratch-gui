@@ -6,7 +6,7 @@ import simpleheat from 'simpleheat';
 
 import styles from './heatmap.css';
 
-const Heatmap = ({ stageSize, visible = true, spritePositions }) => {
+const Heatmap = ({ stageSize, visible = true, spritePositions, heatmapIntensity }) => {
     const canvasRef = useRef(null);
 
     const generateHeatmapData = () => {
@@ -27,7 +27,7 @@ const Heatmap = ({ stageSize, visible = true, spritePositions }) => {
             allPositions.push({
                 x,
                 y,
-                intensity: Math.min(count, 10)
+                intensity: Math.min(count, heatmapIntensity)
             });
         });
 
@@ -64,7 +64,7 @@ const Heatmap = ({ stageSize, visible = true, spritePositions }) => {
         const heat = simpleheat(canvas);
 
         heat.radius(15, 20);
-        heat.max(10);
+        heat.max(heatmapIntensity);
 
         // Set data and draw
         heat.data(heatmapData);
@@ -73,7 +73,7 @@ const Heatmap = ({ stageSize, visible = true, spritePositions }) => {
 
     useEffect(() => {
         drawHeatmap();
-    }, [spritePositions, stageSize]);
+    }, [spritePositions, stageSize, heatmapIntensity]);
 
     const getCanvasDimensions = () => {
         switch (stageSize) {
@@ -110,11 +110,13 @@ const Heatmap = ({ stageSize, visible = true, spritePositions }) => {
 Heatmap.propTypes = {
     stageSize: PropTypes.string.isRequired,
     visible: PropTypes.bool,
-    spritePositions: PropTypes.arrayOf(PropTypes.object)
+    spritePositions: PropTypes.arrayOf(PropTypes.object),
+    heatmapIntensity: PropTypes.number
 };
 
 const mapStateToProps = state => ({
-    spritePositions: state.scratchGui.timeSlider.spritePositions || []
+    spritePositions: state.scratchGui.timeSlider.spritePositions || [],
+    heatmapIntensity: state.scratchGui.timeSlider.heatmapIntensity || 10
 });
 
 export default connect(mapStateToProps)(Heatmap);

@@ -23,6 +23,7 @@ const SET_HEATMAP_VISIBLE = 'scratch-gui/time-slider/SET_HEATMAP_VISIBLE';
 const SET_SPRITE_POSITIONS = 'scratch-gui/time-slider/SET_SPRITE_POSITIONS';
 const ADD_SPRITE_POSITION = 'scratch-gui/time-slider/ADD_SPRITE_POSITION';
 const CLEAR_SPRITE_POSITIONS = 'scratch-gui/time-slider/CLEAR_SPRITE_POSITIONS';
+const SET_HEATMAP_INTENSITY = 'scratch-gui/time-slider/SET_HEATMAP_INTENSITY';
 
 const TimeSliderMode = Object.freeze({
     OFF: 'off',
@@ -52,7 +53,8 @@ const initialState = {
     locateActiveBullet: false,
     exportTrigger: false,
     heatmapVisible: false,
-    spritePositions: []
+    spritePositions: [],
+    heatmapIntensity: 10
 };
 
 const reducer = function (state, action) {
@@ -202,6 +204,10 @@ const reducer = function (state, action) {
     case CLEAR_SPRITE_POSITIONS:
         return Object.assign({}, state, {
             spritePositions: []
+        });
+    case SET_HEATMAP_INTENSITY:
+        return Object.assign({}, state, {
+            heatmapIntensity: action.heatmapIntensity
         });
     default:
         return state;
@@ -386,6 +392,13 @@ const clearSpritePositions = function () {
     };
 };
 
+const setHeatmapIntensity = function (heatmapIntensity) {
+    return {
+        type: SET_HEATMAP_INTENSITY,
+        heatmapIntensity: heatmapIntensity
+    };
+};
+
 export {
     reducer as default,
     initialState as timeSliderInitialState,
@@ -416,5 +429,6 @@ export {
     setHeatmapVisible,
     setSpritePositions,
     addSpritePosition,
-    clearSpritePositions
+    clearSpritePositions,
+    setHeatmapIntensity
 };

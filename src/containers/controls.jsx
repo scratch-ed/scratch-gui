@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
-import {TimeSliderMode, TimeSliderStates, closeSlider, setHeatmapVisible} from '../reducers/time-slider.js';
+import {TimeSliderMode, TimeSliderStates, closeSlider, setHeatmapVisible, setHeatmapIntensity} from '../reducers/time-slider.js';
 
 import ControlsComponent from '../components/controls/controls.jsx';
 
@@ -16,6 +16,7 @@ class Controls extends React.Component {
             'handleDebugModeClick',
             'handleGreenFlagClick',
             'handleHeatmapToggle',
+            'handleHeatmapIntensityChange',
             'handleStopAllClick',
             'handleTestFlagClick'
         ]);
@@ -74,6 +75,10 @@ class Controls extends React.Component {
         this.props.setHeatmapVisible(!this.props.heatmapVisible);
     }
 
+    handleHeatmapIntensityChange (intensity) {
+        this.props.setHeatmapIntensity(intensity);
+    }
+
     render () {
         const componentProps = omit(this.props, [
             'vm',
@@ -82,7 +87,9 @@ class Controls extends React.Component {
             'testsLoaded',
             'closeSlider',
             'setHeatmapVisible',
-            'heatmapVisible'
+            'setHeatmapIntensity',
+            'heatmapVisible',
+            'heatmapIntensity'
         ]);
 
         return (
@@ -92,9 +99,11 @@ class Controls extends React.Component {
                 turbo={this.props.turbo}
                 testsLoaded={this.props.testsLoaded}
                 heatmapVisible={this.props.heatmapVisible}
+                heatmapIntensity={this.props.heatmapIntensity}
                 onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onHeatmapToggle={this.handleHeatmapToggle}
+                onHeatmapIntensityChange={this.handleHeatmapIntensityChange}
                 onStopAllClick={this.handleStopAllClick}
                 onTestFlagClick={this.handleTestFlagClick}
             />
@@ -111,7 +120,9 @@ Controls.propTypes = {
     vm: PropTypes.instanceOf(VM),
     isStarted: PropTypes.bool,
     setHeatmapVisible: PropTypes.func.isRequired,
-    heatmapVisible: PropTypes.bool
+    setHeatmapIntensity: PropTypes.func.isRequired,
+    heatmapVisible: PropTypes.bool,
+    heatmapIntensity: PropTypes.number
 };
 
 const mapStateToProps = state => ({
@@ -119,12 +130,14 @@ const mapStateToProps = state => ({
     projectRunning: state.scratchGui.vmStatus.running,
     turbo: state.scratchGui.vmStatus.turbo,
     testsLoaded: state.scratchGui.vmStatus.testsLoaded,
-    heatmapVisible: state.scratchGui.timeSlider.heatmapVisible
+    heatmapVisible: state.scratchGui.timeSlider.heatmapVisible,
+    heatmapIntensity: state.scratchGui.timeSlider.heatmapIntensity
 });
 
 const mapDispatchToProps = dispatch => ({
     closeSlider: () => dispatch(closeSlider()),
-    setHeatmapVisible: heatmapVisible => dispatch(setHeatmapVisible(heatmapVisible))
+    setHeatmapVisible: heatmapVisible => dispatch(setHeatmapVisible(heatmapVisible)),
+    setHeatmapIntensity: intensity => dispatch(setHeatmapIntensity(intensity))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Controls);
