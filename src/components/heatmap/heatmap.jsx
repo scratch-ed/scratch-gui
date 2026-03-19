@@ -6,7 +6,7 @@ import simpleheat from 'simpleheat';
 
 import styles from './heatmap.css';
 
-const Heatmap = ({ stageSize, visible = true, spritePositions, heatmapIntensity }) => {
+const Heatmap = ({ stageSize, visible = true, spritePositions, heatmapIntensity, timestamps, timeFrame }) => {
     const canvasRef = useRef(null);
 
     const generateHeatmapData = () => {
@@ -14,9 +14,17 @@ const Heatmap = ({ stageSize, visible = true, spritePositions, heatmapIntensity 
             return [];
         }
 
+        let filteredPositions = spritePositions;
+        if (timestamps && timeFrame !== undefined && timeFrame < timestamps.length) {
+            const currentTimeThreshold = timestamps[timeFrame];
+            filteredPositions = spritePositions.filter(pos =>
+                pos.timestamp <= currentTimeThreshold
+            );
+        }
+
         const positionCounts = {};
 
-        spritePositions.forEach(pos => {
+        filteredPositions.forEach(pos => {
             const key = `${Math.round(pos.x)},${Math.round(pos.y)}`;
             positionCounts[key] = (positionCounts[key] || 0) + 1;
         });
@@ -73,7 +81,7 @@ const Heatmap = ({ stageSize, visible = true, spritePositions, heatmapIntensity 
 
     useEffect(() => {
         drawHeatmap();
-    }, [spritePositions, stageSize, heatmapIntensity]);
+    }, [spritePositions, stageSize, heatmapIntensity, timestamps, timeFrame]);
 
     const getCanvasDimensions = () => {
         switch (stageSize) {
@@ -111,12 +119,16 @@ Heatmap.propTypes = {
     stageSize: PropTypes.string.isRequired,
     visible: PropTypes.bool,
     spritePositions: PropTypes.arrayOf(PropTypes.object),
-    heatmapIntensity: PropTypes.number
+    heatmapIntensity: PropTypes.number,
+    timestamps: PropTypes.arrayOf(PropTypes.number),
+    timeFrame: PropTypes.number
 };
 
 const mapStateToProps = state => ({
     spritePositions: state.scratchGui.timeSlider.spritePositions || [],
-    heatmapIntensity: state.scratchGui.timeSlider.heatmapIntensity || 10
+    heatmapIntensity: state.scratchGui.timeSlider.heatmapIntensity || 10,
+    timestamps: state.scratchGui.timeSlider.timestamps || [],
+    timeFrame: state.scratchGui.timeSlider.timeFrame || 0
 });
 
 export default connect(mapStateToProps)(Heatmap);
