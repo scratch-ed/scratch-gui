@@ -8,6 +8,7 @@ import {STAGE_DISPLAY_SIZES} from '../../lib/layout-constants.js';
 import StageHeader from '../../containers/stage-header.jsx';
 import Stage from '../../containers/stage.jsx';
 import Loader from '../loader/loader.jsx';
+import Heatmap from '../heatmap/heatmap.jsx';
 
 import styles from './stage-wrapper.css';
 
@@ -18,7 +19,9 @@ const StageWrapperComponent = function (props) {
         isRendererSupported,
         loading,
         stageSize,
-        vm
+        vm,
+        heatmapVisible,
+        spritePositions
     } = props;
 
     return (
@@ -44,6 +47,11 @@ const StageWrapperComponent = function (props) {
                         /> :
                         null
                 }
+                <Heatmap
+                    stageSize={stageSize}
+                    visible={heatmapVisible}
+                    spritePositions={spritePositions}
+                />
             </Box>
             {loading ? (
                 <Loader isFullScreen={isFullScreen} />
@@ -58,7 +66,9 @@ StageWrapperComponent.propTypes = {
     isRtl: PropTypes.bool.isRequired,
     loading: PropTypes.bool,
     stageSize: PropTypes.oneOf(Object.keys(STAGE_DISPLAY_SIZES)).isRequired,
-    vm: PropTypes.instanceOf(VM).isRequired
+    vm: PropTypes.instanceOf(VM).isRequired,
+    heatmapVisible: PropTypes.bool,
+    spritePositions: PropTypes.arrayOf(PropTypes.object)
 };
 
 export default StageWrapperComponent;

@@ -90,6 +90,7 @@ const GUIComponent = props => {
         costumesTabVisible,
         timeSliderMode,
         enableCommunity,
+        heatmapVisible,
         intl,
         isCreating,
         isFullScreen,
@@ -167,6 +168,7 @@ const GUIComponent = props => {
                 loading={loading}
                 stageSize={STAGE_SIZE_MODES.large}
                 vm={vm}
+                heatmapVisible={heatmapVisible}
             >
                 {alertsVisible ? (
                     <Alerts className={styles.alertsContainer} />
@@ -416,6 +418,7 @@ const GUIComponent = props => {
                                 isRtl={isRtl}
                                 stageSize={stageSize}
                                 vm={vm}
+                                heatmapVisible={heatmapVisible}
                             />
                             {timeSliderMode !== TimeSliderMode.OFF && <TimeInterface vm={vm} />}
                             <Box className={styles.targetWrapper}>
@@ -462,6 +465,7 @@ GUIComponent.propTypes = {
     debuggerTabVisible: PropTypes.bool,
     timeSliderMode: PropTypes.oneOf(TimeSliderStates),
     enableCommunity: PropTypes.bool,
+    heatmapVisible: PropTypes.bool,
     intl: intlShape.isRequired,
     isCreating: PropTypes.bool,
     isFullScreen: PropTypes.bool,
@@ -526,6 +530,7 @@ GUIComponent.defaultProps = {
     canShare: false,
     canUseCloud: false,
     enableCommunity: false,
+    heatmapVisible: false,
     isCreating: false,
     isShared: false,
     isTotallyNormal: false,
@@ -539,7 +544,8 @@ const mapStateToProps = state => ({
     // This is the button's mode, as opposed to the actual current state
     blocksId: state.scratchGui.timeTravel.year.toString(),
     stageSizeMode: state.scratchGui.stageSize.stageSize,
-    theme: state.scratchGui.theme.theme
+    theme: state.scratchGui.theme.theme,
+    heatmapVisible: state.scratchGui.timeSlider.heatmapVisible
 });
 
 export default injectIntl(connect(

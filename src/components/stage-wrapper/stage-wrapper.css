@@ -11,6 +11,7 @@
 .stage-canvas-wrapper {
     /* Hides negative space between edge of rounded corners + container, when selected */
     user-select: none;
+    position: relative;
 }
 
 .stage-wrapper.full-screen {

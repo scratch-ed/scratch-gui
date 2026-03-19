@@ -8,6 +8,8 @@ const SET_TIMESTAMPS = 'scratch-gui/time-slider/SET_TIMESTAMPS';
 const ADD_EVENT = 'scratch-gui/time-slider/ADD_EVENT';
 const SET_EVENTS = 'scratch-gui/time-slider/SET_EVENTS';
 const SET_ACTIVE_THREADS = 'scratch-gui/time-slider/SET_ACTIVE_THREADS';
+const ADD_ACTIVE_THREAD = 'scratch-gui/time-slider/ADD_ACTIVE_THREAD';
+const END_ACTIVE_THREAD = 'scratch-gui/time-slider/END_ACTIVE_THREAD';
 const SET_PAUSED = 'scratch-gui/time-slider/SET_PAUSED';
 const SET_CHANGED = 'scratch-gui/time-slider/SET_CHANGED';
 const SET_REMOVE_FUTURE = 'scratch-gui/time-slider/SET_REMOVE_FUTURE';
@@ -17,6 +19,10 @@ const ZOOM_OUT = 'scratch-gui/time-slider/ZOOM_OUT';
 const ZOOM_RESET = 'scratch-gui/time-slider/ZOOM_RESET';
 const LOCATE_ACTIVE_BULLET = 'scratch-gui/time-slider/LOCATE_ACTIVE_BULLET';
 const SET_EXPORT_TRIGGER = 'scratch-gui/time-slider/SET_EXPORT_TRIGGER';
+const SET_HEATMAP_VISIBLE = 'scratch-gui/time-slider/SET_HEATMAP_VISIBLE';
+const SET_SPRITE_POSITIONS = 'scratch-gui/time-slider/SET_SPRITE_POSITIONS';
+const ADD_SPRITE_POSITION = 'scratch-gui/time-slider/ADD_SPRITE_POSITION';
+const CLEAR_SPRITE_POSITIONS = 'scratch-gui/time-slider/CLEAR_SPRITE_POSITIONS';
 
 const TimeSliderMode = Object.freeze({
     OFF: 'off',
@@ -44,7 +50,9 @@ const initialState = {
     maxZoomLevel: 2,
     zoomStep: 0.1,
     locateActiveBullet: false,
-    exportTrigger: false
+    exportTrigger: false,
+    heatmapVisible: false,
+    spritePositions: []
 };
 
 const reducer = function (state, action) {
@@ -91,6 +99,56 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             activeThreads: action.threads
         });
+    case ADD_ACTIVE_THREAD:
+        const {topBlock, target, options, timestamp} = action;
+        const currentThreadMap = new Map(state.activeThreads);
+
+        if (currentThreadMap.has(topBlock)) {
+            const activeObject = currentThreadMap.get(topBlock);
+            const activeList = activeObject.periods;
+            if (activeList[activeList.length - 1].hasEnded) {
+                activeList.push({
+                    ...target,
+                    start: timestamp,
+                    end: null,
+                    hasEnded: false
+                });
+            }
+        } else {
+            const activeArray = [{
+                ...target,
+                start: timestamp,
+                end: null,
+                hasEnded: false
+            }];
+
+            currentThreadMap.set(topBlock, {
+                periods: activeArray,
+                options: options
+            });
+        }
+
+        return Object.assign({}, state, {
+            activeThreads: currentThreadMap
+        });
+    case END_ACTIVE_THREAD:
+        const {topBlock: endTopBlock, timestamp: endTimestamp} = action;
+        const endThreadMap = new Map(state.activeThreads);
+
+        if (endThreadMap.has(endTopBlock)) {
+            const activeObject = endThreadMap.get(endTopBlock);
+            const activeList = activeObject.periods;
+            const lastItem = activeList[activeList.length - 1];
+
+            if (!lastItem.hasEnded) {
+                lastItem.end = endTimestamp;
+                lastItem.hasEnded = true;
+            }
+        }
+
+        return Object.assign({}, state, {
+            activeThreads: endThreadMap
+        });
     case SET_PAUSED:
         return Object.assign({}, state, {
             paused: action.paused
@@ -126,6 +184,24 @@ const reducer = function (state, action) {
     case SET_EXPORT_TRIGGER:
         return Object.assign({}, state, {
             exportTrigger: action.exportTrigger
+        });
+    case SET_HEATMAP_VISIBLE:
+        return Object.assign({}, state, {
+            heatmapVisible: action.heatmapVisible
+        });
+    case SET_SPRITE_POSITIONS:
+        return Object.assign({}, state, {
+            spritePositions: action.spritePositions
+        });
+    case ADD_SPRITE_POSITION:
+        const {position} = action;
+        const currentPositions = state.spritePositions || [];
+        return Object.assign({}, state, {
+            spritePositions: [...currentPositions, position]
+        });
+    case CLEAR_SPRITE_POSITIONS:
+        return Object.assign({}, state, {
+            spritePositions: []
         });
     default:
         return state;
@@ -198,6 +274,24 @@ const setActiveThreads = function (threads) {
     };
 };
 
+const addActiveThread = function (topBlock, target, options, timestamp) {
+    return {
+        type: ADD_ACTIVE_THREAD,
+        topBlock: topBlock,
+        target: target,
+        options: options,
+        timestamp: timestamp
+    };
+};
+
+const endActiveThread = function (topBlock, timestamp) {
+    return {
+        type: END_ACTIVE_THREAD,
+        topBlock: topBlock,
+        timestamp: timestamp
+    };
+};
+
 const setPaused = function (paused) {
     return {
         type: SET_PAUSED,
@@ -265,6 +359,33 @@ const triggerExportLogs = function () {
     };
 };
 
+const setHeatmapVisible = function (heatmapVisible) {
+    return {
+        type: SET_HEATMAP_VISIBLE,
+        heatmapVisible: heatmapVisible
+    };
+};
+
+const setSpritePositions = function (spritePositions) {
+    return {
+        type: SET_SPRITE_POSITIONS,
+        spritePositions: spritePositions
+    };
+};
+
+const addSpritePosition = function (position) {
+    return {
+        type: ADD_SPRITE_POSITION,
+        position: position
+    };
+};
+
+const clearSpritePositions = function () {
+    return {
+        type: CLEAR_SPRITE_POSITIONS
+    };
+};
+
 export {
     reducer as default,
     initialState as timeSliderInitialState,
@@ -280,6 +401,8 @@ export {
     addEvent,
     setEvents,
     setActiveThreads,
+    addActiveThread,
+    endActiveThread,
     setPaused,
     setChanged,
     setRemoveFuture,
@@ -289,5 +412,9 @@ export {
     zoomReset,
     locateActiveBullet,
     resetExportTrigger,
-    triggerExportLogs
+    triggerExportLogs,
+    setHeatmapVisible,
+    setSpritePositions,
+    addSpritePosition,
+    clearSpritePositions
 };

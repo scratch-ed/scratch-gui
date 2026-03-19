@@ -20,7 +20,12 @@ import {
     setTimeFrame,
     setRemoveFuture,
     setActiveThreads,
-    resetExportTrigger
+    addActiveThread,
+    endActiveThread,
+    resetExportTrigger,
+    setSpritePositions,
+    addSpritePosition,
+    clearSpritePositions
 } from '../reducers/time-slider.js';
 import {createContextWithVm, Context, snapshotFromVm, snapshotFromSb3, runWithContext} from 'itch';
 import omit from 'lodash.omit';
@@ -64,7 +69,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             return this.props.timeSliderMode !== nextProps.timeSliderMode ||
                 this.props.removeFuture !== nextProps.removeFuture ||
                 this.props.editingTarget !== nextProps.editingTarget ||
-                this.props.exportTrigger !== nextProps.exportTrigger;
+                this.props.exportTrigger !== nextProps.exportTrigger ||
+                this.props.heatmapVisible !== nextProps.heatmapVisible;
         }
 
         async componentDidUpdate (prevProps) {
@@ -80,6 +86,15 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
             if (prevProps.editingTarget !== this.props.editingTarget) {
                 this.initActiveThreads();
+                this.initSpritePositions();
+            }
+
+            if (prevProps.heatmapVisible !== this.props.heatmapVisible) {
+                if (this.props.heatmapVisible) {
+                    this.initSpritePositions();
+                } else {
+                    this.props.clearSpritePositions();
+                }
             }
 
             if (this.props.exportTrigger !== prevProps.exportTrigger && this.props.exportTrigger) {
@@ -296,6 +311,55 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             };
         };
 
+        processActiveThreads (snapshot, previousTopBlocks = []) {
+            if (!snapshot || !snapshot.runtimeSnapshot || !this.props.editingTarget) {
+                return [];
+            }
+
+            const threads = snapshot.runtimeSnapshot.threads || [];
+            const processed = [];
+
+            for (const thread of threads) {
+                try {
+                    const jsonThread = JSON.parse(thread);
+
+                    if (jsonThread.targetId === this.props.editingTarget) {
+                        const target = this.getDataTarget(
+                            jsonThread.targetId, jsonThread.topBlock, this.props.sprites, this.props.stage
+                        );
+
+                        if (!target) {
+                            continue;
+                        }
+
+                        const options = this.getOptions(
+                            jsonThread.targetId,
+                            this.props.sprites,
+                            this.props.stage,
+                            jsonThread.topBlock,
+                            target.topBlockName
+                        );
+
+                        this.props.addActiveThread(
+                            jsonThread.topBlock,
+                            target,
+                            options,
+                            snapshot.timestamp
+                        );
+
+                        processed.push(jsonThread.topBlock);
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse thread for active threads:', e);
+                }
+            }
+
+            const topBlocksDone = previousTopBlocks.filter(thread => !processed.includes(thread));
+            for (const topBlock of topBlocksDone) {
+                this.props.endActiveThread(topBlock, snapshot.timestamp);
+            }
+        }
+
         initActiveThreads () {
             if (this.props.context === null) {
                 return;
@@ -378,6 +442,36 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
             this.props.setActiveThreads(threadMap);
         }
 
+        initSpritePositions () {
+            this.props.clearSpritePositions();
+            if (!this.props.context || !this.props.context.log || !this.props.editingTarget) {
+                return;
+            }
+
+            const snapshots = this.props.context.log.snapshots || [];
+
+            for (const snapshot of snapshots) {
+                this.logSpritePositions(snapshot);
+            }
+        }
+
+        logSpritePositions (snapshot) {
+            if (!snapshot || !snapshot.runtimeSnapshot || !this.props.editingTarget) {
+                return;
+            }
+
+            const target = snapshot.targets?.find(t => t.id === this.props.editingTarget);
+
+            if (target && target.x !== undefined && target.y !== undefined) {
+                const position = {
+                    x: target.x,
+                    y: target.y,
+                    timestamp: snapshot.timestamp || Date.now()
+                };
+                this.props.addSpritePosition(position);
+            }
+        }
+
         proxyRegisterSnapshot (context) {
             // Increase the length of the time slider every time a new frame gets added to the log.
             this.oldRegisterSnapshot = context.log.registerSnapshot;
@@ -391,11 +485,20 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                             this.removeFullHistory();
                             this.props.setChanged(false);
                             this.props.setActiveThreads(new Map());
+                            this.props.clearSpritePositions();
                         }
                         this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
                         this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
                         this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
-                        this.initActiveThreads();
+
+                        const lastSnapshot = this.props.context.log.snapshots[this.props.context.log.snapshots.length - 1];
+                        const currentActiveThreads = Array.from(this.props.activeThreads.keys());
+
+                        this.processActiveThreads(lastSnapshot, currentActiveThreads);
+
+                        if (this.props.heatmapVisible) {
+                            this.logSpritePositions(lastSnapshot);
+                        }
                     }
                     return added;
                 }
@@ -443,6 +546,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setTimeFrame(0);
                 this.props.setEvents([]);
                 this.props.setActiveThreads(new Map());
+                this.props.clearSpritePositions();
             }
 
             if (this.props.timeSliderMode === TimeSliderMode.DEBUG) {
@@ -499,6 +603,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'addEvent',
                 'setEvents',
                 'setActiveThreads',
+                'addActiveThread',
+                'endActiveThread',
                 'sprites',
                 'stage',
                 'setExportData',
@@ -510,7 +616,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 'setTimeFrame',
                 'changed',
                 'testCallback',
-                'removeFuture'
+                'removeFuture',
+                'heatmapVisible',
+                'setSpritePositions',
+                'addSpritePosition',
+                'clearSpritePositions'
             ]);
 
             return (
@@ -542,11 +652,17 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         addEvent: PropTypes.func.isRequired,
         setEvents: PropTypes.func.isRequired,
         setActiveThreads: PropTypes.func.isRequired,
+        addActiveThread: PropTypes.func.isRequired,
+        endActiveThread: PropTypes.func.isRequired,
         setPaused: PropTypes.func.isRequired,
         setChanged: PropTypes.func.isRequired,
         setRemoveFuture: PropTypes.func.isRequired,
         setTimeFrame: PropTypes.func.isRequired,
         resetExportTrigger: PropTypes.func.isRequired,
+        heatmapVisible: PropTypes.bool.isRequired,
+        setSpritePositions: PropTypes.func.isRequired,
+        addSpritePosition: PropTypes.func.isRequired,
+        clearSpritePositions: PropTypes.func.isRequired,
         exportTrigger: PropTypes.bool.isRequired,
         changed: PropTypes.bool.isRequired,
         testCallback: PropTypes.func.isRequired,
@@ -562,6 +678,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         changed: state.scratchGui.timeSlider.changed,
         removeFuture: state.scratchGui.timeSlider.removeFuture,
         exportTrigger: state.scratchGui.timeSlider.exportTrigger,
+        heatmapVisible: state.scratchGui.timeSlider.heatmapVisible,
         vm: state.scratchGui.vm,
         testCallback: state.scratchGui.vm.processTestFeedback.bind(state.scratchGui.vm),
         editingTarget: state.scratchGui.targets.editingTarget,
@@ -581,11 +698,16 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         addEvent: event => dispatch(addEvent(event)),
         setEvents: events => dispatch(setEvents(events)),
         setActiveThreads: threads => dispatch(setActiveThreads(threads)),
+        addActiveThread: (topBlock, target, options, timestamp) => dispatch(addActiveThread(topBlock, target, options, timestamp)),
+        endActiveThread: (topBlock, timestamp) => dispatch(endActiveThread(topBlock, timestamp)),
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),
         setRemoveFuture: removeFuture => dispatch(setRemoveFuture(removeFuture)),
         setTimeFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
-        resetExportTrigger: () => dispatch(resetExportTrigger())
+        resetExportTrigger: () => dispatch(resetExportTrigger()),
+        setSpritePositions: spritePositions => dispatch(setSpritePositions(spritePositions)),
+        addSpritePosition: position => dispatch(addSpritePosition(position)),
+        clearSpritePositions: () => dispatch(clearSpritePositions())
     });
 
     return connect(

@@ -8,6 +8,7 @@ import StopAll from '../stop-all/stop-all.jsx';
 import TestFlag from '../test-flag/test-flag.jsx';
 import DebugMode from '../debugger-buttons/debug-mode/debug-mode.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
+import HeatmapButton from '../heatmap-button/heatmap-button.jsx';
 import {TimeSliderMode, TimeSliderStates} from '../../reducers/time-slider.js';
 
 import styles from './controls.css';
@@ -32,6 +33,11 @@ const messages = defineMessages({
         id: 'gui.controls.test',
         defaultMessage: 'Test',
         description: 'Test button title'
+    },
+    heatmapTitle: {
+        id: 'gui.controls.heatmap',
+        defaultMessage: 'Toggle Heatmap',
+        description: 'Heatmap button title'
     }
 });
 
@@ -43,10 +49,12 @@ const Controls = function (props) {
         intl,
         onDebugModeClick,
         onGreenFlagClick,
+        onHeatmapToggle,
         onStopAllClick,
         onTestFlagClick,
         turbo,
         testsLoaded,
+        heatmapVisible,
         ...componentProps
     } = props;
 
@@ -70,6 +78,13 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.debugTitle)}
                 onClick={onDebugModeClick}
             />
+            { timeSliderMode === TimeSliderMode.DEBUG &&
+                <HeatmapButton
+                    active={heatmapVisible}
+                    title={intl.formatMessage(messages.heatmapTitle)}
+                    onClick={onHeatmapToggle}
+                />
+            }
             {testsLoaded &&
                 <TestFlag
                     active={timeSliderMode === TimeSliderMode.TEST_RUNNING}
@@ -91,16 +106,19 @@ Controls.propTypes = {
     intl: intlShape.isRequired,
     onDebugModeClick: PropTypes.func.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
+    onHeatmapToggle: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
     onTestFlagClick: PropTypes.func.isRequired,
     turbo: PropTypes.bool,
-    testsLoaded: PropTypes.bool
+    testsLoaded: PropTypes.bool,
+    heatmapVisible: PropTypes.bool
 };
 
 Controls.defaultProps = {
     active: false,
     turbo: false,
-    testsLoaded: false
+    testsLoaded: false,
+    heatmapVisible: false
 };
 
 export default injectIntl(Controls);

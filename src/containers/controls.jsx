@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
-import {TimeSliderMode, TimeSliderStates, closeSlider} from '../reducers/time-slider.js';
+import {TimeSliderMode, TimeSliderStates, closeSlider, setHeatmapVisible} from '../reducers/time-slider.js';
 
 import ControlsComponent from '../components/controls/controls.jsx';
 
@@ -15,6 +15,7 @@ class Controls extends React.Component {
         bindAll(this, [
             'handleDebugModeClick',
             'handleGreenFlagClick',
+            'handleHeatmapToggle',
             'handleStopAllClick',
             'handleTestFlagClick'
         ]);
@@ -68,13 +69,20 @@ class Controls extends React.Component {
         }
     }
 
+    handleHeatmapToggle (e) {
+        e.preventDefault();
+        this.props.setHeatmapVisible(!this.props.heatmapVisible);
+    }
+
     render () {
         const componentProps = omit(this.props, [
             'vm',
             'projectRunning',
             'turbo',
             'testsLoaded',
-            'closeSlider'
+            'closeSlider',
+            'setHeatmapVisible',
+            'heatmapVisible'
         ]);
 
         return (
@@ -83,8 +91,10 @@ class Controls extends React.Component {
                 active={this.props.projectRunning}
                 turbo={this.props.turbo}
                 testsLoaded={this.props.testsLoaded}
+                heatmapVisible={this.props.heatmapVisible}
                 onDebugModeClick={this.handleDebugModeClick}
                 onGreenFlagClick={this.handleGreenFlagClick}
+                onHeatmapToggle={this.handleHeatmapToggle}
                 onStopAllClick={this.handleStopAllClick}
                 onTestFlagClick={this.handleTestFlagClick}
             />
@@ -99,18 +109,22 @@ Controls.propTypes = {
     turbo: PropTypes.bool.isRequired,
     testsLoaded: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM),
-    isStarted: PropTypes.bool
+    isStarted: PropTypes.bool,
+    setHeatmapVisible: PropTypes.func.isRequired,
+    heatmapVisible: PropTypes.bool
 };
 
 const mapStateToProps = state => ({
     timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
     projectRunning: state.scratchGui.vmStatus.running,
     turbo: state.scratchGui.vmStatus.turbo,
-    testsLoaded: state.scratchGui.vmStatus.testsLoaded
+    testsLoaded: state.scratchGui.vmStatus.testsLoaded,
+    heatmapVisible: state.scratchGui.timeSlider.heatmapVisible
 });
 
 const mapDispatchToProps = dispatch => ({
-    closeSlider: () => dispatch(closeSlider())
+    closeSlider: () => dispatch(closeSlider()),
+    setHeatmapVisible: heatmapVisible => dispatch(setHeatmapVisible(heatmapVisible))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Controls);
