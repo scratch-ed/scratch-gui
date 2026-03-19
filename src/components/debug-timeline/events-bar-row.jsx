@@ -39,7 +39,8 @@ const EventsBarRow = ({
     events,
     timeTicks,
     tickSize,
-    eventIsInGap
+    eventIsInGap,
+    onBroadcastClick
 }) => {
     const {visibleEvents, gapEvents} = groupEventsByGaps(events, timeTicks, tickSize, eventIsInGap);
 
@@ -60,6 +61,7 @@ const EventsBarRow = ({
                         position={left}
                         event={event}
                         transparent={false}
+                        onBroadcastClick={onBroadcastClick}
                     />
                 );
             })}
@@ -97,7 +99,8 @@ EventsBarRow.propTypes = {
     events: PropTypes.arrayOf(PropTypes.object),
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
     tickSize: PropTypes.number.isRequired,
-    eventIsInGap: PropTypes.func.isRequired
+    eventIsInGap: PropTypes.func.isRequired,
+    onBroadcastClick: PropTypes.func
 };
 
 export default EventsBarRow;

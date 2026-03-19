@@ -115,7 +115,7 @@ const getCompressedPlotPosition = (timestamp, ticks, lastTimeStamp, size) => {
 
 const Timeline = ({
     vm, paused, numberOfFrames, timeFrame: currentFrame, setFrame, timestamps, events,
-    zoomLevel, locateActive, onLocateActiveBullet
+    zoomLevel, locateActive, onLocateActiveBullet, onBroadcastClick
 }) => {
     const [highlight, setHighlight] = useState([]);
     const containerRef = useRef(null);
@@ -254,6 +254,7 @@ const Timeline = ({
                     setFrameRange={setFrameRange}
                     clearHighlighting={clearHighlighting}
                     highlightFrameRange={highlightFrameRange}
+                    onBroadcastClick={onBroadcastClick}
                 />
 
                 {
@@ -288,7 +289,8 @@ Timeline.propTypes = {
     events: PropTypes.arrayOf(PropTypes.object),
     zoomLevel: PropTypes.number,
     locateActive: PropTypes.bool,
-    onLocateActiveBullet: PropTypes.func
+    onLocateActiveBullet: PropTypes.func,
+    onBroadcastClick: PropTypes.func
 };
 
 const mapStateToProps = state => ({

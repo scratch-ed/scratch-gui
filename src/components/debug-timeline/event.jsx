@@ -10,7 +10,8 @@ const Event = ({
     activeTargetName,
     position,
     event,
-    transparent
+    transparent,
+    onBroadcastClick
 }) => {
     const affectsTarget = event.sprites.includes(activeTargetName);
 
@@ -26,6 +27,11 @@ const Event = ({
                 data-tip=""
                 style={{
                     left: `${position}px`
+                }}
+                onClick={() => {
+                    if (event.type === 'broadcast' && onBroadcastClick) {
+                        onBroadcastClick(event);
+                    }
                 }}
             >
                 <div
@@ -56,7 +62,8 @@ Event.propTypes = {
     position: PropTypes.number.isRequired,
     // eslint-disable-next-line react/forbid-prop-types
     event: PropTypes.object.isRequired,
-    transparent: PropTypes.bool.isRequired
+    transparent: PropTypes.bool.isRequired,
+    onBroadcastClick: PropTypes.func
 };
 
 export default Event;

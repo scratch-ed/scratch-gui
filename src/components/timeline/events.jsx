@@ -102,7 +102,7 @@ EventMarker.propTypes = {
 
 const shownEventTypes = ['click', 'key', 'broadcast', 'greenFlag'];
 
-const Events = ({events, mapTime, setFrameRange, clearHighlighting, highlightFrameRange}) => (
+const Events = ({events, mapTime, setFrameRange, clearHighlighting, highlightFrameRange, onBroadcastClick}) => (
     <div className={classNames(styles.flexRow, styles.rowMargin)}>
         {
             events.filter(e => shownEventTypes.includes(e.type)).map((event, index) => (
@@ -115,7 +115,12 @@ const Events = ({events, mapTime, setFrameRange, clearHighlighting, highlightFra
                         className={styles.eventIcon}
                         data-for={`event-${index}`}
                         data-tip=""
-                        onClick={() => setFrameRange(event.begin, event.end)}
+                        onClick={() => {
+                            if (event.type === 'broadcast' && onBroadcastClick) {
+                                onBroadcastClick(event);
+                            }
+                            setFrameRange(event.begin, event.end);
+                        }}
                         onMouseEnter={() => highlightFrameRange(event.begin, event.end)}
                         onMouseLeave={clearHighlighting}
                     >
@@ -147,7 +152,8 @@ Events.propTypes = {
     mapTime: PropTypes.func,
     setFrameRange: PropTypes.func,
     clearHighlighting: PropTypes.func,
-    highlightFrameRange: PropTypes.func
+    highlightFrameRange: PropTypes.func,
+    onBroadcastClick: PropTypes.func
 };
 
 export default Events;

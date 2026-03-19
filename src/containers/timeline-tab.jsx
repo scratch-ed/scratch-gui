@@ -14,7 +14,7 @@ import PropTypes from 'prop-types';
 import {locateActiveBullet, TimeSliderMode, zoomIn, zoomOut, zoomReset} from "../reducers/time-slider";
 import DebugTimeline from "../components/debug-timeline/debug-timeline.jsx";
 
-const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, timeSliderMode}) => {
+const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, onBroadcastClick, timeSliderMode}) => {
     const [debugMode, setDebugMode] = React.useState(false);
 
     const toggleDebugMode = () => {
@@ -56,7 +56,10 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, ti
                     </div>
                 )
             }
-            {timeSliderMode === TimeSliderMode.DEBUG && debugMode ? <DebugTimeline/> : <Timeline/>}
+            {timeSliderMode === TimeSliderMode.DEBUG && debugMode ?
+                <DebugTimeline onBroadcastClick={onBroadcastClick} /> :
+                <Timeline onBroadcastClick={onBroadcastClick} />
+            }
             <button
                 className={`${timelineStyles.floatButton} ${timelineStyles.zoomInButton}`}
                 onClick={onZoomIn}
@@ -106,6 +109,8 @@ TimelineTab.propTypes = {
     onZoomOut: PropTypes.func.isRequired,
     onResetZoom: PropTypes.func.isRequired,
     onLocateActiveBullet: PropTypes.func.isRequired,
+    onBroadcastClick: PropTypes.func,
+    timeSliderMode: PropTypes.string.isRequired
 };
 
 const mapStateToProps = state => ({

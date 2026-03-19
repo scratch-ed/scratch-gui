@@ -17,6 +17,7 @@ import SoundTab from '../../containers/sound-tab.jsx';
 import TestResultsTab from '../../containers/test-results-tab.jsx';
 import TimelineTab from '../../containers/timeline-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
+import BroadcastFlowchart from '../broadcast-flowchart/broadcast-flowchart.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
 import MenuBar from '../menu-bar/menu-bar.jsx';
@@ -60,6 +61,9 @@ const messages = defineMessages({
 let isRendererSupported = null;
 
 const GUIComponent = props => {
+    const [isTimelineSplit, setIsTimelineSplit] = React.useState(false);
+    const [selectedBroadcastEvent, setSelectedBroadcastEvent] = React.useState(null);
+
     const {
         accountNavOpen,
         activeTabIndex,
@@ -129,6 +133,7 @@ const GUIComponent = props => {
         showComingSoon,
         soundsTabVisible,
         stageSizeMode,
+        sprites,
         targetIsStage,
         telemetryModalVisible,
         testResultsTabVisible,
@@ -156,6 +161,18 @@ const GUIComponent = props => {
     if (isRendererSupported === null) {
         isRendererSupported = Renderer.isSupported();
     }
+
+    const handleBroadcastClick = (event) => {
+        setSelectedBroadcastEvent(event);
+        setIsTimelineSplit(true);
+    };
+
+    const handleBroadcastClose = () => {
+        setSelectedBroadcastEvent(null);
+        setIsTimelineSplit(false);
+    };
+
+    const allSprites = Object.values(sprites).map(sprite => sprite.name);
 
     return (<MediaQuery minWidth={layout.fullSizeMinWidth}>{isFullSize => {
         const stageSize = resolveStageSize(stageSizeMode, isFullSize);
@@ -392,10 +409,34 @@ const GUIComponent = props => {
                                 {timelineActive &&
                                     <TabPanel className={tabClassNames.tabPanel}>
                                         {timelineTabVisible ?
-                                            <Box className={styles.timelineContainer}>
-                                                <Box className={styles.timelineScroll}>
-                                                    <TimelineTab vm={vm}/>
+                                            <Box className={styles.splitTimelineContainer}>
+                                                <Box className={styles.timelineTop}>
+                                                    <TimelineTab vm={vm} onToggleSplit={() => setIsTimelineSplit(!isTimelineSplit)} onBroadcastClick={handleBroadcastClick} />
                                                 </Box>
+                                                {isTimelineSplit && (
+                                                    <Box className={styles.timelineBottom}>
+                                                        {selectedBroadcastEvent ? (
+                                                            <BroadcastFlowchart
+                                                                broadcastEvent={selectedBroadcastEvent}
+                                                                allSprites={allSprites}
+                                                                onClose={handleBroadcastClose}
+                                                            />
+                                                        ) : (
+                                                            <Blocks
+                                                                key={`${blocksId}/${theme}`}
+                                                                canUseCloud={canUseCloud}
+                                                                grow={1}
+                                                                isVisible={true}
+                                                                options={{
+                                                                    media: `${basePath}static/${themeMap[theme].blocksMediaFolder}/`
+                                                                }}
+                                                                stageSize={stageSize}
+                                                                theme={theme}
+                                                                vm={vm}
+                                                            />
+                                                        )}
+                                                    </Box>
+                                                )}
                                             </Box>
                                             :null
                                         }
@@ -545,7 +586,8 @@ const mapStateToProps = state => ({
     blocksId: state.scratchGui.timeTravel.year.toString(),
     stageSizeMode: state.scratchGui.stageSize.stageSize,
     theme: state.scratchGui.theme.theme,
-    heatmapVisible: state.scratchGui.timeSlider.heatmapVisible
+    heatmapVisible: state.scratchGui.timeSlider.heatmapVisible,
+    sprites: state.scratchGui.targets.sprites
 });
 
 export default injectIntl(connect(

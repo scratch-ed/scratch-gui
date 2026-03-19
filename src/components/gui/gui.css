@@ -335,3 +335,26 @@ $fade-out-distance: 15px;
 :global(.ReactModal__Body--open) {
     overflow: hidden;
 }
+
+.splitTimelineContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.timelineTop,
+.timelineBottom {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    /*overflow: hidden;*/
+}
+
+.timelineBottom {
+    border-top: 1px solid $ui-tertiary;
+}

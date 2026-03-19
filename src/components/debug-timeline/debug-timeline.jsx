@@ -18,7 +18,7 @@ const getActiveTargetName = (editingTarget, sprites, stage) => {
         return stage.name;
     }
 
-    return sprites[editingTarget].name;
+    return sprites[editingTarget]?.name;
 };
 
 const getCategories = (activeThreads, hasEvents) => {
@@ -164,7 +164,7 @@ const createBroadcastEventMap = (events, target) => {
 };
 
 const DebugTimeline = ({
-    vm, paused, activeThreads, zoomLevel, timeFrame, editingTarget, sprites, stage, timestamps, events, locateActive, setFrame, onLocateActiveBullet
+    vm, paused, activeThreads, zoomLevel, timeFrame, editingTarget, sprites, stage, timestamps, events, locateActive, setFrame, onLocateActiveBullet, onBroadcastClick
 }) => {
     const categories = getCategories(activeThreads, events !== null && events.length > 0);
 
@@ -254,6 +254,7 @@ const DebugTimeline = ({
                                             timeTicks={timeTicks}
                                             tickSize={tickSize}
                                             eventIsInGap={eventIsInGap}
+                                            onBroadcastClick={onBroadcastClick}
                                         />
                                     </Row>
                                     {Array.from(activeThreads.entries()).map(([threadId, {periods}]) => (
@@ -297,7 +298,8 @@ DebugTimeline.propTypes = {
     events: PropTypes.arrayOf(PropTypes.object),
     zoomLevel: PropTypes.number,
     locateActive: PropTypes.bool,
-    onLocateActiveBullet: PropTypes.func
+    onLocateActiveBullet: PropTypes.func,
+    onBroadcastClick: PropTypes.func
 };
 
 const mapStateToProps = state => ({
