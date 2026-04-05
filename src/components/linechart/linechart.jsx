@@ -326,8 +326,7 @@ const LineChart = ({ editingTarget, context, onClose }) => {
 };
 
 LineChart.propTypes = {
-    // eslint-disable-next-line react/forbid-prop-types
-    editingTarget: PropTypes.object,
+    editingTarget: PropTypes.string,
     // eslint-disable-next-line react/forbid-prop-types
     context: PropTypes.object,
     onClose: PropTypes.func
