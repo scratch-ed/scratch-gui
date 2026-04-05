@@ -234,6 +234,16 @@ $arrow-rounding: 0.125rem;
     border-radius: 50%;
     border: 1px solid black;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: black;
+}
+
+.tooltip-data-gap::before {
+    content: "+";
 }
 
 .event-icon-container {

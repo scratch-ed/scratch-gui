@@ -77,7 +77,6 @@ const EventsBarRow = ({
                             style={{
                                 left: `${gapGroup.left - 8}px`
                             }}
-                            title="Events in gap"
                         />
                         <ReactTooltip
                             id={`gap-${index}`}

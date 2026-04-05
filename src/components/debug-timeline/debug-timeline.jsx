@@ -87,6 +87,14 @@ const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
         const tickCount = Math.ceil((roundedEnd - roundedStart) / size) + 1;
         const ticks = Array.from({ length: tickCount }, (_, i) => roundedStart + (i * size));
 
+        if (!ticks.includes(0)) {
+            ticks.unshift(0);
+        }
+
+        if (!ticks.includes(timestampEnd)) {
+            ticks.push(timestampEnd);
+        }
+
         return timelineFiller(ticks, 14, size);
     }
 
@@ -142,7 +150,8 @@ const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
     timeTicks.add(timestampEnd);
 
     const ticks = Array.from(timeTicks).sort((a, b) => a - b);
-    return timelineFiller(ticks, 14, size);
+    const result = timelineFiller(ticks, 14, size);
+    return result;
 };
 
 const createBroadcastEventMap = (events, target) => {
