@@ -326,3 +326,23 @@ $arrow-rounding: 0.125rem;
     border-radius: 5px;
     cursor: pointer;
 }
+
+.debugControls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+.debugButtons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.chartButton {
+    align-self: flex-start;
+}

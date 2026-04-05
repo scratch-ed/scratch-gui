@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import styles from './broadcast-flowchart.css';
 
 const getBracketsElement = element => `["${element}"]`;
@@ -45,7 +46,8 @@ const createFlowchartScript = (direction, allSprites, broadcastEvent) => {
             + classes.join("\n") + "\n" + classDefReact + classDefCross;
 };
 
-const BroadcastFlowchart = ({ broadcastEvent, allSprites, onClose }) => {
+const BroadcastFlowchart = ({ broadcastEvent, sprites, onClose }) => {
+    const allSprites = Object.values(sprites).map(sprite => sprite.name);
     const mermaidRef = useRef(null);
     const containerRef = useRef(null);
     const diagramId = `mermaid-diagram-${Date.now()}`;
@@ -177,8 +179,13 @@ BroadcastFlowchart.propTypes = {
         sprites: PropTypes.arrayOf(PropTypes.string).isRequired,
         timestamp: PropTypes.number.isRequired,
     }),
-    allSprites: PropTypes.arrayOf(PropTypes.string).isRequired,
+    // eslint-disable-next-line react/forbid-prop-types
+    sprites: PropTypes.object,
     onClose: PropTypes.func
 };
 
-export default BroadcastFlowchart;
+const mapStateToProps = state => ({
+    sprites: state.scratchGui.targets.sprites
+});
+
+export default connect(mapStateToProps)(BroadcastFlowchart);

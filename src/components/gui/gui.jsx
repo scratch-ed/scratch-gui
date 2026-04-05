@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, {useState} from 'react';
 import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
 import {connect} from 'react-redux';
 import MediaQuery from 'react-responsive';
@@ -18,6 +18,7 @@ import TestResultsTab from '../../containers/test-results-tab.jsx';
 import TimelineTab from '../../containers/timeline-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
 import BroadcastFlowchart from '../broadcast-flowchart/broadcast-flowchart.jsx';
+import LineChart from '../linechart/linechart.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
 import MenuBar from '../menu-bar/menu-bar.jsx';
@@ -61,8 +62,8 @@ const messages = defineMessages({
 let isRendererSupported = null;
 
 const GUIComponent = props => {
-    const [isTimelineSplit, setIsTimelineSplit] = React.useState(false);
-    const [selectedBroadcastEvent, setSelectedBroadcastEvent] = React.useState(null);
+    const [isTimelineSplit, setIsTimelineSplit] = useState(false);
+    const [selectedBroadcastEvent, setSelectedBroadcastEvent] = useState(null);
 
     const {
         accountNavOpen,
@@ -133,7 +134,6 @@ const GUIComponent = props => {
         showComingSoon,
         soundsTabVisible,
         stageSizeMode,
-        sprites,
         targetIsStage,
         telemetryModalVisible,
         testResultsTabVisible,
@@ -162,7 +162,7 @@ const GUIComponent = props => {
         isRendererSupported = Renderer.isSupported();
     }
 
-    const handleBroadcastClick = (event) => {
+    const handleBroadcastClick = event => {
         setSelectedBroadcastEvent(event);
         setIsTimelineSplit(true);
     };
@@ -172,7 +172,14 @@ const GUIComponent = props => {
         setIsTimelineSplit(false);
     };
 
-    const allSprites = Object.values(sprites).map(sprite => sprite.name);
+    const handleLinechartToggle = show => {
+        if (show) {
+            setSelectedBroadcastEvent(null);
+            setIsTimelineSplit(true);
+        } else {
+            setIsTimelineSplit(false);
+        }
+    };
 
     return (<MediaQuery minWidth={layout.fullSizeMinWidth}>{isFullSize => {
         const stageSize = resolveStageSize(stageSizeMode, isFullSize);
@@ -411,30 +418,21 @@ const GUIComponent = props => {
                                         {timelineTabVisible ?
                                             <Box className={styles.splitTimelineContainer}>
                                                 <Box className={styles.timelineTop}>
-                                                    <TimelineTab vm={vm} onToggleSplit={() => setIsTimelineSplit(!isTimelineSplit)} onBroadcastClick={handleBroadcastClick} />
+                                                    <TimelineTab vm={vm} onBroadcastClick={handleBroadcastClick} onLinechartToggle={handleLinechartToggle} isTimelineSplit={isTimelineSplit} />
                                                 </Box>
                                                 {isTimelineSplit && (
                                                     <Box className={styles.timelineBottom}>
                                                         {selectedBroadcastEvent ? (
                                                             <BroadcastFlowchart
                                                                 broadcastEvent={selectedBroadcastEvent}
-                                                                allSprites={allSprites}
                                                                 onClose={handleBroadcastClose}
                                                             />
                                                         ) : (
-                                                            <Blocks
-                                                                key={`${blocksId}/${theme}`}
-                                                                canUseCloud={canUseCloud}
-                                                                grow={1}
-                                                                isVisible={true}
-                                                                options={{
-                                                                    media: `${basePath}static/${themeMap[theme].blocksMediaFolder}/`
-                                                                }}
-                                                                stageSize={stageSize}
-                                                                theme={theme}
-                                                                vm={vm}
+                                                            <LineChart
+                                                                onClose={() => handleLinechartToggle(false)}
                                                             />
-                                                        )}
+                                                        )
+                                                        }
                                                     </Box>
                                                 )}
                                             </Box>
@@ -587,7 +585,6 @@ const mapStateToProps = state => ({
     stageSizeMode: state.scratchGui.stageSize.stageSize,
     theme: state.scratchGui.theme.theme,
     heatmapVisible: state.scratchGui.timeSlider.heatmapVisible,
-    sprites: state.scratchGui.targets.sprites
 });
 
 export default injectIntl(connect(

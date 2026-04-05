@@ -1,0 +1,139 @@
+.container {
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 100%;
+}
+
+.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: #666;
+    font-style: italic;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    flex-shrink: 0;
+}
+
+.headerLeft {
+    flex: 1;
+}
+
+.title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.headerRight {
+    display: flex;
+    align-items: center;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 5px;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+    background-color: #e0e0e0;
+}
+
+.variableSelector {
+    padding: 8px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fafafa;
+    flex-shrink: 0;
+}
+
+.variableSelector h4 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+}
+
+.variableList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.variableItem {
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    color: #555;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.variableItem:hover {
+    background-color: #e8e8e8;
+}
+
+.variableItem input {
+    margin-right: 6px;
+    cursor: pointer;
+}
+
+.diagramContainer {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    background: #fff;
+    min-height: 0;
+}
+
+.diagramContainer.dragging {
+    cursor: grabbing;
+}
+
+.chartWrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.chartWrapper.dragging {
+    transition: none;
+}
+
+.emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #666;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
+}

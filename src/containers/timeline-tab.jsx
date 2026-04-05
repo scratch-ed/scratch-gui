@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Box from '../components/box/box.jsx';
 import Timeline from '../components/timeline/timeline.jsx';
@@ -14,44 +14,70 @@ import PropTypes from 'prop-types';
 import {locateActiveBullet, TimeSliderMode, zoomIn, zoomOut, zoomReset} from "../reducers/time-slider";
 import DebugTimeline from "../components/debug-timeline/debug-timeline.jsx";
 
-const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, onBroadcastClick, timeSliderMode}) => {
-    const [debugMode, setDebugMode] = React.useState(false);
+const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, onBroadcastClick, onLinechartToggle, timeSliderMode, isTimelineSplit}) => {
+    const [debugMode, setDebugMode] = useState(false);
+    const [showLinechart, setShowLinechart] = useState(false);
+
 
     const toggleDebugMode = () => {
         setDebugMode(!debugMode);
+        setShowLinechart(false);
     };
+
+    const toggleLinechart = () => {
+        if (!showLinechart) {
+            setShowLinechart(true);
+
+            if (onLinechartToggle) {
+                onLinechartToggle(true);
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (!isTimelineSplit) {
+            setShowLinechart(false);
+        }
+    }, [isTimelineSplit]);
 
     return (
         <Box className={styles.wrapper}>
             {
                 timeSliderMode === TimeSliderMode.DEBUG && (
-                    <div style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: "1rem",
-                        marginTop: "20px",
-                        marginBottom: "20px",
-                    }}>
+                    <div className={timelineStyles.debugControls}>
+                        <div className={timelineStyles.debugButtons}>
+                            <button
+                                className={timelineStyles.mode}
+                                style={{
+                                    backgroundColor: debugMode ? "#f4f3f1" : "#4CAF50",
+                                    color: debugMode ? "black" : "white",
+                                }}
+                                onClick={toggleDebugMode}
+                            >
+                                Standard Mode
+                            </button>
+                            <button
+                                className={timelineStyles.mode}
+                                style={{
+                                    backgroundColor: debugMode ? "#4CAF50" : "#f4f3f1",
+                                    color: debugMode ? "white" : "black",
+                                }}
+                                onClick={toggleDebugMode}
+                            >
+                                Debug Mode
+                            </button>
+                        </div>
                         <button
-                            className={timelineStyles.mode}
+                            className={`${timelineStyles.mode} ${timelineStyles.chartButton}`}
                             style={{
-                                backgroundColor: debugMode ? "#f4f3f1" : "#4CAF50",
-                                color: debugMode ? "black" : "white",
+                                backgroundColor: showLinechart ? "#cccccc" : "#f4f3f1",
+                                color: showLinechart ? "#666666" : "black",
+                                cursor: showLinechart ? "not-allowed" : "pointer",
                             }}
-                            onClick={toggleDebugMode}
+                            onClick={toggleLinechart}
+                            disabled={showLinechart}
                         >
-                            Standard Mode
-                        </button>
-                        <button
-                            className={timelineStyles.mode}
-                            style={{
-                                backgroundColor: debugMode ? "#4CAF50" : "#f4f3f1",
-                                color: debugMode ? "white" : "black",
-                            }}
-                            onClick={toggleDebugMode}
-                        >
-                            Debug Mode
+                            Show Chart
                         </button>
                     </div>
                 )
@@ -110,7 +136,9 @@ TimelineTab.propTypes = {
     onResetZoom: PropTypes.func.isRequired,
     onLocateActiveBullet: PropTypes.func.isRequired,
     onBroadcastClick: PropTypes.func,
-    timeSliderMode: PropTypes.string.isRequired
+    onLinechartToggle: PropTypes.func,
+    timeSliderMode: PropTypes.string.isRequired,
+    isTimelineSplit: PropTypes.bool
 };
 
 const mapStateToProps = state => ({
