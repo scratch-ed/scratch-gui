@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -24,50 +23,12 @@ ChartJS.register(
     Legend
 );
 
-const LineChart = ({ editingTarget, context, onClose }) => {
+const LineChart = ({ selectedVariables, spriteData }) => {
     const containerRef = useRef(null);
 
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-    const [selectedVariables, setSelectedVariables] = useState(new Set()); // No default selection
-    const [availableVariables, setAvailableVariables] = useState(['size', 'x', 'y', 'direction']);
-    const [spriteData, setSpriteData] = useState(null);
-
-    // Update sprite data when editing target or context changes
-    useEffect(() => {
-        const vars = new Set(['size', 'x', 'y', 'direction']);
-
-        if (!context || !context.log || !editingTarget) {
-            setAvailableVariables(Array.from(vars));
-            setSpriteData(null);
-            return;
-        }
-
-        try {
-            const log = context.log;
-            const data = log.extractSpriteData(editingTarget);
-            setSpriteData(data);
-
-            if (data && data.variables) {
-                // Add all variables from the log data (includes both sprite and stage variables)
-                Object.keys(data.variables).forEach(variableName => {
-                    vars.add(variableName);
-                });
-            }
-        } catch (error) {
-            console.error('Error getting available variables:', error);
-            setSpriteData(null);
-        }
-
-        setAvailableVariables(Array.from(vars));
-    }, [editingTarget, context]);
-
-    const handleClose = () => {
-        if (onClose) {
-            onClose();
-        }
-    };
 
     const handleMouseDown = e => {
         setIsDragging(true);
@@ -93,7 +54,6 @@ const LineChart = ({ editingTarget, context, onClose }) => {
     const getTargetData = () => {
         return spriteData;
     };
-
 
     const prepareChartData = (selectedVariables) => {
         const spriteData = getTargetData();
@@ -126,6 +86,10 @@ const LineChart = ({ editingTarget, context, onClose }) => {
                 data = spriteData.direction;
                 label = 'Direction';
                 borderColor = 'rgb(255, 205, 86)';
+            } else if (variableName === 'visible') {
+                data = spriteData.visible;
+                label = 'Visibility';
+                borderColor = 'rgb(128, 0, 128)';
             } else {
                 data = spriteData.variables[variableName] || [];
                 label = variableName.charAt(0).toUpperCase() + variableName.slice(1);
@@ -145,17 +109,6 @@ const LineChart = ({ editingTarget, context, onClose }) => {
         return { labels, datasets };
     };
 
-    const toggleVariable = (variableName) => {
-        const newSelected = new Set(selectedVariables);
-        if (newSelected.has(variableName)) {
-            newSelected.delete(variableName);
-        } else {
-            newSelected.add(variableName);
-        }
-        setSelectedVariables(newSelected);
-    };
-
-
     useEffect(() => {
         const handleGlobalMouseMove = e => handleMouseMove(e);
         const handleGlobalMouseUp = () => handleMouseUp();
@@ -170,16 +123,6 @@ const LineChart = ({ editingTarget, context, onClose }) => {
             document.removeEventListener('mouseup', handleGlobalMouseUp);
         };
     }, [isDragging, dragStart]);
-
-    if (!editingTarget) {
-        return (
-            <div className={styles.container}>
-                <div className={styles.placeholder}>
-                    Select a sprite to view variable line charts
-                </div>
-            </div>
-        );
-    }
 
     const chartData = prepareChartData(selectedVariables);
     const chartOptions = {
@@ -280,44 +223,20 @@ const LineChart = ({ editingTarget, context, onClose }) => {
 
     return (
         <div className={styles.container}>
-            <div className={styles.variableSelector}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h4>Select Variables to Display:</h4>
-                    <button onClick={handleClose} className={styles.closeButton}>×</button>
-                </div>
-                <div className={styles.variableList}>
-                    {availableVariables.map(variableName => (
-                        <label
-                            key={variableName}
-                            className={styles.variableItem}
-                        >
-                            <input
-                                type="checkbox"
-                                checked={selectedVariables.has(variableName)}
-                                onChange={() => toggleVariable(variableName)}
-                            />
-                            {variableName}
-                        </label>
-                    ))}
-                </div>
-            </div>
             <div
                 className={`${styles.diagramContainer} ${isDragging ? styles.dragging : ''}`}
                 ref={containerRef}
                 onMouseDown={handleMouseDown}
             >
-                <div
-                    className={`${styles.chartWrapper} ${isDragging ? styles.dragging : ''}`}
-                    style={{
-                        transform: `translate(${position.x}px, ${position.y}px)`
-                    }}
-                >
+                <div className={styles.chartWrapper}>
                     {selectedVariables.size === 0 ? (
                         <div className={styles.emptyState}>
                             Select variables above to display them in the chart
                         </div>
                     ) : (
-                        <Line data={chartData} options={chartOptions} />
+                        <div className={styles.chartInner}>
+                            <Line data={chartData} options={chartOptions} />
+                        </div>
                     )}
                 </div>
             </div>
@@ -326,15 +245,8 @@ const LineChart = ({ editingTarget, context, onClose }) => {
 };
 
 LineChart.propTypes = {
-    editingTarget: PropTypes.string,
-    // eslint-disable-next-line react/forbid-prop-types
-    context: PropTypes.object,
-    onClose: PropTypes.func
+    selectedVariables: PropTypes.object,
+    spriteData: PropTypes.object
 };
 
-const mapStateToProps = state => ({
-    editingTarget: state.scratchGui.targets.editingTarget,
-    context: state.scratchGui.timeSlider.context
-});
-
-export default connect(mapStateToProps)(LineChart);
+export default LineChart;

@@ -77,7 +77,7 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, on
                             onClick={toggleLinechart}
                             disabled={showLinechart}
                         >
-                            Show Chart
+                            More Properties
                         </button>
                     </div>
                 )

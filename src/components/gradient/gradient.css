@@ -1,0 +1,97 @@
+.gradientContainer {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.diagramContainer {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: white;
+    overflow: auto;
+    cursor: move;
+}
+
+.diagramContainer.dragging {
+    cursor: grabbing;
+}
+
+.gradientWrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    transition: transform 0.1s ease-out;
+}
+
+.gradientWrapper.centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gradientWrapper.dragging {
+    cursor: grabbing;
+}
+
+.emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
+}
+
+.gradientsContainer {
+    padding: 20px;
+    width: 100%;
+    flex: 1;
+}
+
+.gradientItem {
+    margin-bottom: 20px;
+}
+
+.divider {
+    height: 2px;
+    background-color: #ccc;
+    margin: 20px 0;
+    width: 100%;
+}
+
+.gradientInfo {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.legendGradient {
+    width: 200px;
+    height: 20px;
+    background: linear-gradient(to right, rgb(150, 182, 255), rgb(0, 61, 153));
+    border: 1px solid #ddd;
+    margin: 0 10px;
+}
+
+.gradientCanvas {
+    display: block;
+    margin: 10px 0;
+}

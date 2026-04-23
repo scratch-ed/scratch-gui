@@ -18,7 +18,7 @@ import TestResultsTab from '../../containers/test-results-tab.jsx';
 import TimelineTab from '../../containers/timeline-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
 import BroadcastFlowchart from '../broadcast-flowchart/broadcast-flowchart.jsx';
-import LineChart from '../linechart/linechart.jsx';
+import GraphContainer from '../graph-container/graph-container.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
 import MenuBar from '../menu-bar/menu-bar.jsx';
@@ -428,7 +428,7 @@ const GUIComponent = props => {
                                                                 onClose={handleBroadcastClose}
                                                             />
                                                         ) : (
-                                                            <LineChart
+                                                            <GraphContainer
                                                                 onClose={() => handleLinechartToggle(false)}
                                                             />
                                                         )

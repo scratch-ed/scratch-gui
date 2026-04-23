@@ -9,7 +9,7 @@ const getConcatenatedElements = (elements, startId) => elements
     .map((sprite, index) => `${startId + index}${getBracketsElement(sprite)}`)
     .join(' & ');
 
-const createFlowchartScript = (direction, allSprites, broadcastEvent) => {
+const createFlowchartScript = (direction, allTargets, broadcastEvent) => {
     const arrowReact = '-->';
     const arrowCross = '--x';
     const broadcastId = 'Broadcast';
@@ -21,7 +21,7 @@ const createFlowchartScript = (direction, allSprites, broadcastEvent) => {
 
     let id = 1;
     const reacted = broadcastEvent["sprites"];
-    const notReacted = allSprites.filter(sprite => !reacted.includes(sprite));
+    const notReacted = allTargets.filter(target => !reacted.includes(target));
 
     const flowchartInit = `flowchart ${direction}\n`;
     const flowchartStart = `${id}${getBracketsElement(broadcastEvent.data.source)}${arrowReact} ${broadcastId}{"${broadcastEvent.data.name.toLowerCase()}"}\n`;
@@ -46,8 +46,10 @@ const createFlowchartScript = (direction, allSprites, broadcastEvent) => {
             + classes.join("\n") + "\n" + classDefReact + classDefCross;
 };
 
-const BroadcastFlowchart = ({ broadcastEvent, sprites, onClose }) => {
+const BroadcastFlowchart = ({ broadcastEvent, sprites, stage, onClose }) => {
     const allSprites = Object.values(sprites).map(sprite => sprite.name);
+    const stageName = stage.name || 'Stage';
+    const allTargets = [...allSprites, stageName];
     const mermaidRef = useRef(null);
     const containerRef = useRef(null);
     const diagramId = `mermaid-diagram-${Date.now()}`;
@@ -84,8 +86,8 @@ const BroadcastFlowchart = ({ broadcastEvent, sprites, onClose }) => {
     };
 
     useEffect(() => {
-        if (window.mermaid && broadcastEvent && allSprites) {
-            const flowchartScript = createFlowchartScript('TB', allSprites, broadcastEvent);
+        if (window.mermaid && broadcastEvent && allTargets) {
+            const flowchartScript = createFlowchartScript('TB', allTargets, broadcastEvent);
 
             if (mermaidRef.current) {
                 mermaidRef.current.innerHTML = '';
@@ -113,7 +115,7 @@ const BroadcastFlowchart = ({ broadcastEvent, sprites, onClose }) => {
                 }
             }
         }
-    }, [broadcastEvent, allSprites, diagramId]);
+    }, [broadcastEvent, allTargets, diagramId]);
 
     useEffect(() => {
         const handleGlobalMouseMove = e => handleMouseMove(e);
@@ -130,7 +132,7 @@ const BroadcastFlowchart = ({ broadcastEvent, sprites, onClose }) => {
         };
     }, [isDragging, dragStart]);
 
-    if (!broadcastEvent || !allSprites) {
+    if (!broadcastEvent || !allTargets) {
         return (
             <div className={styles.container}>
                 <div className={styles.placeholder}>
@@ -181,11 +183,14 @@ BroadcastFlowchart.propTypes = {
     }),
     // eslint-disable-next-line react/forbid-prop-types
     sprites: PropTypes.object,
+    // eslint-disable-next-line react/forbid-prop-types
+    stage: PropTypes.object,
     onClose: PropTypes.func
 };
 
 const mapStateToProps = state => ({
-    sprites: state.scratchGui.targets.sprites
+    sprites: state.scratchGui.targets.sprites,
+    stage: state.scratchGui.targets.stage
 });
 
 export default connect(mapStateToProps)(BroadcastFlowchart);
