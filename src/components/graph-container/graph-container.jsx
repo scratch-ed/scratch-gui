@@ -11,8 +11,7 @@ const GraphContainer = ({ editingTarget, context, onClose }) => {
     const [availableVariables, setAvailableVariables] = useState(['size', 'x', 'y', 'direction', 'visible']);
     const [spriteData, setSpriteData] = useState(null);
 
-    // Update sprite data when editing target or context changes
-    useEffect(() => {
+    const fetchSpriteData = () => {
         const vars = new Set(['size', 'x', 'y', 'direction', 'visible']);
 
         if (!context || !context.log || !editingTarget) {
@@ -38,6 +37,11 @@ const GraphContainer = ({ editingTarget, context, onClose }) => {
         }
 
         setAvailableVariables(Array.from(vars));
+    };
+
+    // Update sprite data when editing target or context changes
+    useEffect(() => {
+        fetchSpriteData();
     }, [editingTarget, context]);
 
     const handleVariableToggle = (variable) => {
@@ -52,6 +56,10 @@ const GraphContainer = ({ editingTarget, context, onClose }) => {
 
     const toggleView = () => {
         setActiveView(activeView === 'linechart' ? 'gradient' : 'linechart');
+    };
+
+    const handleRefresh = () => {
+        fetchSpriteData();
     };
 
     return (
@@ -82,6 +90,12 @@ const GraphContainer = ({ editingTarget, context, onClose }) => {
                     </div>
                 </div>
                 <div className={styles.headerRight}>
+                    <button
+                        className={styles.refreshButton}
+                        onClick={handleRefresh}
+                    >
+                        ↻
+                    </button>
                     <button
                         className={styles.closeButton}
                         onClick={onClose}
