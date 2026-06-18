@@ -5,10 +5,6 @@ import styles from './broadcast-flowchart.css';
 
 const getBracketsElement = element => `["${element}"]`;
 
-const getConcatenatedElements = (elements, startId) => elements
-    .map((sprite, index) => `${startId + index}${getBracketsElement(sprite)}`)
-    .join(' & ');
-
 const createFlowchartScript = (direction, allTargets, broadcastEvent) => {
     const arrowReact = '-->';
     const arrowCross = '--x';
@@ -20,30 +16,31 @@ const createFlowchartScript = (direction, allTargets, broadcastEvent) => {
     const classDefCross = `classDef ${classCross} stroke-width:1px, stroke-dasharray:none, stroke:#FF5978, fill:#FFDFE5, color:#8E2236\n`;
 
     let id = 1;
-    const reacted = broadcastEvent["sprites"];
-    const notReacted = allTargets.filter(target => !reacted.includes(target));
+    const reacted = new Set(broadcastEvent["sprites"]);
+
+    // Combine all targets with their reaction status, then sort by name
+    const allTargetsWithStatus = allTargets.map(target => ({
+        name: target,
+        reacted: reacted.has(target)
+    })).sort((a, b) => a.name.localeCompare(b.name));
 
     const flowchartInit = `flowchart ${direction}\n`;
     const flowchartStart = `${id}${getBracketsElement(broadcastEvent.data.source)}${arrowReact} ${broadcastId}{"${broadcastEvent.data.name.toLowerCase()}"}\n`;
 
     id++;
-    const flowchartReacted = `${broadcastId} ${arrowReact} ${getConcatenatedElements(reacted, id)}\n`;
-
+    const flowchartConnections = [];
     const classes = [];
-    for (let i = 0; i < reacted.length; i++) {
-        classes.push(`${id}:::${classReact}`);
+
+    for (const target of allTargetsWithStatus) {
+        const arrow = target.reacted ? arrowReact : arrowCross;
+        const className = target.reacted ? classReact : classCross;
+        flowchartConnections.push(`${broadcastId} ${arrow} ${id}${getBracketsElement(target.name)}`);
+        classes.push(`${id}:::${className}`);
         id++;
     }
 
-    const flowchartNotReacted = `${broadcastId} ${arrowCross} ${getConcatenatedElements(notReacted, id)}\n`;
-
-    for (let i = 0; i < notReacted.length; i++) {
-        classes.push(`${id}:::${classCross}`);
-        id++;
-    }
-
-    return flowchartInit + flowchartStart + flowchartReacted + flowchartNotReacted
-            + classes.join("\n") + "\n" + classDefReact + classDefCross;
+    return flowchartInit + flowchartStart + flowchartConnections.join('\n')
+            + '\n' + classes.join('\n') + '\n' + classDefReact + classDefCross;
 };
 
 const BroadcastFlowchart = ({ broadcastEvent, sprites, stage, onClose }) => {
