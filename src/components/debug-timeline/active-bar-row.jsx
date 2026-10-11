@@ -18,6 +18,7 @@ const ActiveBarElement = ({
     const width = getCompressedPlotPosition(end, timeTicks, tickSize) - left;
 
     const colorClass = styles[EVENT_INFO[activeThread.topBlockName].color];
+    const waitPeriods = activeThread.waitPeriods || [];
 
     return (
         <div
@@ -33,7 +34,30 @@ const ActiveBarElement = ({
                 <div
                     className={`${styles.trackBarContent} ${colorClass}`}
                     onClick={() => onSelectBar(activeThread.start, end)}
-                />
+                >
+                    {waitPeriods.map((period, index) => {
+                        const waitEnd = period.end === null ? end : period.end;
+                        const waitLeft = getCompressedPlotPosition(
+                            period.start, timeTicks, tickSize
+                        ) - left;
+                        const waitWidth = getCompressedPlotPosition(
+                            waitEnd, timeTicks, tickSize
+                        ) - getCompressedPlotPosition(period.start, timeTicks, tickSize);
+
+                        return (
+                            <div
+                                key={index}
+                                className={styles.waitBarContent}
+                                style={{
+                                    left: `${waitLeft}px`,
+                                    width: `${waitWidth}px`
+                                }}
+                            >
+                                <span className={styles.waitMarker}>{'WAIT'}</span>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
@@ -45,7 +69,11 @@ ActiveBarElement.propTypes = {
         topBlockName: PropTypes.string.isRequired,
         start: PropTypes.number.isRequired,
         end: PropTypes.number,
-        hasEnded: PropTypes.bool.isRequired
+        hasEnded: PropTypes.bool.isRequired,
+        waitPeriods: PropTypes.arrayOf(PropTypes.shape({
+            start: PropTypes.number.isRequired,
+            end: PropTypes.number
+        })).isRequired
     }).isRequired,
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
     lastTimestamp: PropTypes.number.isRequired,

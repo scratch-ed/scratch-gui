@@ -31,6 +31,36 @@ import {createContextWithVm, Context, snapshotFromVm, snapshotFromSb3, runWithCo
 import omit from 'lodash.omit';
 import bindAll from 'lodash.bindall';
 
+const WAITING_THREAD_STATUSES = new Set([1, 2, 3]);
+const WAITING_BLOCK_OPCODES = new Set([
+    'control_wait',
+    'control_wait_until',
+    'event_broadcastandwait',
+    'sensing_askandwait'
+]);
+
+const isWaitingThread = (thread, sprites, stage) => {
+    if (WAITING_THREAD_STATUSES.has(thread.status)) {
+        return true;
+    }
+
+    const target = stage && thread.targetId === stage.id ? stage : sprites[thread.targetId];
+    const stack = thread.stack || [];
+    const currentBlock = target && target.blocks &&
+        stack.map(blockId => target.blocks[blockId]).find(block =>
+            block && WAITING_BLOCK_OPCODES.has(block.opcode)
+        );
+
+    if (currentBlock) {
+        return true;
+    }
+
+    return (thread.stackFrames || []).some(frame => {
+        const context = frame.executionContext;
+        return context && context.timer && typeof context.duration === 'number';
+    });
+};
+
 const DebuggerAndTesterHOC = function (WrappedComponent) {
     class DebuggerAndTesterWrapper extends React.Component {
         constructor (props) {
@@ -339,12 +369,16 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                             jsonThread.topBlock,
                             target.topBlockName
                         );
+                        const waiting = isWaitingThread(
+                            jsonThread, this.props.sprites, this.props.stage
+                        );
 
                         this.props.addActiveThread(
                             jsonThread.topBlock,
                             target,
                             options,
-                            snapshot.timestamp
+                            snapshot.timestamp,
+                            waiting
                         );
 
                         processed.push(jsonThread.topBlock);
@@ -382,9 +416,15 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
 
                     if (jsonThread.targetId === this.props.editingTarget) {
                         if (threadMap.has(jsonThread.topBlock)) {
+                            // If the thread already exists, we need to update it.
                             const activeObject = threadMap.get(jsonThread.topBlock);
                             const activeList = activeObject.periods;
-                            if (activeList[activeList.length - 1].hasEnded) {
+                            const lastPeriod = activeList[activeList.length - 1];
+                            const waiting = isWaitingThread(
+                                jsonThread, this.props.sprites, this.props.stage
+                            );
+                            if (lastPeriod.hasEnded) {
+                                // If the thread has ended, we need to add a new active period for it.
                                 const target = this.getDataTarget(
                                     jsonThread.targetId, jsonThread.topBlock, this.props.sprites, this.props.stage
                                 );
@@ -392,10 +432,29 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                                     ...target,
                                     start: snapshot.timestamp,
                                     end: null,
-                                    hasEnded: false
+                                    hasEnded: false,
+                                    waitPeriods: waiting ? [{
+                                        start: snapshot.timestamp,
+                                        end: null
+                                    }] : []
                                 });
+                            } else if (waiting) {
+                                // If the thread is waiting, we need to check if the last wait period has ended. If it has, we need to add a new wait period.
+                                const waitPeriods = lastPeriod.waitPeriods;
+                                const lastWaitPeriod = waitPeriods[waitPeriods.length - 1];
+                                if (!lastWaitPeriod || lastWaitPeriod.end !== null) {
+                                    waitPeriods.push({start: snapshot.timestamp, end: null});
+                                }
+                            } else {
+                                // If the thread is not waiting, we need to check if the last wait period has ended. If it hasn't, we need to end it.
+                                const waitPeriods = lastPeriod.waitPeriods;
+                                const lastWaitPeriod = waitPeriods[waitPeriods.length - 1];
+                                if (lastWaitPeriod && lastWaitPeriod.end === null) {
+                                    lastWaitPeriod.end = snapshot.timestamp;
+                                }
                             }
                         } else {
+                            // If the thread doesn't exist, we need to create a new active period for it.
                             const target = this.getDataTarget(
                                 jsonThread.targetId, jsonThread.topBlock, this.props.sprites, this.props.stage
                             );
@@ -408,7 +467,13 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                                 ...target,
                                 start: snapshot.timestamp,
                                 end: null,
-                                hasEnded: false
+                                hasEnded: false,
+                                waitPeriods: isWaitingThread(
+                                    jsonThread, this.props.sprites, this.props.stage
+                                ) ? [{
+                                    start: snapshot.timestamp,
+                                    end: null
+                                }] : []
                             }];
 
                             threadMap.set(jsonThread.topBlock, {
@@ -432,6 +497,10 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                     const list = threadMap.get(topBlock).periods;
                     const lastItem = list[list.length - 1];
 
+                    const lastWaitPeriod = lastItem.waitPeriods[lastItem.waitPeriods.length - 1];
+                    if (lastWaitPeriod && lastWaitPeriod.end === null) {
+                        lastWaitPeriod.end = snapshot.timestamp;
+                    }
                     lastItem.end = snapshot.timestamp;
                     lastItem.hasEnded = true;
                 }
@@ -698,7 +767,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         addEvent: event => dispatch(addEvent(event)),
         setEvents: events => dispatch(setEvents(events)),
         setActiveThreads: threads => dispatch(setActiveThreads(threads)),
-        addActiveThread: (topBlock, target, options, timestamp) => dispatch(addActiveThread(topBlock, target, options, timestamp)),
+        addActiveThread: (topBlock, target, options, timestamp, waiting) =>
+            dispatch(addActiveThread(topBlock, target, options, timestamp, waiting)),
         endActiveThread: (topBlock, timestamp) => dispatch(endActiveThread(topBlock, timestamp)),
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),
