@@ -11,7 +11,7 @@ import {locateActiveBullet, setTimeFrame} from '../../reducers/time-slider';
 import EventsBarRow from './events-bar-row.jsx';
 import GridProvider from './grid-provider.jsx';
 import VM from "scratch-vm";
-import {getBounds} from "./helpers.ts";
+import {isEventInCompressedGap} from './gap-utils.js';
 
 const getActiveTargetName = (editingTarget, sprites, stage) => {
     if (editingTarget === stage.id) {
@@ -72,7 +72,7 @@ const timelineFiller = (timeTicks, minElements, size) => {
     return result.sort((a, b) => a - b);
 };
 
-const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
+const generateTimelineCuts = (activeThreads, timestampEnd, size) => {
     let combined = Array.from(activeThreads.values()).flatMap(threadData =>
         threadData.periods.map(activeElement =>
             (activeElement.end === null ? [activeElement.start, timestampEnd] : [activeElement.start, activeElement.end])
@@ -97,13 +97,6 @@ const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
 
         return timelineFiller(ticks, 14, size);
     }
-
-
-    if (events && events.length > 0) {
-        // add the last event to the combined array to make sure no icon is out of bounds
-        combined.push([events[events.length - 1].begin, events[events.length - 1].end]);
-    }
-
     if (combined.length === 0) {
         return [];
     }
@@ -183,7 +176,7 @@ const DebugTimeline = ({
     const tickSize = Math.round(100 * zoomLevel);
 
     const timestampEnd = Math.ceil(timestamps[timestamps.length - 1] / tickSize) * tickSize;
-    const timeTicks = generateTimelineCuts(activeThreads, events, timestampEnd, tickSize);
+    const timeTicks = generateTimelineCuts(activeThreads, timestampEnd, tickSize);
 
     const timestampToIndex = timestamps.reduce((map, item, index) => {
         map[item] = index;
@@ -208,8 +201,7 @@ const DebugTimeline = ({
     };
 
     const eventIsInGap = eventTime => {
-        const bounds = getBounds(eventTime, tickSize);
-        return !timeTicks.includes(bounds.lower) || !timeTicks.includes(bounds.upper);
+        return isEventInCompressedGap(eventTime, timeTicks, tickSize);
     };
 
     const rulerIndicatorRef = useRef(null);
