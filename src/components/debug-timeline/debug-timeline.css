@@ -222,6 +222,30 @@
     background-color: #0f172a;
 }
 
+.wait-bar-content {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    opacity: 1;
+    background-color: #ff8c42;
+    pointer-events: none;
+}
+
+.wait-marker {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    padding: 0.2rem 0.4rem;
+    color: white;
+    background-color: #c2410c;
+    border-radius: 0.2rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
 /* CATEGORY CSS */
 .category-list-container {
     display: flex;

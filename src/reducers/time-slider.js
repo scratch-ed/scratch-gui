@@ -102,26 +102,44 @@ const reducer = function (state, action) {
             activeThreads: action.threads
         });
     case ADD_ACTIVE_THREAD:
-        const {topBlock, target, options, timestamp} = action;
+        const {topBlock, target, options, timestamp, waiting} = action;
         const currentThreadMap = new Map(state.activeThreads);
 
         if (currentThreadMap.has(topBlock)) {
             const activeObject = currentThreadMap.get(topBlock);
             const activeList = activeObject.periods;
-            if (activeList[activeList.length - 1].hasEnded) {
+            const lastPeriod = activeList[activeList.length - 1];
+            if (lastPeriod.hasEnded) {
+                // If the thread has ended, we need to add a new active period for it.
                 activeList.push({
                     ...target,
                     start: timestamp,
                     end: null,
-                    hasEnded: false
+                    hasEnded: false,
+                    waitPeriods: waiting ? [{start: timestamp, end: null}] : []
                 });
+            } else if (waiting) {
+                // If the thread is waiting, we need to check if the last wait period has ended. If it has, we need to add a new wait period.
+                const waitPeriods = lastPeriod.waitPeriods;
+                const lastWaitPeriod = waitPeriods[waitPeriods.length - 1];
+                if (!lastWaitPeriod || lastWaitPeriod.end !== null) {
+                    waitPeriods.push({start: timestamp, end: null});
+                }
+            } else {
+                // If the thread is not waiting, we need to check if the last wait period has ended. If it hasn't, we need to end it.
+                const waitPeriods = lastPeriod.waitPeriods;
+                const lastWaitPeriod = waitPeriods[waitPeriods.length - 1];
+                if (lastWaitPeriod && lastWaitPeriod.end === null) {
+                    lastWaitPeriod.end = timestamp;
+                }
             }
         } else {
             const activeArray = [{
                 ...target,
                 start: timestamp,
                 end: null,
-                hasEnded: false
+                hasEnded: false,
+                waitPeriods: waiting ? [{start: timestamp, end: null}] : []
             }];
 
             currentThreadMap.set(topBlock, {
@@ -143,6 +161,10 @@ const reducer = function (state, action) {
             const lastItem = activeList[activeList.length - 1];
 
             if (!lastItem.hasEnded) {
+                const lastWaitPeriod = lastItem.waitPeriods[lastItem.waitPeriods.length - 1];
+                if (lastWaitPeriod && lastWaitPeriod.end === null) {
+                    lastWaitPeriod.end = endTimestamp;
+                }
                 lastItem.end = endTimestamp;
                 lastItem.hasEnded = true;
             }
@@ -280,13 +302,14 @@ const setActiveThreads = function (threads) {
     };
 };
 
-const addActiveThread = function (topBlock, target, options, timestamp) {
+const addActiveThread = function (topBlock, target, options, timestamp, waiting) {
     return {
         type: ADD_ACTIVE_THREAD,
         topBlock: topBlock,
         target: target,
         options: options,
-        timestamp: timestamp
+        timestamp: timestamp,
+        waiting: waiting
     };
 };
 
