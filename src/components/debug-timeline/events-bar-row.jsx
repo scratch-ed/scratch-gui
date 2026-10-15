@@ -1,10 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {getCompressedGap, getCompressedGapPosition} from './gap-utils.js';
+import {BAR_WIDTH} from './constants.ts';
 import {getCompressedPlotPosition} from './helpers.ts';
-import ReactTooltip from "react-tooltip";
+import ReactTooltip from 'react-tooltip';
 import styles from '../timeline/timeline.css';
-import GapTooltip from "./gap-tooltip.jsx";
-import Event from "./event.jsx";
+import GapTooltip from './gap-tooltip.jsx';
+import Event from './event.jsx';
 
 const groupEventsByGaps = (events, timeTicks, tickSize, eventIsInGap) => {
     const visibleEvents = [];
@@ -12,16 +14,18 @@ const groupEventsByGaps = (events, timeTicks, tickSize, eventIsInGap) => {
 
     for (const event of events) {
         if (eventIsInGap(event.begin)) {
-            const position = getCompressedPlotPosition(
+            const gap = getCompressedGap(event.begin, timeTicks, tickSize);
+            const position = getCompressedGapPosition(
                 event.begin,
                 timeTicks,
-                tickSize
+                tickSize,
+                BAR_WIDTH
             );
 
-            if (gapGroups.has(position)) {
-                gapGroups.get(position).events.push(event);
+            if (gapGroups.has(gap.start)) {
+                gapGroups.get(gap.start).events.push(event);
             } else {
-                gapGroups.set(position, {
+                gapGroups.set(gap.start, {
                     left: position,
                     events: [event]
                 });
@@ -65,11 +69,9 @@ const EventsBarRow = ({
                     />
                 );
             })}
-            {Array.from(gapEvents.values()).map((gapGroup, index) => {
-                return (
-                    <div
-                        key={`gap-${index}`}
-                    >
+            {Array.from(gapEvents.values()).map((gapGroup, index) => (
+                <React.Fragment key={`gap-${index}`}>
+                    <div>
                         <div
                             className={styles.tooltipDataGap}
                             data-for={`gap-${index}`}
@@ -87,8 +89,8 @@ const EventsBarRow = ({
                             <GapTooltip gapGroup={gapGroup} />
                         </ReactTooltip>
                     </div>
-                );
-            })}
+                </React.Fragment>
+            ))}
         </>
     );
 };
