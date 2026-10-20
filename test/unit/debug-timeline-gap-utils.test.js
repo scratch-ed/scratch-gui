@@ -12,9 +12,9 @@ describe('isEventInCompressedGap', () => {
         expect(isEventInCompressedGap(4000, timeTicks, tickSize)).toBe(true);
     });
 
-    test('groups events at compressed interval boundaries with the gap', () => {
-        expect(isEventInCompressedGap(2000, timeTicks, tickSize)).toBe(true);
-        expect(isEventInCompressedGap(6000, timeTicks, tickSize)).toBe(true);
+    test('keeps events at compressed interval boundaries visible', () => {
+        expect(isEventInCompressedGap(2000, timeTicks, tickSize)).toBe(false);
+        expect(isEventInCompressedGap(6000, timeTicks, tickSize)).toBe(false);
     });
 
     test('does not classify events in regular intervals as compressed', () => {
@@ -26,12 +26,11 @@ describe('isEventInCompressedGap', () => {
         expect(isEventInCompressedGap(4000, timeTicks, tickSize)).toBe(true);
     });
 
-    test('places boundary events at the center of the compressed span', () => {
-        expect(getCompressedGap(2000, timeTicks, tickSize)).toEqual({
+    test('places events inside a compressed span at its center', () => {
+        expect(getCompressedGap(4000, timeTicks, tickSize)).toEqual({
             start: 2000,
             end: 6000
         });
-        expect(getCompressedGapPosition(2000, timeTicks, tickSize, 80)).toBe(200);
-        expect(getCompressedGapPosition(6000, timeTicks, tickSize, 80)).toBe(200);
+        expect(getCompressedGapPosition(4000, timeTicks, tickSize, 80)).toBe(200);
     });
 });
