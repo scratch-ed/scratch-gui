@@ -102,7 +102,7 @@ const reducer = function (state, action) {
             activeThreads: action.threads
         });
     case ADD_ACTIVE_THREAD:
-        const {topBlock, target, options, timestamp, waiting} = action;
+        const {topBlock, target, options, timestamp, waiting, requestedWaitDuration} = action;
         const currentThreadMap = new Map(state.activeThreads);
 
         if (currentThreadMap.has(topBlock)) {
@@ -116,14 +116,22 @@ const reducer = function (state, action) {
                     start: timestamp,
                     end: null,
                     hasEnded: false,
-                    waitPeriods: waiting ? [{start: timestamp, end: null}] : []
+                    waitPeriods: waiting ? [{
+                        start: timestamp,
+                        end: null,
+                        requestedDuration: requestedWaitDuration
+                    }] : []
                 });
             } else if (waiting) {
                 // If the thread is waiting, we need to check if the last wait period has ended. If it has, we need to add a new wait period.
                 const waitPeriods = lastPeriod.waitPeriods;
                 const lastWaitPeriod = waitPeriods[waitPeriods.length - 1];
                 if (!lastWaitPeriod || lastWaitPeriod.end !== null) {
-                    waitPeriods.push({start: timestamp, end: null});
+                    waitPeriods.push({
+                        start: timestamp,
+                        end: null,
+                        requestedDuration: requestedWaitDuration
+                    });
                 }
             } else {
                 // If the thread is not waiting, we need to check if the last wait period has ended. If it hasn't, we need to end it.
@@ -139,7 +147,11 @@ const reducer = function (state, action) {
                 start: timestamp,
                 end: null,
                 hasEnded: false,
-                waitPeriods: waiting ? [{start: timestamp, end: null}] : []
+                waitPeriods: waiting ? [{
+                    start: timestamp,
+                    end: null,
+                    requestedDuration: requestedWaitDuration
+                }] : []
             }];
 
             currentThreadMap.set(topBlock, {
@@ -302,14 +314,15 @@ const setActiveThreads = function (threads) {
     };
 };
 
-const addActiveThread = function (topBlock, target, options, timestamp, waiting) {
+const addActiveThread = function (topBlock, target, options, timestamp, waiting, requestedWaitDuration) {
     return {
         type: ADD_ACTIVE_THREAD,
         topBlock: topBlock,
         target: target,
         options: options,
         timestamp: timestamp,
-        waiting: waiting
+        waiting: waiting,
+        requestedWaitDuration: requestedWaitDuration
     };
 };
 
