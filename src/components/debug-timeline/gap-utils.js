@@ -1,27 +1,32 @@
-const EPSILON = 1e-12;
+export const getCompressedIntervals = (
+    timeTicks,
+    tickSize,
+    isGap = (start, end) => end - start > tickSize
+) => {
+    const gaps = [];
 
-export const getCompressedGap = (eventTime, timeTicks, tickSize) => {
     for (let index = 0; index < timeTicks.length - 1; index++) {
         const start = timeTicks[index];
         const end = timeTicks[index + 1];
 
-        if (
-            end - start > tickSize + EPSILON &&
-            eventTime >= start - EPSILON &&
-            eventTime <= end + EPSILON
-        ) {
-            return {start: start, end: end};
+        if (isGap(start, end)) {
+            gaps.push({start: start, end: end});
         }
     }
 
-    return null;
+    return gaps;
 };
 
-export const isEventInCompressedGap = (eventTime, timeTicks, tickSize) =>
-    getCompressedGap(eventTime, timeTicks, tickSize) !== null;
+export const getCompressedGap = (eventTime, timeTicks, tickSize, isGap) => {
+    const gaps = getCompressedIntervals(timeTicks, tickSize, isGap);
+    return gaps.find(gap => eventTime > gap.start && eventTime < gap.end) || null;
+};
 
-export const getCompressedGapPosition = (eventTime, timeTicks, tickSize, barWidth) => {
-    const gap = getCompressedGap(eventTime, timeTicks, tickSize);
+export const isEventInCompressedGap = (eventTime, timeTicks, tickSize, isGap) =>
+    getCompressedGap(eventTime, timeTicks, tickSize, isGap) !== null;
+
+export const getCompressedGapPosition = (eventTime, timeTicks, tickSize, barWidth, isGap, knownGap) => {
+    const gap = knownGap || getCompressedGap(eventTime, timeTicks, tickSize, isGap);
     if (!gap) {
         return null;
     }

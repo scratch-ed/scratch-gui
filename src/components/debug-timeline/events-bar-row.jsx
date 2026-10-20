@@ -8,18 +8,20 @@ import styles from '../timeline/timeline.css';
 import GapTooltip from './gap-tooltip.jsx';
 import Event from './event.jsx';
 
-const groupEventsByGaps = (events, timeTicks, tickSize, eventIsInGap) => {
+const groupEventsByGaps = (events, timeTicks, tickSize, isGap) => {
     const visibleEvents = [];
     const gapGroups = new Map();
 
     for (const event of events) {
-        if (eventIsInGap(event.begin)) {
-            const gap = getCompressedGap(event.begin, timeTicks, tickSize);
+        const gap = getCompressedGap(event.begin, timeTicks, tickSize, isGap);
+        if (gap) {
             const position = getCompressedGapPosition(
                 event.begin,
                 timeTicks,
                 tickSize,
-                BAR_WIDTH
+                BAR_WIDTH,
+                isGap,
+                gap
             );
 
             if (gapGroups.has(gap.start)) {
@@ -43,10 +45,11 @@ const EventsBarRow = ({
     events,
     timeTicks,
     tickSize,
-    eventIsInGap,
+    isGap,
     onBroadcastClick
 }) => {
-    const {visibleEvents, gapEvents} = groupEventsByGaps(events, timeTicks, tickSize, eventIsInGap);
+    const {visibleEvents, gapEvents} =
+        groupEventsByGaps(events, timeTicks, tickSize, isGap);
 
     return (
         <>
@@ -100,7 +103,7 @@ EventsBarRow.propTypes = {
     events: PropTypes.arrayOf(PropTypes.object),
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
     tickSize: PropTypes.number.isRequired,
-    eventIsInGap: PropTypes.func.isRequired,
+    isGap: PropTypes.func.isRequired,
     onBroadcastClick: PropTypes.func
 };
 
