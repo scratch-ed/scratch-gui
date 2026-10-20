@@ -86,15 +86,9 @@
     color: #334155;
 }
 
-.ruler-bar-empty {
-    display: flex;
+.ruler-empty-body {
     justify-content: center;
     align-items: center;
-
-    height: 100%;
-
-    /*background-color: white;*/
-    color: black;
 }
 
 .ruler-subbar-container {
@@ -228,7 +222,7 @@
     height: 100%;
     opacity: 1;
     background-color: #ff8c42;
-    pointer-events: none;
+    pointer-events: auto;
 }
 
 .wait-marker {
@@ -242,8 +236,9 @@
     border-radius: 0.2rem;
     font-size: 0.7rem;
     font-weight: bold;
+    white-space: nowrap;
     transform: translate(-50%, -50%);
-    pointer-events: none;
+    pointer-events: auto;
 }
 
 /* CATEGORY CSS */

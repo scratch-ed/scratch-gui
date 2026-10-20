@@ -4,14 +4,23 @@ import {BAR_WIDTH, SUB_BAR_NUM} from './constants.ts';
 import {getCompressedPlotPosition} from './helpers.ts';
 import styles from './debug-timeline.css';
 
-const EmptyRulerBar = () => (
+const EmptyRulerBar = ({startTick}) => (
     <div
-        className={`${styles.rulerBar} ${styles.rulerBarEmpty}`}
+        className={styles.rulerBar}
         style={{width: `${BAR_WIDTH}px`}}
     >
-        <p>{'...'}</p>
+        <div className={`${styles.rulerBarLabel} select-none`}>
+            {Math.round(startTick * 100) / 100}
+        </div>
+        <div className={`${styles.rulerSubbarContainer} ${styles.rulerEmptyBody}`}>
+            <p>{'...'}</p>
+        </div>
     </div>
 );
+
+EmptyRulerBar.propTypes = {
+    startTick: PropTypes.number.isRequired
+};
 
 const RulerSubBar = ({subBarIndex}) => {
     const borderClass = subBarIndex === SUB_BAR_NUM - 1 ? '' : styles.rulerSubbarBorder;
@@ -81,7 +90,7 @@ const Ruler = ({timeTicks, currentTick, tickSize, isGap}) => {
                         const nextTick = timeTicks[index + 1];
 
                         return isGap(tick, nextTick) ? (
-                            <EmptyRulerBar key={index} />
+                            <EmptyRulerBar key={index} startTick={tick} />
                         ) : (
                             <RulerBar
                                 key={index}
