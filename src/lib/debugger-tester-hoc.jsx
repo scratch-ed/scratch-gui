@@ -62,6 +62,18 @@ const isWaitingThread = (thread, sprites, stage) => {
     });
 };
 
+const getRequestedWaitDuration = (thread, sprites, stage) => {
+    const target = stage && thread.targetId === stage.id ? stage : sprites[thread.targetId];
+    const block = (thread.stack || [])
+        .map(blockId => target && target.blocks && target.blocks[blockId])
+        .find(candidate => candidate && candidate.opcode === 'control_wait');
+    const input = block && block.inputs && block.inputs.DURATION;
+    const value = Array.isArray(input) && Array.isArray(input[1]) ? input[1][1] : input && input[1];
+    const duration = Number(value);
+
+    return Number.isFinite(duration) ? duration * 1000 : null;
+};
+
 const DebuggerAndTesterHOC = function (WrappedComponent) {
     class DebuggerAndTesterWrapper extends React.Component {
         constructor (props) {
@@ -366,13 +378,16 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                         const waiting = isWaitingThread(
                             jsonThread, this.props.sprites, this.props.stage
                         );
+                        const requestedWaitDuration = waiting ?
+                            getRequestedWaitDuration(jsonThread, this.props.sprites, this.props.stage) : null;
 
                         this.props.addActiveThread(
                             jsonThread.topBlock,
                             target,
                             options,
                             snapshot.timestamp,
-                            waiting
+                            waiting,
+                            requestedWaitDuration
                         );
 
                         processed.push(jsonThread.topBlock);
@@ -417,6 +432,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                             const waiting = isWaitingThread(
                                 jsonThread, this.props.sprites, this.props.stage
                             );
+                            const requestedWaitDuration = waiting ?
+                                getRequestedWaitDuration(jsonThread, this.props.sprites, this.props.stage) : null;
                             if (lastPeriod.hasEnded) {
                                 // If the thread has ended, we need to add a new active period for it.
                                 const target = this.getDataTarget(
@@ -429,7 +446,8 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                                     hasEnded: false,
                                     waitPeriods: waiting ? [{
                                         start: snapshot.timestamp,
-                                        end: null
+                                        end: null,
+                                        requestedDuration: requestedWaitDuration
                                     }] : []
                                 });
                             } else if (waiting) {
@@ -437,7 +455,11 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                                 const waitPeriods = lastPeriod.waitPeriods;
                                 const lastWaitPeriod = waitPeriods[waitPeriods.length - 1];
                                 if (!lastWaitPeriod || lastWaitPeriod.end !== null) {
-                                    waitPeriods.push({start: snapshot.timestamp, end: null});
+                                    waitPeriods.push({
+                                        start: snapshot.timestamp,
+                                        end: null,
+                                        requestedDuration: requestedWaitDuration
+                                    });
                                 }
                             } else {
                                 // If the thread is not waiting, we need to check if the last wait period has ended. If it hasn't, we need to end it.
@@ -466,7 +488,10 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                                     jsonThread, this.props.sprites, this.props.stage
                                 ) ? [{
                                     start: snapshot.timestamp,
-                                    end: null
+                                    end: null,
+                                    requestedDuration: getRequestedWaitDuration(
+                                        jsonThread, this.props.sprites, this.props.stage
+                                    )
                                 }] : []
                             }];
 
@@ -756,8 +781,10 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         addEvent: event => dispatch(addEvent(event)),
         setEvents: events => dispatch(setEvents(events)),
         setActiveThreads: threads => dispatch(setActiveThreads(threads)),
-        addActiveThread: (topBlock, target, options, timestamp, waiting) =>
-            dispatch(addActiveThread(topBlock, target, options, timestamp, waiting)),
+        addActiveThread: (topBlock, target, options, timestamp, waiting, requestedWaitDuration) =>
+            dispatch(addActiveThread(
+                topBlock, target, options, timestamp, waiting, requestedWaitDuration
+            )),
         endActiveThread: (topBlock, timestamp) => dispatch(endActiveThread(topBlock, timestamp)),
         setPaused: paused => dispatch(setPaused(paused)),
         setChanged: changed => dispatch(setChanged(changed)),

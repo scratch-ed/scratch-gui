@@ -11,7 +11,7 @@ import {locateActiveBullet, setTimeFrame} from '../../reducers/time-slider';
 import EventsBarRow from './events-bar-row.jsx';
 import GridProvider from './grid-provider.jsx';
 import VM from "scratch-vm";
-import {isEventInCompressedGap} from './gap-utils.js';
+import {getNonWaitActivityRanges, hasNonWaitActivity} from './timeline-utils.js';
 
 const getActiveTargetName = (editingTarget, sprites, stage) => {
     if (editingTarget === stage.id) {
@@ -72,34 +72,8 @@ const timelineFiller = (timeTicks, minElements, size) => {
     return result.sort((a, b) => a - b);
 };
 
-const generateTimelineCuts = (activeThreads, timestampEnd, size) => {
-    let combined = Array.from(activeThreads.values()).flatMap(threadData =>
-        threadData.periods.map(activeElement =>
-            (activeElement.end === null ? [activeElement.start, timestampEnd] : [activeElement.start, activeElement.end])
-        )
-    );
-
-    if (combined.length === 1) {
-        const [start, end] = combined[0];
-        const roundedStart = Math.floor(start / size) * size;
-        const roundedEnd = Math.ceil(end / size) * size;
-
-        const tickCount = Math.ceil((roundedEnd - roundedStart) / size) + 1;
-        const ticks = Array.from({ length: tickCount }, (_, i) => roundedStart + (i * size));
-
-        if (!ticks.includes(0)) {
-            ticks.unshift(0);
-        }
-
-        if (!ticks.includes(timestampEnd)) {
-            ticks.push(timestampEnd);
-        }
-
-        return timelineFiller(ticks, 14, size);
-    }
-    if (combined.length === 0) {
-        return [];
-    }
+const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
+    let combined = getNonWaitActivityRanges(activeThreads, timestampEnd);
 
     combined = combined.sort((a, b) => {
         if (a[0] === b[0]) {
@@ -110,18 +84,20 @@ const generateTimelineCuts = (activeThreads, timestampEnd, size) => {
     });
 
     const activeRange = [];
-    activeRange.push(combined[0]);
+    if (combined.length > 0) {
+        activeRange.push(combined[0]);
 
-    let currentEnd = combined[0][1];
-    for (let index = 1; index < combined.length; index++) {
-        const element = combined[index];
+        let currentEnd = combined[0][1];
+        for (let index = 1; index < combined.length; index++) {
+            const element = combined[index];
 
-        if (element[0] <= currentEnd) {
-            currentEnd = Math.max(currentEnd, element[1]);
-            activeRange[activeRange.length - 1][1] = currentEnd;
-        } else {
-            activeRange.push(element);
-            currentEnd = element[1];
+            if (element[0] <= currentEnd) {
+                currentEnd = Math.max(currentEnd, element[1]);
+                activeRange[activeRange.length - 1][1] = currentEnd;
+            } else {
+                activeRange.push(element);
+                currentEnd = element[1];
+            }
         }
     }
 
@@ -141,8 +117,29 @@ const generateTimelineCuts = (activeThreads, timestampEnd, size) => {
     }
 
     timeTicks.add(timestampEnd);
+    activeThreads.forEach(threadData => {
+        threadData.periods.forEach(period => {
+            timeTicks.add(period.start);
+            if (period.end !== null) {
+                timeTicks.add(period.end);
+            }
+        });
+    });
+    const activeEventTimes = new Set(
+        Array.from(activeThreads.values()).flatMap(threadData =>
+            threadData.periods.map(period => period.start)
+        )
+    );
+    events.forEach(event => {
+        if (activeEventTimes.has(event.begin)) {
+            timeTicks.add(event.begin);
+        }
+    });
 
     const ticks = Array.from(timeTicks).sort((a, b) => a - b);
+    if (combined.length === 0) {
+        return ticks;
+    }
     const result = timelineFiller(ticks, 14, size);
     return result;
 };
@@ -176,7 +173,7 @@ const DebugTimeline = ({
     const tickSize = Math.round(100 * zoomLevel);
 
     const timestampEnd = Math.ceil(timestamps[timestamps.length - 1] / tickSize) * tickSize;
-    const timeTicks = generateTimelineCuts(activeThreads, timestampEnd, tickSize);
+    const timeTicks = generateTimelineCuts(activeThreads, events, timestampEnd, tickSize);
 
     const timestampToIndex = timestamps.reduce((map, item, index) => {
         map[item] = index;
@@ -197,11 +194,8 @@ const DebugTimeline = ({
     };
 
     const isGap = (tick, nextTick) => {
-        return Math.abs((nextTick - tick) - tickSize) > 1e-12;
-    };
-
-    const eventIsInGap = eventTime => {
-        return isEventInCompressedGap(eventTime, timeTicks, tickSize);
+        return nextTick - tick > tickSize &&
+            !hasNonWaitActivity(activeThreads, tick, nextTick);
     };
 
     const rulerIndicatorRef = useRef(null);
@@ -254,7 +248,7 @@ const DebugTimeline = ({
                                             events={events || []}
                                             timeTicks={timeTicks}
                                             tickSize={tickSize}
-                                            eventIsInGap={eventIsInGap}
+                                            isGap={isGap}
                                             onBroadcastClick={onBroadcastClick}
                                         />
                                     </Row>
@@ -270,6 +264,7 @@ const DebugTimeline = ({
                                                 broadcastsSent={broadcastEventMap.get(threadId) || []}
                                                 lastTimestamp={timestamps ? timestamps[timestamps.length - 1] : 0}
                                                 tickSize={tickSize}
+                                                isGap={isGap}
                                                 onSelectBar={setFrameRange}
                                             />
                                         </Row>
