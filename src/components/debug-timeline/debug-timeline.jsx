@@ -11,7 +11,11 @@ import {locateActiveBullet, setTimeFrame} from '../../reducers/time-slider';
 import EventsBarRow from './events-bar-row.jsx';
 import GridProvider from './grid-provider.jsx';
 import VM from "scratch-vm";
-import {getNonWaitActivityRanges, hasNonWaitActivity} from './timeline-utils.js';
+import {
+    getNonWaitActivityRanges,
+    getWaitBoundaries,
+    hasNonWaitActivity
+} from './timeline-utils.js';
 
 const getActiveTargetName = (editingTarget, sprites, stage) => {
     if (editingTarget === stage.id) {
@@ -125,6 +129,7 @@ const generateTimelineCuts = (activeThreads, events, timestampEnd, size) => {
             }
         });
     });
+    getWaitBoundaries(activeThreads).forEach(boundary => timeTicks.add(boundary));
     const activeEventTimes = new Set(
         Array.from(activeThreads.values()).flatMap(threadData =>
             threadData.periods.map(period => period.start)
@@ -260,6 +265,7 @@ const DebugTimeline = ({
                                             <ActiveBarRow
                                                 threadId={threadId}
                                                 periods={periods}
+                                                events={events || []}
                                                 timeTicks={timeTicks}
                                                 broadcastsSent={broadcastEventMap.get(threadId) || []}
                                                 lastTimestamp={timestamps ? timestamps[timestamps.length - 1] : 0}

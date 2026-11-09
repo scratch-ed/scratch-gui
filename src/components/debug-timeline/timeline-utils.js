@@ -60,3 +60,24 @@ export const hasNonWaitActivity = (activeThreads, start, end) => {
 
     return false;
 };
+
+/**
+ * Return the timestamp boundaries needed to render each wait as a separate
+ * compressed timeline section.
+ */
+export const getWaitBoundaries = activeThreads => {
+    const boundaries = [];
+
+    activeThreads.forEach(threadData => {
+        threadData.periods.forEach(period => {
+            (period.waitPeriods || []).forEach(waitPeriod => {
+                boundaries.push(waitPeriod.start);
+                if (waitPeriod.end !== null) {
+                    boundaries.push(waitPeriod.end);
+                }
+            });
+        });
+    });
+
+    return boundaries;
+};

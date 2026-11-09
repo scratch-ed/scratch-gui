@@ -257,6 +257,26 @@ $arrow-rounding: 0.125rem;
     border-radius: 50%;
 }
 
+.event-looks {
+    background-color: rgba(133, 92, 214, 0.75);
+}
+
+.event-sound {
+    background-color: rgba(207, 99, 207, 0.75);
+}
+
+.event-affects-target {
+    background-color: rgba(126, 206, 126, 0.5);
+}
+
+.event-unaffected {
+    background-color: rgba(255, 107, 107, 0.5);
+}
+
+.event-transparent {
+    background-color: transparent;
+}
+
 .floatButton {
     position: absolute;
     right: 1.5rem;

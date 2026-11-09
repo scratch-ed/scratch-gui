@@ -27,7 +27,7 @@ import {
     addSpritePosition,
     clearSpritePositions
 } from '../reducers/time-slider.js';
-import {toTimelineEvent} from './timeline-event.js';
+import {isVisibleTimelineEvent, toTimelineEvent} from './timeline-event.js';
 import {createContextWithVm, Context, snapshotFromVm, snapshotFromSb3, runWithContext} from 'itch';
 import omit from 'lodash.omit';
 import bindAll from 'lodash.bindall';
@@ -205,7 +205,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 this.props.setTimeFrame(this.props.context.log.snapshots.length - 1);
                 this.props.setTimestamps(this.props.context.log.snapshots.map(snap => snap.timestamp));
                 this.props.setEvents(this.props.context.log.events
-                    .filter(e => e.type !== 'block_execution')
+                    .filter(e => e.type !== 'block_execution' && isVisibleTimelineEvent(e))
                     .map(toTimelineEvent));
             }
         }
@@ -600,7 +600,9 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
                 apply: (target, thisArg, argArray) => {
                     const added = target.apply(thisArg, argArray);
                     if (added && this.props.context) {
+                        if (isVisibleTimelineEvent(argArray[0])) {
                         this.props.addEvent(toTimelineEvent(argArray[0]));
+                        }
                     }
                     return added;
                 }

@@ -221,7 +221,8 @@
     top: 0;
     height: 100%;
     opacity: 1;
-    background-color: #ff8c42;
+    z-index: 2;
+    background-color: #ffab19;
     pointer-events: auto;
 }
 
@@ -239,6 +240,28 @@
     white-space: nowrap;
     transform: translate(-50%, -50%);
     pointer-events: auto;
+}
+
+.action-bar {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    height: 100%;
+    opacity: 0.9;
+    border-radius: 0.375em;
+    pointer-events: auto;
+}
+
+.action-marker {
+    display: block;
+    max-width: 100%;
+    padding: 0.2rem 0.4rem;
+    overflow: hidden;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* CATEGORY CSS */
@@ -327,6 +350,13 @@
     user-select: none
 }
 
+.event-badge {
+    color: white;
+    font-size: 0.6rem;
+    font-weight: bold;
+    text-align: center;
+}
+
 .category-item-color {
     width: 0.25rem;
     height: 100%;
@@ -358,6 +388,18 @@
 
 .broadcast {
     background-color: #ffbf00;
+}
+
+.looks {
+    background-color: #855cd6;
+}
+
+.sound {
+    background-color: #cf63cf;
+}
+
+.control {
+    background-color: #ffab19;
 }
 
 .events {

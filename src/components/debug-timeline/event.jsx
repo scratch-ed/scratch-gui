@@ -15,7 +15,9 @@ const Event = ({
 }) => {
     const affectsTarget = event.sprites.includes(activeTargetName);
 
-    const backgroundColor = transparent ? 'transparent' : affectsTarget ? 'rgba(126, 206, 126, 0.5)' : 'rgba(255, 107, 107, 0.5)';
+    const eventClass = event.type === 'say' ? styles.eventLooks :
+        event.type === 'sound' ? styles.eventSound :
+            affectsTarget ? styles.eventAffectsTarget : styles.eventUnaffected;
     const randomId = Math.floor(Math.random() * 1000);
 
     return (
@@ -35,8 +37,8 @@ const Event = ({
                 }}
             >
                 <div
-                    className={styles.eventIconContainer}
-                    style={{backgroundColor: backgroundColor}}
+                    className={`${styles.eventIconContainer} ${
+                        transparent ? styles.eventTransparent : eventClass}`}
                 >
                     <Icon
                         event={event}
