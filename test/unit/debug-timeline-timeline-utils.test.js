@@ -1,4 +1,7 @@
-import {getNonWaitActivityRanges} from '../../src/components/debug-timeline/timeline-utils.js';
+import {
+    getNonWaitActivityRanges,
+    getWaitBoundaries
+} from '../../src/components/debug-timeline/timeline-utils.js';
 
 describe('getNonWaitActivityRanges', () => {
     test('removes wait sections from every thread before combining ranges', () => {
@@ -54,5 +57,37 @@ describe('getNonWaitActivityRanges', () => {
         ]);
 
         expect(getNonWaitActivityRanges(activeThreads, 3000)).toEqual([]);
+    });
+
+    test('does not treat action periods as non-wait activity', () => {
+        const activeThreads = new Map([
+            ['thread', {
+                periods: [{
+                    start: 0,
+                    end: 3000,
+                    waitPeriods: [{start: 0, end: 3000}],
+                    actionPeriods: [{start: 500, end: 2500}]
+                }]
+            }]
+        ]);
+
+        expect(getNonWaitActivityRanges(activeThreads, 3000)).toEqual([]);
+    });
+
+    test('returns separate boundaries for adjacent waits in one compressed gap', () => {
+        const activeThreads = new Map([
+            ['thread', {
+                periods: [{
+                    start: 0,
+                    end: 5000,
+                    waitPeriods: [
+                        {start: 100, end: 1000},
+                        {start: 1000, end: 2400}
+                    ]
+                }]
+            }]
+        ]);
+
+        expect(getWaitBoundaries(activeThreads)).toEqual([100, 1000, 1000, 2400]);
     });
 });

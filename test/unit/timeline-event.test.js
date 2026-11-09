@@ -1,4 +1,18 @@
-import {toTimelineEvent} from '../../src/lib/timeline-event.js';
+import {isVisibleTimelineEvent, toTimelineEvent} from '../../src/lib/timeline-event.js';
+
+test('hides speech, sound, and text-skin renderer events from the event row', () => {
+    expect(isVisibleTimelineEvent({type: 'say'})).toBe(false);
+    expect(isVisibleTimelineEvent({type: 'sound'})).toBe(false);
+    expect(isVisibleTimelineEvent({
+        type: 'renderer',
+        data: {name: 'createTextSkin'}
+    })).toBe(false);
+    expect(isVisibleTimelineEvent({
+        type: 'renderer',
+        data: {name: 'drawCostume'}
+    })).toBe(true);
+    expect(isVisibleTimelineEvent({type: 'key'})).toBe(true);
+});
 
 test('uses the input timestamp for events without a reacting sprite', () => {
     const event = {
