@@ -295,26 +295,6 @@ $arrow-rounding: 0.125rem;
     bottom: 1rem;
 }
 
-.codeButton {
-    position: absolute;
-    z-index: 12;
-    top: 1rem;
-    left: 1rem;
-    width: auto;
-    height: 2rem;
-    padding: 0.75rem;
-
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 5%;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.1s ease;
-}
-
 .floatButton img {
     width: 100%;
     height: 100%;
@@ -354,6 +334,10 @@ $arrow-rounding: 0.125rem;
 }
 
 .chartButton {
+    align-self: flex-start;
+}
+
+.codeButton {
     align-self: flex-start;
 }
 

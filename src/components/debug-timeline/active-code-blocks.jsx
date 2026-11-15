@@ -21,6 +21,24 @@ const formatOpcode = opcode => opcode
     .replace(/\b\w/g, character => character.toUpperCase());
 
 /**
+ * Map a Scratch opcode to the palette category used by Scratch blocks.
+ * @param {string} opcode The Scratch block opcode.
+ * @return {string} The block palette category.
+ */
+const getBlockCategory = opcode => {
+    if (opcode.startsWith('event_')) return 'event';
+    if (opcode.startsWith('motion_')) return 'motion';
+    if (opcode.startsWith('looks_')) return 'looks';
+    if (opcode.startsWith('sound_') || opcode.startsWith('music_')) return 'sounds';
+    if (opcode.startsWith('control_')) return 'control';
+    if (opcode.startsWith('sensing_') || opcode.startsWith('video_')) return 'sensing';
+    if (opcode.startsWith('pen_')) return 'pen';
+    if (opcode.startsWith('operator_')) return 'operators';
+    if (opcode.startsWith('data_')) return 'data';
+    return 'more';
+};
+
+/**
  * Find active thread code for the selected debugger snapshot.
  * @param {object|null} context The debugger context containing recorded snapshots.
  * @param {number} timeFrame The selected snapshot index.
@@ -46,11 +64,14 @@ export const getActiveCodeThreads = (context, timeFrame, editingTarget, targetBl
         .filter(thread => thread && thread.targetId === editingTarget)
         .map(thread => ({
             id: thread.topBlock,
-            highlightedBlock: thread.blockGlowInFrame,
+            highlightedBlock: thread.stack && thread.stack.length > 0 ?
+                thread.stack[thread.stack.length - 1] : null,
             blocks: (thread.stack || [])
                 .map(blockId => ({
                     id: blockId,
-                    opcode: targetBlocks[blockId] && targetBlocks[blockId].opcode
+                    opcode: targetBlocks[blockId] && targetBlocks[blockId].opcode,
+                    category: targetBlocks[blockId] && targetBlocks[blockId].opcode ?
+                        getBlockCategory(targetBlocks[blockId].opcode) : 'more'
                 }))
                 .filter(block => block.opcode)
         }))
@@ -85,7 +106,7 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks}) => 
                         >
                             {thread.blocks.map(block => (
                                 <div
-                                    className={`${styles.block} ${
+                                    className={`${styles.block} ${styles[block.category]} ${
                                         block.id === thread.highlightedBlock ? styles.active : ''
                                     }`}
                                     key={block.id}

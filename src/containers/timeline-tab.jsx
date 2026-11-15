@@ -38,7 +38,6 @@ const TimelineTab = ({
     const toggleDebugMode = () => {
         setDebugMode(!debugMode);
         setShowLinechart(false);
-        setShowCodeBlocks(false);
     };
 
     const toggleLinechart = () => {
@@ -105,14 +104,13 @@ const TimelineTab = ({
                                 More Properties
                             </button>
                             <button
-                                className={`${timelineStyles.mode} ${timelineStyles.chartButton}`}
+                                className={`${timelineStyles.mode} ${timelineStyles.codeButton}`}
                                 style={{
                                     backgroundColor: showCodeBlocks ? "#cccccc" : "#f4f3f1",
                                     color: showCodeBlocks ? "#666666" : "black",
-                                    cursor: debugMode ? "pointer" : "not-allowed",
+                                    cursor: "pointer",
                                 }}
                                 onClick={toggleCodeBlocks}
-                                disabled={!debugMode}
                             >
                                 Code Blocks
                             </button>
@@ -124,7 +122,7 @@ const TimelineTab = ({
                 <DebugTimeline onBroadcastClick={onBroadcastClick} /> :
                 <Timeline onBroadcastClick={onBroadcastClick} />
             }
-            {timeSliderMode === TimeSliderMode.DEBUG && debugMode && showCodeBlocks && (
+            {timeSliderMode === TimeSliderMode.DEBUG && showCodeBlocks && (
                 <ActiveCodeBlocks
                     context={context}
                     timeFrame={timeFrame}

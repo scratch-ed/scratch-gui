@@ -37,11 +37,50 @@
     min-width: 10rem;
     padding: 0.5rem 0.75rem;
     border-radius: 0.35rem;
-    background: #4c97ff;
     color: white;
     font-size: 0.875rem;
 }
 
+.motion {
+    background: #4C97FF;
+}
+
+.looks {
+    background: #9966FF;
+}
+
+.sounds {
+    background: #CF63CF;
+}
+
+.control {
+    background: #FFAB19;
+}
+
+.event {
+    background: #FFBF00;
+}
+
+.sensing {
+    background: #5CB1D6;
+}
+
+.pen {
+    background: #0fBD8C;
+}
+
+.operators {
+    background: #59C059;
+}
+
+.data {
+    background: #FF8C1A;
+}
+
+.more {
+    background: #FF6680;
+}
+
 .active {
-    box-shadow: 0 0 0 0.2rem #fff200;
+    box-shadow: 0 0 0 0.4rem #fff200;
 }

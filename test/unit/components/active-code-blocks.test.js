@@ -11,7 +11,7 @@ describe('Active code blocks', () => {
                                 targetId: 'sprite',
                                 topBlock: 'hat',
                                 stack: ['hat', 'move'],
-                                blockGlowInFrame: 'move'
+                                blockGlowInFrame: 'hat'
                             }),
                             JSON.stringify({
                                 targetId: 'other-sprite',
@@ -33,8 +33,8 @@ describe('Active code blocks', () => {
             id: 'hat',
             highlightedBlock: 'move',
             blocks: [
-                {id: 'hat', opcode: 'event_whenflagclicked'},
-                {id: 'move', opcode: 'motion_movesteps'}
+                {id: 'hat', opcode: 'event_whenflagclicked', category: 'event'},
+                {id: 'move', opcode: 'motion_movesteps', category: 'motion'}
             ]
         }]);
     });
