@@ -25,8 +25,16 @@ describe('Active code blocks', () => {
             }
         };
         const blocks = {
-            hat: {opcode: 'event_whenflagclicked'},
-            move: {opcode: 'motion_movesteps'}
+            hat: {
+                opcode: 'event_whenflagclicked',
+                next: 'move',
+                inputs: {}
+            },
+            move: {
+                opcode: 'motion_movesteps',
+                next: null,
+                inputs: {}
+            }
         };
 
         expect(getActiveCodeThreads(context, 0, 'sprite', blocks)).toEqual([{

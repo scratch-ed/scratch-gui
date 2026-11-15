@@ -39,12 +39,55 @@ const getBlockCategory = opcode => {
 };
 
 /**
+ * Extract a nested script block ID from a serialized block input.
+ * @param {Array|*} input A serialized Scratch block input.
+ * @param {object} targetBlocks The selected target's block map.
+ * @return {?string} The nested script's first block ID.
+ */
+const getSubstackId = (input, targetBlocks) => {
+    if (!Array.isArray(input)) {
+        return null;
+    }
+
+    return input
+        .slice(1)
+        .find(value => typeof value === 'string' && targetBlocks[value]) || null;
+};
+
+/**
+ * Flatten a Scratch script, including nested control block substacks.
+ * @param {?string} blockId The first block ID to visit.
+ * @param {object} targetBlocks The selected target's block map.
+ * @param {Set<string>} visited Block IDs already added to the script.
+ * @return {Array<string>} Block IDs in display order.
+ */
+const getScriptBlockIds = (blockId, targetBlocks, visited = new Set()) => {
+    if (!blockId || visited.has(blockId) || !targetBlocks[blockId]) {
+        return [];
+    }
+
+    visited.add(blockId);
+    const block = targetBlocks[blockId];
+    const blockIds = [blockId];
+
+    Object.keys(block.inputs || {})
+        .filter(inputName => inputName.startsWith('SUBSTACK'))
+        .forEach(inputName => {
+            const substackId = getSubstackId(block.inputs[inputName], targetBlocks);
+            blockIds.push(...getScriptBlockIds(substackId, targetBlocks, visited));
+        });
+
+    blockIds.push(...getScriptBlockIds(block.next, targetBlocks, visited));
+    return blockIds;
+};
+
+/**
  * Find active thread code for the selected debugger snapshot.
  * @param {object|null} context The debugger context containing recorded snapshots.
  * @param {number} timeFrame The selected snapshot index.
  * @param {string} editingTarget The target whose code is being inspected.
  * @param {object} targetBlocks The selected target's block map.
- * @return {Array<object>} Active threads with their blocks and highlighted block ID.
+ * @return {Array<object>} Active threads with their full scripts and highlighted block ID.
  */
 export const getActiveCodeThreads = (context, timeFrame, editingTarget, targetBlocks) => {
     const snapshot = context && context.log && context.log.snapshots &&
@@ -62,19 +105,24 @@ export const getActiveCodeThreads = (context, timeFrame, editingTarget, targetBl
             }
         })
         .filter(thread => thread && thread.targetId === editingTarget)
-        .map(thread => ({
-            id: thread.topBlock,
-            highlightedBlock: thread.stack && thread.stack.length > 0 ?
-                thread.stack[thread.stack.length - 1] : null,
-            blocks: (thread.stack || [])
-                .map(blockId => ({
-                    id: blockId,
-                    opcode: targetBlocks[blockId] && targetBlocks[blockId].opcode,
-                    category: targetBlocks[blockId] && targetBlocks[blockId].opcode ?
-                        getBlockCategory(targetBlocks[blockId].opcode) : 'more'
-                }))
-                .filter(block => block.opcode)
-        }))
+        .map(thread => {
+            const highlightedBlock = thread.stack && thread.stack.length > 0 ?
+                thread.stack[thread.stack.length - 1] : null;
+            const scriptBlockIds = getScriptBlockIds(thread.topBlock, targetBlocks);
+
+            return {
+                id: thread.topBlock,
+                highlightedBlock,
+                blocks: scriptBlockIds
+                    .map(blockId => ({
+                        id: blockId,
+                        opcode: targetBlocks[blockId] && targetBlocks[blockId].opcode,
+                        category: targetBlocks[blockId] && targetBlocks[blockId].opcode ?
+                            getBlockCategory(targetBlocks[blockId].opcode) : 'more'
+                    }))
+                    .filter(block => block.opcode)
+            };
+        })
         .filter(thread => thread.blocks.length > 0);
 };
 
