@@ -356,3 +356,9 @@ $arrow-rounding: 0.125rem;
 .chartButton {
     align-self: flex-start;
 }
+
+.propertyButtons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

@@ -13,20 +13,38 @@ import {connect} from "react-redux";
 import PropTypes from 'prop-types';
 import {locateActiveBullet, TimeSliderMode, zoomIn, zoomOut, zoomReset} from "../reducers/time-slider";
 import DebugTimeline from "../components/debug-timeline/debug-timeline.jsx";
+import ActiveCodeBlocks from "../components/debug-timeline/active-code-blocks.jsx";
 
-const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, onBroadcastClick, onLinechartToggle, timeSliderMode, isTimelineSplit}) => {
+const TimelineTab = ({
+    onZoomIn,
+    onZoomOut,
+    onResetZoom,
+    onLocateActiveBullet,
+    onBroadcastClick,
+    onLinechartToggle,
+    timeSliderMode,
+    isTimelineSplit,
+    context,
+    timeFrame,
+    editingTarget,
+    sprites,
+    stage
+}) => {
     const [debugMode, setDebugMode] = useState(false);
     const [showLinechart, setShowLinechart] = useState(false);
+    const [showCodeBlocks, setShowCodeBlocks] = useState(false);
 
 
     const toggleDebugMode = () => {
         setDebugMode(!debugMode);
         setShowLinechart(false);
+        setShowCodeBlocks(false);
     };
 
     const toggleLinechart = () => {
         if (!showLinechart) {
             setShowLinechart(true);
+            setShowCodeBlocks(false);
 
             if (onLinechartToggle) {
                 onLinechartToggle(true);
@@ -34,9 +52,15 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, on
         }
     };
 
+    const toggleCodeBlocks = () => {
+        setShowCodeBlocks(!showCodeBlocks);
+        setShowLinechart(false);
+    };
+
     useEffect(() => {
         if (!isTimelineSplit) {
             setShowLinechart(false);
+            setShowCodeBlocks(false);
         }
     }, [isTimelineSplit]);
 
@@ -67,18 +91,32 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, on
                                 Debug Mode
                             </button>
                         </div>
-                        <button
-                            className={`${timelineStyles.mode} ${timelineStyles.chartButton}`}
-                            style={{
-                                backgroundColor: showLinechart ? "#cccccc" : "#f4f3f1",
-                                color: showLinechart ? "#666666" : "black",
-                                cursor: showLinechart ? "not-allowed" : "pointer",
-                            }}
-                            onClick={toggleLinechart}
-                            disabled={showLinechart}
-                        >
-                            More Properties
-                        </button>
+                        <div className={timelineStyles.propertyButtons}>
+                            <button
+                                className={`${timelineStyles.mode} ${timelineStyles.chartButton}`}
+                                style={{
+                                    backgroundColor: showLinechart ? "#cccccc" : "#f4f3f1",
+                                    color: showLinechart ? "#666666" : "black",
+                                    cursor: showLinechart ? "not-allowed" : "pointer",
+                                }}
+                                onClick={toggleLinechart}
+                                disabled={showLinechart}
+                            >
+                                More Properties
+                            </button>
+                            <button
+                                className={`${timelineStyles.mode} ${timelineStyles.chartButton}`}
+                                style={{
+                                    backgroundColor: showCodeBlocks ? "#cccccc" : "#f4f3f1",
+                                    color: showCodeBlocks ? "#666666" : "black",
+                                    cursor: debugMode ? "pointer" : "not-allowed",
+                                }}
+                                onClick={toggleCodeBlocks}
+                                disabled={!debugMode}
+                            >
+                                Code Blocks
+                            </button>
+                        </div>
                     </div>
                 )
             }
@@ -86,6 +124,18 @@ const TimelineTab = ({onZoomIn, onZoomOut, onResetZoom, onLocateActiveBullet, on
                 <DebugTimeline onBroadcastClick={onBroadcastClick} /> :
                 <Timeline onBroadcastClick={onBroadcastClick} />
             }
+            {timeSliderMode === TimeSliderMode.DEBUG && debugMode && showCodeBlocks && (
+                <ActiveCodeBlocks
+                    context={context}
+                    timeFrame={timeFrame}
+                    editingTarget={editingTarget}
+                    targetBlocks={
+                        editingTarget === stage?.id ?
+                            stage?.blocks || {} :
+                            sprites[editingTarget]?.blocks || {}
+                    }
+                />
+            )}
             <button
                 className={`${timelineStyles.floatButton} ${timelineStyles.zoomInButton}`}
                 onClick={onZoomIn}
@@ -138,11 +188,21 @@ TimelineTab.propTypes = {
     onBroadcastClick: PropTypes.func,
     onLinechartToggle: PropTypes.func,
     timeSliderMode: PropTypes.string.isRequired,
-    isTimelineSplit: PropTypes.bool
+    isTimelineSplit: PropTypes.bool,
+    context: PropTypes.shape({}),
+    timeFrame: PropTypes.number,
+    editingTarget: PropTypes.string,
+    sprites: PropTypes.shape({}),
+    stage: PropTypes.shape({})
 };
 
 const mapStateToProps = state => ({
-    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode
+    timeSliderMode: state.scratchGui.timeSlider.timeSliderMode,
+    context: state.scratchGui.timeSlider.context,
+    timeFrame: state.scratchGui.timeSlider.timeFrame,
+    editingTarget: state.scratchGui.targets.editingTarget,
+    sprites: state.scratchGui.targets.sprites,
+    stage: state.scratchGui.targets.stage
 });
 
 const mapDispatchToProps = dispatch => ({
