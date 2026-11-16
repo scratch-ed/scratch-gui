@@ -1,7 +1,16 @@
 import React, {useCallback, useLayoutEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
-import {FormattedMessage} from 'react-intl';
+import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
+import focusIcon from '../timeline/targeting.png';
 import styles from './active-code-blocks.css';
+
+const messages = defineMessages({
+    focus: {
+        defaultMessage: 'Focus on highlighted blocks',
+        description: 'Tooltip for the button that shows highlighted blocks in all active threads',
+        id: 'gui.activeCode.focus'
+    }
+});
 
 /**
  * Convert a Scratch opcode into a short label suitable for a child-friendly code list.
@@ -187,7 +196,7 @@ ScriptBlocks.propTypes = {
  * @param {object} props The thread, selected frame and panel size.
  * @return {JSX.Element} The independently scrollable thread.
  */
-const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize}) => {
+const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize, focusRequest}) => {
     const threadRef = useRef(null);
     const highlightedRef = useRef(null);
 
@@ -222,7 +231,7 @@ const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize
             return () => observer.disconnect();
         }
         return () => {};
-    }, [thread.highlightedBlock, timeFrame, editingTarget, targetBlocks, panelSize]);
+    }, [thread.highlightedBlock, timeFrame, editingTarget, targetBlocks, panelSize, focusRequest]);
 
     return (
         <div
@@ -246,7 +255,8 @@ ActiveThread.propTypes = {
     timeFrame: PropTypes.number.isRequired,
     editingTarget: PropTypes.string,
     targetBlocks: PropTypes.shape({}).isRequired,
-    panelSize: PropTypes.number.isRequired
+    panelSize: PropTypes.number.isRequired,
+    focusRequest: PropTypes.number.isRequired
 };
 
 /**
@@ -257,9 +267,10 @@ ActiveThread.propTypes = {
  * @param {object} targetBlocks The selected target's block map.
  * @return {JSX.Element} The active code panel.
  */
-const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks}) => {
+const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks, intl}) => {
     const threads = getActiveCodeThreads(context, timeFrame, editingTarget, targetBlocks);
     const [panelSize, setPanelSize] = useState(40);
+    const [focusRequest, setFocusRequest] = useState(0);
 
     /**
      * Set the panel height as a percentage of the timeline area.
@@ -270,6 +281,14 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks}) => 
         setPanelSize(Number(event.target.value));
     }, []);
 
+    /**
+     * Request each thread to bring its highlighted block back into view.
+     * @returns {void}
+     */
+    const handleFocus = useCallback(() => {
+        setFocusRequest(previous => previous + 1);
+    }, []);
+
     return (
         <section
             className={styles.panel}
@@ -278,22 +297,39 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks}) => 
         >
             <div className={styles.header}>
                 <h2 className={styles.title}>{'Active code'}</h2>
-                <label className={styles.resizeLabel}>
-                    <FormattedMessage
-                        defaultMessage="Panel size"
-                        description="Label for the active code panel size slider"
-                        id="gui.activeCode.panelSize"
-                    />
-                    <input
-                        className={styles.resizeInput}
-                        type="range"
-                        min="20"
-                        max="70"
-                        step="5"
-                        value={panelSize}
-                        onChange={handlePanelSizeChange}
-                    />
-                </label>
+                <div className={styles.controls}>
+                    <button
+                        aria-label={intl.formatMessage(messages.focus)}
+                        className={styles.focusButton}
+                        title={intl.formatMessage(messages.focus)}
+                        type="button"
+                        disabled={threads.length === 0}
+                        onClick={handleFocus}
+                    >
+                        <img
+                            alt=""
+                            className={styles.focusIcon}
+                            draggable={false}
+                            src={focusIcon}
+                        />
+                    </button>
+                    <label className={styles.resizeLabel}>
+                        <FormattedMessage
+                            defaultMessage="Panel size"
+                            description="Label for the active code panel size slider"
+                            id="gui.activeCode.panelSize"
+                        />
+                        <input
+                            className={styles.resizeInput}
+                            type="range"
+                            min="20"
+                            max="70"
+                            step="5"
+                            value={panelSize}
+                            onChange={handlePanelSizeChange}
+                        />
+                    </label>
+                </div>
             </div>
             {threads.length === 0 ? (
                 <p className={styles.empty}>{'No code is running at this frame.'}</p>
@@ -307,6 +343,7 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks}) => 
                             editingTarget={editingTarget}
                             targetBlocks={targetBlocks}
                             panelSize={panelSize}
+                            focusRequest={focusRequest}
                         />
                     ))}
                 </div>
@@ -323,7 +360,8 @@ ActiveCodeBlocks.propTypes = {
     }),
     timeFrame: PropTypes.number.isRequired,
     editingTarget: PropTypes.string,
-    targetBlocks: PropTypes.shape({}).isRequired
+    targetBlocks: PropTypes.shape({}).isRequired,
+    intl: intlShape.isRequired
 };
 
-export default ActiveCodeBlocks;
+export default injectIntl(ActiveCodeBlocks);

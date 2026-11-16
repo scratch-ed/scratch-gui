@@ -228,6 +228,22 @@ describe('Active code blocks', () => {
             positions.Turnright = [130, 150];
             observers[observers.length - 2].callback();
             expect(threads[0].scrollTop).toBe(170);
+            threads[0].scrollTop = 0;
+            threads[1].scrollTop = 0;
+            positions.Turnright = [140, 160];
+            positions.Say = [150, 170];
+            const focusButton = root.querySelector('button');
+            expect(focusButton.textContent).toBe('');
+            expect(focusButton.getAttribute('title')).toBe('Focus on highlighted blocks');
+            expect(focusButton.getAttribute('aria-label')).toBe('Focus on highlighted blocks');
+            expect(focusButton.querySelector('img')).not.toBeNull();
+            expect(focusButton.compareDocumentPosition(slider) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+            act(() => Simulate.click(focusButton));
+            expect(threads[0].scrollTop).toBe(60);
+            expect(threads[1].scrollTop).toBe(70);
+            act(() => Simulate.click(focusButton));
+            expect(threads[0].scrollTop).toBe(120);
+            expect(threads[1].scrollTop).toBe(140);
             expect(root.scrollTop).toBe(29);
         } finally {
             ReactDOM.unmountComponentAtNode(root);
