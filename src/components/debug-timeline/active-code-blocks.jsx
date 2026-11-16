@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {FormattedMessage} from 'react-intl';
 import styles from './active-code-blocks.css';
 
 /**
@@ -39,46 +40,45 @@ const getBlockCategory = opcode => {
 };
 
 /**
- * Extract a nested script block ID from a serialized block input.
- * @param {Array|*} input A serialized Scratch block input.
- * @param {object} targetBlocks The selected target's block map.
- * @return {?string} The nested script's first block ID.
- */
-const getSubstackId = (input, targetBlocks) => {
-    if (!Array.isArray(input)) {
-        return null;
-    }
-
-    return input
-        .slice(1)
-        .find(value => typeof value === 'string' && targetBlocks[value]) || null;
-};
-
-/**
- * Flatten a Scratch script, including nested control block substacks.
+ * Build a script tree from the VM's block map, preserving control substacks.
  * @param {?string} blockId The first block ID to visit.
  * @param {object} targetBlocks The selected target's block map.
  * @param {Set<string>} visited Block IDs already added to the script.
- * @return {Array<string>} Block IDs in display order.
+ * @return {Array<object>} Blocks in execution order with nested branches.
  */
-const getScriptBlockIds = (blockId, targetBlocks, visited = new Set()) => {
-    if (!blockId || visited.has(blockId) || !targetBlocks[blockId]) {
-        return [];
-    }
-
-    visited.add(blockId);
-    const block = targetBlocks[blockId];
-    const blockIds = [blockId];
-
-    Object.keys(block.inputs || {})
-        .filter(inputName => inputName.startsWith('SUBSTACK'))
-        .forEach(inputName => {
-            const substackId = getSubstackId(block.inputs[inputName], targetBlocks);
-            blockIds.push(...getScriptBlockIds(substackId, targetBlocks, visited));
+const getScriptBlocks = (blockId, targetBlocks, visited = new Set()) => {
+    const blocks = [];
+    // Traverse the script starting from the given block ID, adding blocks to the list while preserving control flow.
+    while (blockId && !visited.has(blockId) && targetBlocks[blockId]) {
+        visited.add(blockId);
+        const block = targetBlocks[blockId];
+        const inputs = block.inputs || {};
+        // Identify the names of input branches that represent control substacks.
+        const branchNames = Object.keys(inputs)
+            .filter(name => /^SUBSTACK\d*$/.test(name));
+        if (block.opcode === 'control_if_else') {
+            ['SUBSTACK', 'SUBSTACK2'].forEach(name => {
+                if (!branchNames.includes(name)) branchNames.push(name);
+            });
+        }
+        // Sort the branch names to ensure SUBSTACK comes before SUBSTACK2, etc.
+        branchNames.sort((first, second) => {
+            const branchNumber = name => Number(name.slice('SUBSTACK'.length)) || 1;
+            return branchNumber(first) - branchNumber(second);
         });
 
-    blockIds.push(...getScriptBlockIds(block.next, targetBlocks, visited));
-    return blockIds;
+        blocks.push({
+            id: blockId,
+            opcode: block.opcode,
+            category: getBlockCategory(block.opcode),
+            branches: branchNames.map(name => ({
+                name,
+                blocks: getScriptBlocks(inputs[name] && inputs[name].block, targetBlocks, visited)
+            }))
+        });
+        blockId = block.next;
+    }
+    return blocks;
 };
 
 /**
@@ -108,22 +108,75 @@ export const getActiveCodeThreads = (context, timeFrame, editingTarget, targetBl
         .map(thread => {
             const highlightedBlock = thread.stack && thread.stack.length > 0 ?
                 thread.stack[thread.stack.length - 1] : null;
-            const scriptBlockIds = getScriptBlockIds(thread.topBlock, targetBlocks);
-
             return {
                 id: thread.topBlock,
                 highlightedBlock,
-                blocks: scriptBlockIds
-                    .map(blockId => ({
-                        id: blockId,
-                        opcode: targetBlocks[blockId] && targetBlocks[blockId].opcode,
-                        category: targetBlocks[blockId] && targetBlocks[blockId].opcode ?
-                            getBlockCategory(targetBlocks[blockId].opcode) : 'more'
-                    }))
-                    .filter(block => block.opcode)
+                blocks: getScriptBlocks(thread.topBlock, targetBlocks)
             };
         })
         .filter(thread => thread.blocks.length > 0);
+};
+
+/**
+ * Render a script's blocks and recursively indented control branches.
+ * @param {object} props The blocks and current highlighted block ID.
+ * @return {JSX.Element} The script's block list.
+ */
+const ScriptBlocks = ({blocks, highlightedBlock}) => (
+    <div className={styles.scriptBlocks}>
+        {blocks.map(block => (
+            <div key={block.id}>
+                <div
+                    className={`${styles.block} ${styles[block.category]} ${
+                        block.id === highlightedBlock ? styles.active : ''
+                    }`}
+                >
+                    {formatOpcode(block.opcode)}
+                </div>
+                {block.branches.map(branch => (
+                    <div
+                        className={styles.branch}
+                        key={branch.name}
+                    >
+                        {block.opcode === 'control_if_else' && (
+                            <span className={styles.branchLabel}>
+                                {branch.name === 'SUBSTACK' ? (
+                                    <FormattedMessage
+                                        defaultMessage="Then"
+                                        description="First branch of an if-else block"
+                                        id="gui.activeCode.then"
+                                    />
+                                ) : (
+                                    <FormattedMessage
+                                        defaultMessage="Else"
+                                        description="Second branch of an if-else block"
+                                        id="gui.activeCode.else"
+                                    />
+                                )}
+                            </span>
+                        )}
+                        <ScriptBlocks
+                            blocks={branch.blocks}
+                            highlightedBlock={highlightedBlock}
+                        />
+                    </div>
+                ))}
+            </div>
+        ))}
+    </div>
+);
+
+ScriptBlocks.propTypes = {
+    blocks: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        opcode: PropTypes.string.isRequired,
+        category: PropTypes.string.isRequired,
+        branches: PropTypes.arrayOf(PropTypes.shape({
+            name: PropTypes.string.isRequired,
+            blocks: PropTypes.arrayOf(PropTypes.shape({})).isRequired
+        })).isRequired
+    })).isRequired,
+    highlightedBlock: PropTypes.string
 };
 
 /**
@@ -152,16 +205,10 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks}) => 
                             className={styles.thread}
                             key={thread.id}
                         >
-                            {thread.blocks.map(block => (
-                                <div
-                                    className={`${styles.block} ${styles[block.category]} ${
-                                        block.id === thread.highlightedBlock ? styles.active : ''
-                                    }`}
-                                    key={block.id}
-                                >
-                                    {formatOpcode(block.opcode)}
-                                </div>
-                            ))}
+                            <ScriptBlocks
+                                blocks={thread.blocks}
+                                highlightedBlock={thread.highlightedBlock}
+                            />
                         </div>
                     ))}
                 </div>
