@@ -14,6 +14,7 @@ import PropTypes from 'prop-types';
 import {locateActiveBullet, TimeSliderMode, zoomIn, zoomOut, zoomReset} from "../reducers/time-slider";
 import DebugTimeline from "../components/debug-timeline/debug-timeline.jsx";
 import ActiveCodeBlocks from "../components/debug-timeline/active-code-blocks.jsx";
+import {isTimeTravel2020} from '../reducers/time-travel';
 
 const TimelineTab = ({
     onZoomIn,
@@ -28,7 +29,10 @@ const TimelineTab = ({
     timeFrame,
     editingTarget,
     sprites,
-    stage
+    stage,
+    theme,
+    isRtl,
+    useCatBlocks
 }) => {
     const [debugMode, setDebugMode] = useState(false);
     const [showLinechart, setShowLinechart] = useState(false);
@@ -127,6 +131,9 @@ const TimelineTab = ({
                     context={context}
                     timeFrame={timeFrame}
                     editingTarget={editingTarget}
+                    theme={theme}
+                    isRtl={isRtl}
+                    useCatBlocks={useCatBlocks}
                     targetBlocks={
                         editingTarget === stage?.id ?
                             stage?.blocks || {} :
@@ -191,7 +198,10 @@ TimelineTab.propTypes = {
     timeFrame: PropTypes.number,
     editingTarget: PropTypes.string,
     sprites: PropTypes.shape({}),
-    stage: PropTypes.shape({})
+    stage: PropTypes.shape({}),
+    theme: PropTypes.string,
+    isRtl: PropTypes.bool,
+    useCatBlocks: PropTypes.bool
 };
 
 const mapStateToProps = state => ({
@@ -200,7 +210,10 @@ const mapStateToProps = state => ({
     timeFrame: state.scratchGui.timeSlider.timeFrame,
     editingTarget: state.scratchGui.targets.editingTarget,
     sprites: state.scratchGui.targets.sprites,
-    stage: state.scratchGui.targets.stage
+    stage: state.scratchGui.targets.stage,
+    theme: state.scratchGui.theme.theme,
+    isRtl: state.locales.isRtl,
+    useCatBlocks: isTimeTravel2020(state)
 });
 
 const mapDispatchToProps = dispatch => ({

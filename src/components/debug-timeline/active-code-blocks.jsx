@@ -1,10 +1,13 @@
 import React, {useCallback, useLayoutEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
-import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
+import {defineMessages, FormattedMessage, injectIntl, intlShape, IntlProvider} from 'react-intl';
 import focusIcon from '../timeline/targeting.png';
 import {getBlockLabels, getSnapshotReporterValue} from './active-code-labels';
+import {renderNativeScript} from './native-script';
 import {EVENT_INFO} from './constants.ts';
 import Icon from './icon.jsx';
+import log from '../../lib/log';
+import {getColorsForTheme} from '../../lib/themes';
 import styles from './active-code-blocks.css';
 
 const messages = defineMessages({
@@ -12,8 +15,42 @@ const messages = defineMessages({
         defaultMessage: 'Focus on highlighted blocks',
         description: 'Tooltip for the button that shows highlighted blocks in all active threads',
         id: 'gui.activeCode.focus'
+    },
+    script: {
+        defaultMessage: 'Scratch script: {starter}. Current block: {block}',
+        description: 'Accessible description of a script starter and its current block',
+        id: 'gui.activeCode.script'
+    },
+    unknownBlock: {
+        defaultMessage: 'none',
+        description: 'Description when no current block is available',
+        id: 'gui.activeCode.noCurrentBlock'
+    },
+    panel: {
+        defaultMessage: 'Active code blocks',
+        description: 'Accessible name for the active code panel',
+        id: 'gui.activeCode.panel'
     }
 });
+
+const localMessages = {
+    nl: {
+        'gui.activeCode.focus': 'Focus op gemarkeerde blokken',
+        'gui.activeCode.script': 'Scratch-script: {starter}. Huidig blok: {block}',
+        'gui.activeCode.noCurrentBlock': 'geen',
+        'gui.activeCode.panel': 'Actieve codeblokken',
+        'gui.activeCode.title': 'Actieve code',
+        'gui.activeCode.panelSize': 'Paneelgrootte',
+        'gui.activeCode.frameValues': 'Waarden in dit frame',
+        'gui.activeCode.empty': 'Er wordt geen code uitgevoerd in dit frame.',
+        'gui.activeCode.then': 'Dan',
+        'gui.activeCode.else': 'Anders',
+        'gui.activeCode.unsupportedBlock': 'Niet-ondersteund blok: {opcode}',
+        'gui.activeCode.snapshotValue': '({value})',
+        'gui.activeCode.renderWarning': 'Scratch-blokken kunnen niet worden weergegeven; ' +
+            'een vereenvoudigd script wordt getoond.'
+    }
+};
 
 /**
  * Map a Scratch opcode to the palette category used by Scratch blocks.
@@ -308,11 +345,143 @@ BlockLabel.propTypes = {
 };
 
 /**
+ * Turn a localized block label into readable text for the frame-value list.
+ * @param {object} label The Scratch block label.
+ * @returns {string} A readable label.
+ */
+const labelText = label => (label ? label.parts.map(part => (
+    part.type === 'input' ? labelText(part.label) || '?' : part.text || part.alt || ''
+)).filter(Boolean)
+    .join(' ') : '');
+
+/**
+ * Collect directly recorded reporter values reachable from a script.
+ * @param {string} topBlock The first script block ID.
+ * @param {object} targetBlocks The selected target's blocks.
+ * @param {object} snapshot The selected recorded frame.
+ * @param {string} editingTarget The target whose state is displayed.
+ * @param {object} labels Localized block labels by ID.
+ * @returns {Array<object>} Reporter labels and values.
+ */
+export const getScriptFrameValues = (topBlock, targetBlocks, snapshot, editingTarget, labels) => {
+    const values = [];
+    const visited = new Set();
+    // visit each block in the script recursively to collect reporter values
+    const visit = id => {
+        const block = id && targetBlocks[id];
+        if (!block || visited.has(id)) return;
+        visited.add(id);
+        const value = getSnapshotReporterValue(block, snapshot, editingTarget);
+        if (value !== null && ['string', 'number', 'boolean'].includes(typeof value)) {
+            values.push({id, label: labelText(labels[id]) || block.opcode, value});
+        }
+        Object.values(block.inputs || {}).forEach(input => visit(input && input.block));
+        visit(block.next);
+    };
+    visit(topBlock);
+    return values;
+};
+
+/**
+ * Render and highlight a static copy of a native Scratch Blocks script.
+ * @param {object} props The XML, editor configuration and selected block.
+ * @returns {JSX.Element} The read-only native script or an explicit fallback.
+ */
+const NativeScript = ({
+    xml, scriptId, locale, theme, isRtl, useCatBlocks, highlightedBlock, highlightedRef, description, fallback, children
+}) => {
+    const canvasRef = useRef(null);
+    const svgRef = useRef(null);
+    const [failed, setFailed] = useState(false);
+
+    useLayoutEffect(() => {
+        if (!canvasRef.current) return () => {};
+        const canvas = canvasRef.current;
+        try {
+            // Use the same Scratch Blocks variant as the editor, without taking ownership of its workspace.
+            const blocks = useCatBlocks ? require('cat-blocks') : require('scratch-blocks');
+            const svg = renderNativeScript(blocks, xml, scriptId, locale, {
+                colours: theme ? getColorsForTheme(theme) : null,
+                rtl: isRtl
+            });
+            svg.classList.add(styles.nativeScript);
+            canvas.appendChild(svg);
+            svgRef.current = svg;
+            setFailed(false);
+            return () => {
+                svgRef.current = null;
+                svg.remove();
+            };
+        } catch (error) {
+            log.warn(`Unable to render native Scratch script ${scriptId}`, error);
+            setFailed(true);
+            return () => {};
+        }
+    }, [xml, scriptId, locale, theme, isRtl, useCatBlocks]);
+
+    useLayoutEffect(() => {
+        const svg = svgRef.current;
+        if (!svg || !highlightedBlock) return () => {};
+        const block = Array.from(svg.querySelectorAll('[data-id]'))
+            .find(element => element.getAttribute('data-id') === highlightedBlock);
+        const path = block && Array.from(block.children).find(element => element.tagName.toLowerCase() === 'path');
+        if (!path) return () => {};
+        path.classList.add(styles.nativeActivePath);
+        highlightedRef.current = path;
+        return () => {
+            path.classList.remove(styles.nativeActivePath);
+            if (highlightedRef.current === path) highlightedRef.current = null;
+        };
+    }, [highlightedBlock, highlightedRef, xml, scriptId, locale, theme, isRtl, useCatBlocks]);
+
+    return (
+        <React.Fragment>
+            <div
+                aria-label={description}
+                className={styles.nativeCanvas}
+                ref={canvasRef}
+                role="img"
+            />
+            {failed && (
+                <React.Fragment>
+                    <p className={styles.renderWarning}>
+                        <FormattedMessage
+                            defaultMessage="Scratch block preview unavailable; showing a simplified script."
+                            description="Notice shown when the native Scratch script cannot be rendered"
+                            id="gui.activeCode.renderWarning"
+                        />
+                    </p>
+                    {fallback}
+                </React.Fragment>
+            )}
+            {!failed && children}
+        </React.Fragment>
+    );
+};
+
+NativeScript.propTypes = {
+    xml: PropTypes.string.isRequired,
+    scriptId: PropTypes.string.isRequired,
+    locale: PropTypes.string.isRequired,
+    theme: PropTypes.string,
+    isRtl: PropTypes.bool,
+    useCatBlocks: PropTypes.bool,
+    highlightedBlock: PropTypes.string,
+    highlightedRef: PropTypes.shape({current: PropTypes.instanceOf(Element)}).isRequired,
+    description: PropTypes.string.isRequired,
+    fallback: PropTypes.node.isRequired,
+    children: PropTypes.node
+};
+
+/**
  * Keep each thread's highlighted block visible without scrolling the surrounding timeline.
  * @param {object} props The thread, selected frame and panel size.
  * @return {JSX.Element} The independently scrollable thread.
  */
-const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize, focusRequest, labels, snapshot}) => {
+const ActiveThread = ({
+    thread, timeFrame, editingTarget, targetBlocks, panelSize, focusRequest, labels, snapshot,
+    xml, locale, theme, isRtl, useCatBlocks, intl
+}) => {
     const threadRef = useRef(null);
     const highlightedRef = useRef(null);
 
@@ -342,26 +511,73 @@ const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize
         return () => {};
     }, [thread.highlightedBlock, timeFrame, editingTarget, targetBlocks, panelSize, focusRequest]);
 
+    const fallback = (
+        <ScriptBlocks
+            blocks={thread.blocks}
+            highlightedBlock={thread.highlightedBlock}
+            highlightedRef={highlightedRef}
+            labels={labels}
+            targetBlocks={targetBlocks}
+            snapshot={snapshot}
+            editingTarget={editingTarget}
+        />
+    );
+    const values = xml ? getScriptFrameValues(thread.id, targetBlocks, snapshot, editingTarget, labels) : [];
+    const currentLabel = labelText(labels[thread.highlightedBlock]) || intl.formatMessage(messages.unknownBlock);
+    const starterLabel = labelText(labels[thread.id]) || intl.formatMessage(messages.unknownBlock);
+    const frameValues = values.length > 0 && (
+        <div className={styles.frameValues}>
+            <FormattedMessage
+                defaultMessage="Values at this frame"
+                description="Heading for values recorded in the selected frame"
+                id="gui.activeCode.frameValues"
+            />
+            <ul>
+                {values.map(value => (
+                    <li key={value.id}>{`${value.label}: ${String(value.value)}`}</li>
+                ))}
+            </ul>
+        </div>
+    );
     return (
         <div
             className={styles.thread}
             ref={threadRef}
         >
-            <ScriptBlocks
-                blocks={thread.blocks}
-                highlightedBlock={thread.highlightedBlock}
-                highlightedRef={highlightedRef}
-                labels={labels}
-                targetBlocks={targetBlocks}
-                snapshot={snapshot}
-                editingTarget={editingTarget}
-            />
+            {xml ? (
+                <NativeScript
+                    description={intl.formatMessage(messages.script, {starter: starterLabel, block: currentLabel})}
+                    fallback={fallback}
+                    highlightedBlock={thread.highlightedBlock}
+                    highlightedRef={highlightedRef}
+                    locale={locale}
+                    isRtl={isRtl}
+                    scriptId={thread.id}
+                    theme={theme}
+                    useCatBlocks={useCatBlocks}
+                    xml={xml}
+                >
+                    {frameValues}
+                </NativeScript>
+            ) : (
+                <React.Fragment>
+                    <p className={styles.renderWarning}>
+                        <FormattedMessage
+                            defaultMessage="Scratch block preview unavailable; showing a simplified script."
+                            description="Notice shown when the native Scratch script cannot be rendered"
+                            id="gui.activeCode.renderWarning"
+                        />
+                    </p>
+                    {fallback}
+                </React.Fragment>
+            )}
         </div>
     );
 };
 
 ActiveThread.propTypes = {
     thread: PropTypes.shape({
+        id: PropTypes.string.isRequired,
         blocks: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
         highlightedBlock: PropTypes.string
     }).isRequired,
@@ -371,7 +587,13 @@ ActiveThread.propTypes = {
     panelSize: PropTypes.number.isRequired,
     focusRequest: PropTypes.number.isRequired,
     labels: PropTypes.shape({}).isRequired,
-    snapshot: PropTypes.shape({})
+    snapshot: PropTypes.shape({}),
+    xml: PropTypes.string,
+    locale: PropTypes.string.isRequired,
+    theme: PropTypes.string,
+    isRtl: PropTypes.bool,
+    useCatBlocks: PropTypes.bool,
+    intl: intlShape.isRequired
 };
 
 /**
@@ -382,12 +604,29 @@ ActiveThread.propTypes = {
  * @param {object} targetBlocks The selected target's block map.
  * @return {JSX.Element} The active code panel.
  */
-const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks, intl}) => {
+const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks, intl, theme, isRtl, useCatBlocks}) => {
     const threads = getActiveCodeThreads(context, timeFrame, editingTarget, targetBlocks);
     const labels = threads.length ? getBlockLabels(targetBlocks, threads.map(thread => thread.id), intl.locale) : {};
     const snapshot = context && context.log && context.log.snapshots && context.log.snapshots[timeFrame];
     const [panelSize, setPanelSize] = useState(40);
     const [focusRequest, setFocusRequest] = useState(0);
+    const runtime = context && context.vm && context.vm.runtime;
+    const target = runtime && runtime.getTargetById && runtime.getTargetById(editingTarget);
+
+    /**
+     * Serialize the displayed target's script using the VM's existing serializer.
+     * @param {string} id The top block ID.
+     * @returns {?string} Scratch Blocks XML or null if the target is unavailable.
+     */
+    const scriptXml = id => {
+        if (!target || !target.blocks || target.blocks._blocks !== targetBlocks) return null;
+        try {
+            return target.blocks.blockToXML(id, target.comments) || null;
+        } catch (error) {
+            log.warn(`Unable to serialize active Scratch script ${id}`, error);
+            return null;
+        }
+    };
 
     /**
      * Set the panel height as a percentage of the timeline area.
@@ -409,11 +648,17 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks, intl
     return (
         <section
             className={styles.panel}
-            aria-label={'Active code blocks'}
+            aria-label={intl.formatMessage(messages.panel)}
             style={{height: `${panelSize}%`}}
         >
             <div className={styles.header}>
-                <h2 className={styles.title}>{'Active code'}</h2>
+                <h2 className={styles.title}>
+                    <FormattedMessage
+                        defaultMessage="Active code"
+                        description="Title of the active code panel"
+                        id="gui.activeCode.title"
+                    />
+                </h2>
                 <div className={styles.controls}>
                     <button
                         aria-label={intl.formatMessage(messages.focus)}
@@ -449,12 +694,18 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks, intl
                 </div>
             </div>
             {threads.length === 0 ? (
-                <p className={styles.empty}>{'No code is running at this frame.'}</p>
+                <p className={styles.empty}>
+                    <FormattedMessage
+                        defaultMessage="No code is running at this frame."
+                        description="Empty state for the active code panel"
+                        id="gui.activeCode.empty"
+                    />
+                </p>
             ) : (
                 <div className={styles.threadList}>
-                    {threads.map(thread => (
+                    {threads.map((thread, index) => (
                         <ActiveThread
-                            key={thread.id}
+                            key={`${thread.id}:${index}`}
                             thread={thread}
                             timeFrame={timeFrame}
                             editingTarget={editingTarget}
@@ -463,6 +714,12 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks, intl
                             focusRequest={focusRequest}
                             labels={labels}
                             snapshot={snapshot}
+                            xml={scriptXml(thread.id)}
+                            locale={intl.locale}
+                            theme={theme}
+                            isRtl={isRtl}
+                            useCatBlocks={useCatBlocks}
+                            intl={intl}
                         />
                     ))}
                 </div>
@@ -475,12 +732,36 @@ ActiveCodeBlocks.propTypes = {
     context: PropTypes.shape({
         log: PropTypes.shape({
             snapshots: PropTypes.arrayOf(PropTypes.object).isRequired
-        }).isRequired
+        }).isRequired,
+        vm: PropTypes.shape({
+            runtime: PropTypes.shape({getTargetById: PropTypes.func})
+        })
     }),
     timeFrame: PropTypes.number.isRequired,
     editingTarget: PropTypes.string,
     targetBlocks: PropTypes.shape({}).isRequired,
-    intl: intlShape.isRequired
+    intl: intlShape.isRequired,
+    theme: PropTypes.string,
+    isRtl: PropTypes.bool,
+    useCatBlocks: PropTypes.bool
 };
 
-export default injectIntl(ActiveCodeBlocks);
+const ConnectedActiveCodeBlocks = injectIntl(ActiveCodeBlocks);
+
+/**
+ * Supply local Active Code translations without replacing the editor's message catalog.
+ * @param {object} props The editor's internationalization context and panel props.
+ * @returns {JSX.Element} The localized Active Code panel.
+ */
+const LocalizedActiveCodeBlocks = ({intl, ...props}) => (
+    <IntlProvider
+        locale={intl.locale}
+        messages={{...localMessages[intl.locale.split('-')[0]], ...intl.messages}}
+    >
+        <ConnectedActiveCodeBlocks {...props} />
+    </IntlProvider>
+);
+
+LocalizedActiveCodeBlocks.propTypes = {intl: intlShape.isRequired};
+
+export default injectIntl(LocalizedActiveCodeBlocks);

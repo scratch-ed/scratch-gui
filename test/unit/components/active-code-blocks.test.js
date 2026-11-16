@@ -6,6 +6,7 @@ import renderer from 'react-test-renderer';
 import ScratchBlocks from 'scratch-blocks';
 import ActiveCodeBlocks, {getActiveCodeThreads} from '../../../src/components/debug-timeline/active-code-blocks.jsx';
 import {getBlockLabels, getSnapshotReporterValue} from '../../../src/components/debug-timeline/active-code-labels';
+import {renderNativeScript} from '../../../src/components/debug-timeline/native-script';
 import log from '../../../src/lib/log';
 
 jest.mock('../../../src/components/debug-timeline/active-code-blocks.css', () => ({
@@ -14,8 +15,15 @@ jest.mock('../../../src/components/debug-timeline/active-code-blocks.css', () =>
     thread: 'thread',
     threadList: 'threadList',
     starterEventIcon: 'starterEventIcon',
+    nativeScript: 'nativeScript',
+    nativeActivePath: 'nativeActivePath',
+    nativeCanvas: 'nativeCanvas',
     literalInput: 'literalInput',
     reporterInput: 'reporterInput'
+}));
+
+jest.mock('../../../src/components/debug-timeline/native-script', () => ({
+    renderNativeScript: jest.fn()
 }));
 
 jest.mock('../../../src/components/debug-timeline/constants.ts', () => ({
@@ -149,7 +157,9 @@ describe('Active code blocks', () => {
         const component = renderer.create(React.createElement(
             IntlProvider,
             {locale: 'en'},
-            React.createElement(ActiveCodeBlocks, {context, editingTarget: 'sprite', targetBlocks, timeFrame: 0})
+            React.createElement(ActiveCodeBlocks, {
+                context, editingTarget: 'sprite', targetBlocks, timeFrame: 0
+            })
         ));
         const output = JSON.stringify(component.toJSON());
         expect(output).toContain('Then');
@@ -324,6 +334,9 @@ describe('Active code blocks', () => {
                 messages: {
                     'gui.activeCode.focus': 'Focus',
                     'gui.activeCode.panelSize': 'Paneelgrootte',
+                    'gui.activeCode.panel': 'Actieve codeblokken',
+                    'gui.activeCode.title': 'Actieve code',
+                    'gui.activeCode.renderWarning': 'Vereenvoudigd script',
                     'gui.activeCode.snapshotValue': '(op dit frame: {value})'
                 }
             },
@@ -348,6 +361,102 @@ describe('Active code blocks', () => {
             })
         ));
         expect(JSON.stringify(reporter.toJSON())).toContain('(0)');
+    });
+
+    test('updates native highlights and frame values without rebuilding duplicate scripts', () => {
+        const targetBlocks = {
+            say: {opcode: 'looks_say', inputs: {MESSAGE: {block: 'variable'}}},
+            variable: {opcode: 'data_variable', fields: {VARIABLE: {name: 'VARIABLE', id: 'score-id', value: 'score'}}}
+        };
+        const makeThread = block => JSON.stringify({targetId: 'sprite', topBlock: 'say', stack: [block]});
+        const snapshot = (block, value) => ({
+            runtimeSnapshot: {threads: [makeThread(block), makeThread(block)]},
+            targets: [{id: 'sprite', variables: [{id: 'score-id', type: '', value}]}]
+        });
+        const target = {blocks: {_blocks: targetBlocks, blockToXML: () => '<block id="say"/>'}};
+        const context = {
+            vm: {runtime: {getTargetById: () => target}},
+            log: {snapshots: [snapshot('say', 0), snapshot('variable', 9)]}
+        };
+        const root = document.createElement('div');
+        document.body.appendChild(root);
+        renderNativeScript.mockImplementation(() => {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            ['say', 'variable'].forEach(id => {
+                const block = document.createElementNS(svg.namespaceURI, 'g');
+                block.setAttribute('data-id', id);
+                block.appendChild(document.createElementNS(svg.namespaceURI, 'path'));
+                svg.appendChild(block);
+            });
+            return svg;
+        });
+        const render = (frame, locale = 'en') => React.createElement(
+            IntlProvider, {locale},
+            React.createElement(ActiveCodeBlocks, {
+                context, editingTarget: 'sprite', targetBlocks, timeFrame: frame
+            })
+        );
+        try {
+            act(() => {
+                ReactDOM.render(render(0), root);
+            });
+            const scripts = root.querySelectorAll('svg.nativeScript');
+            expect(scripts).toHaveLength(2);
+            expect(root.querySelectorAll('[data-id="say"] > path.nativeActivePath')).toHaveLength(2);
+            expect(root.textContent).toContain('score: 0');
+            act(() => {
+                ReactDOM.render(render(1), root);
+            });
+            expect(root.querySelector('svg.nativeScript')).toBe(scripts[0]);
+            expect(renderNativeScript).toHaveBeenCalledTimes(2);
+            expect(root.querySelectorAll('[data-id="variable"] > path.nativeActivePath')).toHaveLength(2);
+            expect(root.querySelectorAll('[data-id="say"] > path.nativeActivePath')).toHaveLength(0);
+            expect(root.textContent).toContain('score: 9');
+            act(() => {
+                ReactDOM.render(render(1, 'nl'), root);
+            });
+            expect(root.textContent).toContain('Waarden in dit frame');
+            expect(root.querySelector('[role="img"]').getAttribute('aria-label')).toContain('Huidig blok');
+        } finally {
+            ReactDOM.unmountComponentAtNode(root);
+            root.remove();
+            renderNativeScript.mockReset();
+        }
+    });
+
+    test('shows a simplified script if native rendering fails', () => {
+        const targetBlocks = {move: {opcode: 'motion_movesteps'}};
+        const target = {blocks: {_blocks: targetBlocks, blockToXML: () => '<block id="move"/>'}};
+        const context = {
+            vm: {runtime: {getTargetById: () => target}},
+            log: {snapshots: [{runtimeSnapshot: {threads: [
+                JSON.stringify({targetId: 'sprite', topBlock: 'move', stack: ['move']})
+            ]}}]}
+        };
+        const warn = jest.spyOn(log, 'warn').mockImplementation(() => {});
+        renderNativeScript.mockImplementation(() => {
+            throw new Error('Unsupported block');
+        });
+        const root = document.createElement('div');
+        document.body.appendChild(root);
+        try {
+            act(() => {
+                ReactDOM.render(React.createElement(
+                    IntlProvider, {locale: 'en'},
+                    React.createElement(ActiveCodeBlocks, {
+                        context, editingTarget: 'sprite', targetBlocks, timeFrame: 0
+                    })
+                ), root);
+            });
+            expect(root.textContent).toContain('Scratch block preview unavailable');
+            expect(root.textContent).toContain('move');
+            expect(warn).toHaveBeenCalled();
+        } finally {
+            ReactDOM.unmountComponentAtNode(root);
+            root.remove();
+            warn.mockRestore();
+            renderNativeScript.mockReset();
+        }
     });
 
     test('restores Blockly state and exposes a fallback when a block definition fails', () => {

@@ -5,7 +5,7 @@
     width: 100%;
     min-height: 0;
     box-sizing: border-box;
-    padding: 1rem;
+    padding: 0.8rem;
     border: 1px solid #d9d9d9;
     border-radius: 0.5rem;
     background: #f8f8f8;
@@ -17,7 +17,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .title {
@@ -99,6 +99,36 @@
     padding: 0.25rem;
     border: 1px solid #c5c5c5;
     border-radius: 0.25rem;
+}
+
+.nativeCanvas {
+    width: fit-content;
+    max-width: 100%;
+}
+
+.nativeScript {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    pointer-events: none;
+}
+
+.nativeActivePath {
+    stroke: #fff200 !important;
+    stroke-width: 5px !important;
+    stroke-linejoin: round;
+}
+
+.frameValues,
+.renderWarning {
+    color: #555;
+    font-size: 0.75rem;
+}
+
+.frameValues ul {
+    margin: 0.25rem 0 0;
+    padding-left: 1.25rem;
 }
 
 .scriptBlocks {
