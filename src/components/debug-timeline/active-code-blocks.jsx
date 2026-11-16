@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
 import focusIcon from '../timeline/targeting.png';
 import {getBlockLabels, getSnapshotReporterValue} from './active-code-labels';
+import {EVENT_INFO} from './constants.ts';
+import Icon from './icon.jsx';
 import styles from './active-code-blocks.css';
 
 const messages = defineMessages({
@@ -218,6 +220,23 @@ const BlockLabel = ({label, targetBlocks, snapshot, editingTarget, highlightedBl
                             src={part.src}
                             alt={part.alt}
                         />
+                    );
+                } else if (part.type === 'keyIcon') {
+                    content = (
+                        <span
+                            aria-label={part.text}
+                            className={styles.starterEventIcon}
+                            role="img"
+                            title={part.text}
+                        >
+                            <span aria-hidden="true">
+                                <Icon
+                                    category={{...EVENT_INFO.event_whenkeypressed, options: {key: {value: part.key}}}}
+                                    inline
+                                    isEvent={false}
+                                />
+                            </span>
+                        </span>
                     );
                 } else if (part.type === 'input') {
                     const inputBlock = targetBlocks[part.id];

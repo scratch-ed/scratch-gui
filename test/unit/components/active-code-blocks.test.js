@@ -13,9 +13,31 @@ jest.mock('../../../src/components/debug-timeline/active-code-blocks.css', () =>
     block: 'block',
     thread: 'thread',
     threadList: 'threadList',
+    starterEventIcon: 'starterEventIcon',
     literalInput: 'literalInput',
     reporterInput: 'reporterInput'
 }));
+
+jest.mock('../../../src/components/debug-timeline/constants.ts', () => ({
+    EVENT_INFO: {
+        event_whenflagclicked: {id: 1, icon: 'flag-icon'},
+        event_whenkeypressed: {id: 2, icon: 'keycap-icon'},
+        event_whenthisspriteclicked: {id: 3, icon: 'click-icon'},
+        event_whenstageclicked: {id: 4, icon: 'click-icon'},
+        event_whenbackdropswitchesto: {id: 5, icon: 'backdrop-icon'},
+        event_whengreaterthan: {id: 6, icon: 'greater-than-icon'},
+        event_whenbroadcastreceived: {id: 7, icon: 'broadcast-icon'}
+    }
+}));
+
+jest.mock('../../../src/components/debug-timeline/icon.jsx', () => ({category}) =>
+    // eslint-disable-next-line global-require
+    require('react').createElement('img', {
+        'src': category.icon,
+        'data-key': category.options.key.value,
+        'alt': ''
+    })
+);
 
 describe('Active code blocks', () => {
     let mainWorkspace;
@@ -175,6 +197,54 @@ describe('Active code blocks', () => {
         ]);
     });
 
+    test('replaces key fields with inline timeline keycaps without changing other event labels', () => {
+        const targetBlocks = {
+            key: {opcode: 'event_whenkeypressed', fields: {KEY_OPTION: {name: 'KEY_OPTION', value: 'left arrow'}}},
+            any: {opcode: 'event_whenkeypressed', fields: {KEY_OPTION: {name: 'KEY_OPTION', value: 'any'}}},
+            space: {opcode: 'event_whenkeypressed'},
+            letter: {opcode: 'event_whenkeypressed', fields: {KEY_OPTION: {name: 'KEY_OPTION', value: 'a'}}},
+            unknown: {opcode: 'event_whenkeypressed', fields: {KEY_OPTION: {name: 'KEY_OPTION', value: 'enter'}}},
+            click: {opcode: 'event_whenthisspriteclicked'},
+            broadcast: {opcode: 'event_whenbroadcastreceived'},
+            flag: {opcode: 'event_whenflagclicked'},
+            move: {opcode: 'motion_movesteps'}
+        };
+        const threads = Object.keys(targetBlocks).map(id => JSON.stringify({
+            targetId: 'sprite', topBlock: id, stack: [id]
+        }));
+        const context = {log: {snapshots: [{runtimeSnapshot: {threads}}]}};
+        const component = renderer.create(React.createElement(
+            IntlProvider, {locale: 'en'},
+            React.createElement(ActiveCodeBlocks, {context, editingTarget: 'sprite', targetBlocks, timeFrame: 0})
+        ));
+        const rendered = component.root.findAll(node => node.type === 'div' && node.props.className === 'thread');
+        const icon = thread => thread.findAll(node => node.type === 'img' &&
+            Object.prototype.hasOwnProperty.call(node.props, 'data-key'));
+        const keyLabel = rendered[0].findByProps({role: 'img'});
+
+        expect(icon(rendered[0])[0].props).toMatchObject({'src': 'keycap-icon', 'data-key': 'left arrow'});
+        expect(icon(rendered[1])[0].props).toMatchObject({'src': 'keycap-icon', 'data-key': 'any'});
+        expect(icon(rendered[2])[0].props['data-key']).toBe('space');
+        expect(icon(rendered[3])[0].props['data-key']).toBe('a');
+        expect(keyLabel.props['aria-label']).toBe('left arrow');
+        expect(keyLabel.props.title).toBe('left arrow');
+        expect(keyLabel.parent.children[0]).toBe('when');
+        expect(keyLabel.parent.children[keyLabel.parent.children.length - 1]).toBe('key pressed');
+        expect(icon(rendered[4])).toHaveLength(0);
+        expect(rendered[4].findAllByType('span').some(node => node.children.includes('enter'))).toBe(true);
+        expect(icon(rendered[5])).toHaveLength(0);
+        expect(icon(rendered[6])).toHaveLength(0);
+        expect(icon(rendered[7])).toHaveLength(0);
+        expect(rendered[7].findByType('img').props.src).toContain('green-flag.svg');
+        expect(icon(rendered[8])).toHaveLength(0);
+
+        const dutch = getBlockLabels(targetBlocks, ['key'], 'nl').key.parts;
+        const keyPart = dutch.find(part => part.type === 'keyIcon');
+        expect(keyPart.key).toBe('left arrow');
+        expect(keyPart.text).not.toBe('left arrow');
+        expect(dutch.indexOf(keyPart)).toBeGreaterThan(0);
+    });
+
     test('uses localized Scratch labels, literal inputs, menus and nested reporters', () => {
         const blocks = {
             say: {opcode: 'looks_sayforsecs', inputs: {MESSAGE: {block: 'text'}, SECS: {block: 'add'}}},
@@ -238,12 +308,12 @@ describe('Active code blocks', () => {
             React.createElement(ActiveCodeBlocks, {context, editingTarget: 'sprite', targetBlocks: blocks, timeFrame})
         );
         const component = renderer.create(render(0));
-        expect(JSON.stringify(component.toJSON())).toContain('at this frame: 0');
+        expect(JSON.stringify(component.toJSON())).toContain('(0)');
         const highlighted = component.root.findAll(node => node.type === 'span' &&
             typeof node.props.className === 'string' && node.props.className.split(' ').includes('active'));
         expect(highlighted).toHaveLength(1);
         component.update(render(1));
-        expect(JSON.stringify(component.toJSON())).toContain('at this frame: 9');
+        expect(JSON.stringify(component.toJSON())).toContain('(9)');
         blocks.variable.fields.VARIABLE.value = 'points';
         component.update(render(1));
         expect(JSON.stringify(component.toJSON())).toContain('points');
@@ -277,7 +347,7 @@ describe('Active code blocks', () => {
                 timeFrame: 0
             })
         ));
-        expect(JSON.stringify(reporter.toJSON())).toContain('at this frame: 0');
+        expect(JSON.stringify(reporter.toJSON())).toContain('(0)');
     });
 
     test('restores Blockly state and exposes a fallback when a block definition fails', () => {

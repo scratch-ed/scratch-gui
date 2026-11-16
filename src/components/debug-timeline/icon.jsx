@@ -4,13 +4,20 @@ import styles from './debug-timeline.css';
 import {getKeyOnIcon} from './helpers.ts';
 import {EVENT_TYPES, EVENTS_TO_ICON} from './constants.ts';
 
+/**
+ * Render a timeline event or category icon, optionally using inline markup.
+ * @param {object} props The event or category and rendering options.
+ * @returns {JSX.Element} The icon and any key overlay.
+ */
 const Icon = ({
     event,
     category,
-    isEvent
+    isEvent,
+    inline
 }) => {
     let key;
     let icon;
+    const Container = inline ? 'span' : 'div';
     if (isEvent) {
         icon = EVENTS_TO_ICON[event.type];
         if (event.type === 'key') {
@@ -24,7 +31,7 @@ const Icon = ({
     }
 
     return (
-        <div className={styles.iconContainer}>
+        <Container className={styles.iconContainer}>
             <img
                 alt="Icon of event"
                 className={styles.eventIcon}
@@ -32,11 +39,11 @@ const Icon = ({
                 src={icon}
             />
             {key &&
-                <div className={styles.eventKeyData}>
+                <Container className={styles.eventKeyData}>
                     <span>{getKeyOnIcon(key)}</span>
-                </div>
+                </Container>
             }
-        </div>
+        </Container>
     );
 };
 
@@ -57,7 +64,8 @@ Icon.propTypes = {
         // eslint-disable-next-line react/forbid-prop-types
         options: PropTypes.object.isRequired
     }),
-    isEvent: PropTypes.bool.isRequired
+    isEvent: PropTypes.bool.isRequired,
+    inline: PropTypes.bool
 };
 
 export default Icon;

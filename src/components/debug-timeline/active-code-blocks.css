@@ -191,6 +191,13 @@
     vertical-align: middle;
 }
 
+.starterEventIcon {
+    display: inline-flex;
+    width: 1.5625rem;
+    height: 1.5625rem;
+    vertical-align: middle;
+}
+
 .motion {
     background: #4C97FF;
 }

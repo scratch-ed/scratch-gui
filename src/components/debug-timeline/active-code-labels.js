@@ -87,7 +87,14 @@ export const getBlockLabels = (blocks, blockIds, locale) => {
                                 saved.id && Object.prototype.hasOwnProperty.call(variableFields, field.name) ?
                                     saved.id : saved.value
                             ) ? String(saved.value) : field.getText();
-                            if (text !== '') parts.push({type: 'text', text});
+                            const key = saved ? saved.value : field.getValue();
+                            if (block.opcode === 'event_whenkeypressed' && field.name === 'KEY_OPTION' &&
+                                typeof key === 'string' &&
+                                /^(space|any|(left|right|up|down) arrow|[a-z0-9])$/i.test(key)) {
+                                parts.push({type: 'keyIcon', text, key});
+                            } else if (text !== '') {
+                                parts.push({type: 'text', text});
+                            }
                         }
                     });
                     if (input.type === ScratchBlocks.INPUT_VALUE) {
