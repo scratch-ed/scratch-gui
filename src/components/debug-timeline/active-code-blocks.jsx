@@ -2,6 +2,7 @@ import React, {useCallback, useLayoutEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
 import focusIcon from '../timeline/targeting.png';
+import {getBlockLabels, getSnapshotReporterValue} from './active-code-labels';
 import styles from './active-code-blocks.css';
 
 const messages = defineMessages({
@@ -11,24 +12,6 @@ const messages = defineMessages({
         id: 'gui.activeCode.focus'
     }
 });
-
-/**
- * Convert a Scratch opcode into a short label suitable for a child-friendly code list.
- * @param {string} opcode The Scratch block opcode.
- * @return {string} A readable block label.
- */
-const formatOpcode = opcode => opcode
-    .replace(/^event_/, '')
-    .replace(/^control_/, '')
-    .replace(/^looks_/, '')
-    .replace(/^motion_/, '')
-    .replace(/^sound_/, '')
-    .replace(/^sensing_/, '')
-    .replace(/^data_/, '')
-    .replace(/^operator_/, '')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, character => character.toUpperCase());
 
 /**
  * Map a Scratch opcode to the palette category used by Scratch blocks.
@@ -131,7 +114,7 @@ export const getActiveCodeThreads = (context, timeFrame, editingTarget, targetBl
  * @param {object} props The blocks and current highlighted block ID.
  * @return {JSX.Element} The script's block list.
  */
-const ScriptBlocks = ({blocks, highlightedBlock, highlightedRef}) => (
+const ScriptBlocks = ({blocks, highlightedBlock, highlightedRef, labels, targetBlocks, snapshot, editingTarget}) => (
     <div className={styles.scriptBlocks}>
         {blocks.map(block => (
             <div key={block.id}>
@@ -141,7 +124,15 @@ const ScriptBlocks = ({blocks, highlightedBlock, highlightedRef}) => (
                     }`}
                     ref={block.id === highlightedBlock ? highlightedRef : null}
                 >
-                    {formatOpcode(block.opcode)}
+                    <BlockLabel
+                        label={labels[block.id]}
+                        targetBlocks={targetBlocks}
+                        snapshot={snapshot}
+                        editingTarget={editingTarget}
+                        highlightedBlock={highlightedBlock}
+                        highlightedRef={highlightedRef}
+                    />
+                    <FrameValue value={getSnapshotReporterValue(targetBlocks[block.id], snapshot, editingTarget)} />
                 </div>
                 {block.branches.map(branch => (
                     <div
@@ -169,6 +160,10 @@ const ScriptBlocks = ({blocks, highlightedBlock, highlightedRef}) => (
                             blocks={branch.blocks}
                             highlightedBlock={highlightedBlock}
                             highlightedRef={highlightedRef}
+                            labels={labels}
+                            targetBlocks={targetBlocks}
+                            snapshot={snapshot}
+                            editingTarget={editingTarget}
                         />
                     </div>
                 ))}
@@ -188,6 +183,108 @@ ScriptBlocks.propTypes = {
         })).isRequired
     })).isRequired,
     highlightedBlock: PropTypes.string,
+    highlightedRef: PropTypes.shape({current: PropTypes.instanceOf(Element)}).isRequired,
+    labels: PropTypes.shape({}).isRequired,
+    targetBlocks: PropTypes.shape({}).isRequired,
+    snapshot: PropTypes.shape({}),
+    editingTarget: PropTypes.string
+};
+
+/**
+ * Render localized block fields and recursively nested reporter inputs.
+ * @param {object} props The label parts and selected-frame context.
+ * @return {JSX.Element} The read-only block label.
+ */
+const BlockLabel = ({label, targetBlocks, snapshot, editingTarget, highlightedBlock, highlightedRef}) => {
+    if (!label) return <span>{'?'}</span>;
+    if (label.unsupported) {
+        return (
+            <FormattedMessage
+                defaultMessage="Unsupported block: {opcode}"
+                description="Label for a block whose text is unavailable"
+                id="gui.activeCode.unsupportedBlock"
+                values={{opcode: label.parts[0].text}}
+            />
+        );
+    }
+    return (
+        <span>
+            {label.parts.map((part, index) => {
+                let content;
+                if (part.type === 'icon') {
+                    content = (
+                        <img
+                            className={styles.blockIcon}
+                            src={part.src}
+                            alt={part.alt}
+                        />
+                    );
+                } else if (part.type === 'input') {
+                    const inputBlock = targetBlocks[part.id];
+                    const value = inputBlock && getSnapshotReporterValue(inputBlock, snapshot, editingTarget);
+                    content = (
+                        <span
+                            className={`${part.literal ? styles.literalInput :
+                                `${styles.reporterInput} ${
+                                    inputBlock ? styles[getBlockCategory(inputBlock.opcode)] : ''
+                                }`} ${part.id === highlightedBlock ? styles.active : ''}`}
+                            ref={part.id === highlightedBlock ? highlightedRef : null}
+                        >
+                            {part.label ? (
+                                <BlockLabel
+                                    label={part.label}
+                                    targetBlocks={targetBlocks}
+                                    snapshot={snapshot}
+                                    editingTarget={editingTarget}
+                                    highlightedBlock={highlightedBlock}
+                                    highlightedRef={highlightedRef}
+                                />
+                            ) : '?'}
+                            <FrameValue value={value} />
+                        </span>
+                    );
+                } else {
+                    content = part.text;
+                }
+                return <React.Fragment key={index}>{index > 0 && ' '}{content}</React.Fragment>;
+            })}
+        </span>
+    );
+};
+
+/**
+ * Show a directly recorded scalar as selected-frame state.
+ * @param {object} props The snapshot value, if one is available.
+ * @return {?JSX.Element} The frame-value annotation or nothing.
+ */
+const FrameValue = ({value}) => {
+    if (value === null || !['string', 'number', 'boolean'].includes(typeof value)) return null;
+    return (
+        <span className={styles.snapshotValue}>
+            {' '}
+            <FormattedMessage
+                defaultMessage="({value})"
+                description="Recorded value of a reporter at the selected frame"
+                id="gui.activeCode.snapshotValue"
+                values={{value: String(value)}}
+            />
+        </span>
+    );
+};
+
+FrameValue.propTypes = {
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool])
+};
+
+BlockLabel.propTypes = {
+    label: PropTypes.shape({
+        parts: PropTypes.arrayOf(PropTypes.shape({text: PropTypes.string})).isRequired,
+        unsupported: PropTypes.bool.isRequired
+    }),
+    targetBlocks: PropTypes.shape({}).isRequired,
+    snapshot: PropTypes.shape({}),
+    editingTarget: PropTypes.string,
+    highlightedBlock: PropTypes.string,
     highlightedRef: PropTypes.shape({current: PropTypes.instanceOf(Element)}).isRequired
 };
 
@@ -196,7 +293,7 @@ ScriptBlocks.propTypes = {
  * @param {object} props The thread, selected frame and panel size.
  * @return {JSX.Element} The independently scrollable thread.
  */
-const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize, focusRequest}) => {
+const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize, focusRequest, labels, snapshot}) => {
     const threadRef = useRef(null);
     const highlightedRef = useRef(null);
 
@@ -235,6 +332,10 @@ const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize
                 blocks={thread.blocks}
                 highlightedBlock={thread.highlightedBlock}
                 highlightedRef={highlightedRef}
+                labels={labels}
+                targetBlocks={targetBlocks}
+                snapshot={snapshot}
+                editingTarget={editingTarget}
             />
         </div>
     );
@@ -249,7 +350,9 @@ ActiveThread.propTypes = {
     editingTarget: PropTypes.string,
     targetBlocks: PropTypes.shape({}).isRequired,
     panelSize: PropTypes.number.isRequired,
-    focusRequest: PropTypes.number.isRequired
+    focusRequest: PropTypes.number.isRequired,
+    labels: PropTypes.shape({}).isRequired,
+    snapshot: PropTypes.shape({})
 };
 
 /**
@@ -262,6 +365,8 @@ ActiveThread.propTypes = {
  */
 const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks, intl}) => {
     const threads = getActiveCodeThreads(context, timeFrame, editingTarget, targetBlocks);
+    const labels = threads.length ? getBlockLabels(targetBlocks, threads.map(thread => thread.id), intl.locale) : {};
+    const snapshot = context && context.log && context.log.snapshots && context.log.snapshots[timeFrame];
     const [panelSize, setPanelSize] = useState(40);
     const [focusRequest, setFocusRequest] = useState(0);
 
@@ -337,6 +442,8 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks, intl
                             targetBlocks={targetBlocks}
                             panelSize={panelSize}
                             focusRequest={focusRequest}
+                            labels={labels}
+                            snapshot={snapshot}
                         />
                     ))}
                 </div>
