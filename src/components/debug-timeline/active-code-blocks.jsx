@@ -209,18 +209,11 @@ const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize
             const containerRect = container.getBoundingClientRect();
             const blockRect = block.getBoundingClientRect();
             const top = containerRect.top + container.clientTop;
-            const left = containerRect.left + container.clientLeft;
             const bottom = top + container.clientHeight;
-            const right = left + container.clientWidth;
             if (blockRect.top < top) {
                 container.scrollTop += blockRect.top - top;
             } else if (blockRect.bottom > bottom) {
                 container.scrollTop += blockRect.bottom - bottom;
-            }
-            if (blockRect.left < left) {
-                container.scrollLeft += blockRect.left - left;
-            } else if (blockRect.right > right) {
-                container.scrollLeft += blockRect.right - right;
             }
         };
 
@@ -322,9 +315,9 @@ const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks, intl
                         <input
                             className={styles.resizeInput}
                             type="range"
-                            min="20"
-                            max="70"
-                            step="5"
+                            min="32"
+                            max="72"
+                            step="4"
                             value={panelSize}
                             onChange={handlePanelSizeChange}
                         />

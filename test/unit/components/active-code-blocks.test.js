@@ -8,7 +8,8 @@ import ActiveCodeBlocks, {getActiveCodeThreads} from '../../../src/components/de
 jest.mock('../../../src/components/debug-timeline/active-code-blocks.css', () => ({
     active: 'active',
     block: 'block',
-    thread: 'thread'
+    thread: 'thread',
+    threadList: 'threadList'
 }));
 
 describe('Active code blocks', () => {
@@ -160,6 +161,47 @@ describe('Active code blocks', () => {
         ]);
     });
 
+    test('renders threads without fixed groups and focuses every thread', () => {
+        const targetBlocks = {};
+        const threads = Array.from({length: 7}, (unused, index) => {
+            const id = `block-${index}`;
+            targetBlocks[id] = {opcode: 'motion_movesteps', next: null};
+            return JSON.stringify({targetId: 'sprite', topBlock: id, stack: [id]});
+        });
+        const context = {log: {snapshots: [{runtimeSnapshot: {threads}}]}};
+        const rect = jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function () {
+            // eslint-disable-next-line no-invalid-this
+            const active = this.classList.contains('active');
+            return {top: active ? 160 : 0, bottom: active ? 180 : 100};
+        });
+        const height = jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(100);
+        const root = document.createElement('div');
+        document.body.appendChild(root);
+
+        try {
+            act(() => {
+                ReactDOM.render(React.createElement(
+                    IntlProvider, {locale: 'en'},
+                    React.createElement(ActiveCodeBlocks, {
+                        context, editingTarget: 'sprite', targetBlocks, timeFrame: 0
+                    })
+                ), root);
+            });
+            expect(root.querySelectorAll('.threadList > .thread')).toHaveLength(7);
+            const elements = root.querySelectorAll('.thread');
+            elements.forEach(element => {
+                element.scrollTop = 0;
+            });
+            act(() => Simulate.click(root.querySelector('button')));
+            expect(Array.from(elements, element => element.scrollTop)).toEqual([80, 80, 80, 80, 80, 80, 80]);
+        } finally {
+            ReactDOM.unmountComponentAtNode(root);
+            document.body.removeChild(root);
+            rect.mockRestore();
+            height.mockRestore();
+        }
+    });
+
     test('scrolls each thread to its highlighted block and resizes the panel', () => {
         const context = {log: {snapshots: [
             {runtimeSnapshot: {threads: [
@@ -220,10 +262,10 @@ describe('Active code blocks', () => {
             expect(threads[1].scrollTop).toBe(120);
             positions.Turnright = [140, 160];
             const slider = root.querySelector('input[type="range"]');
-            expect(slider.min).toBe('20');
-            expect(slider.max).toBe('70');
-            act(() => Simulate.change(slider, {target: {value: '70'}}));
-            expect(root.querySelector('section').style.height).toBe('70%');
+            expect(slider.min).toBe('32');
+            expect(slider.max).toBe('72');
+            act(() => Simulate.change(slider, {target: {value: '72'}}));
+            expect(root.querySelector('section').style.height).toBe('72%');
             expect(threads[0].scrollTop).toBe(120);
             positions.Turnright = [130, 150];
             observers[observers.length - 2].callback();
