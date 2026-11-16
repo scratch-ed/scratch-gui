@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback, useLayoutEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 import {FormattedMessage} from 'react-intl';
 import styles from './active-code-blocks.css';
@@ -122,7 +122,7 @@ export const getActiveCodeThreads = (context, timeFrame, editingTarget, targetBl
  * @param {object} props The blocks and current highlighted block ID.
  * @return {JSX.Element} The script's block list.
  */
-const ScriptBlocks = ({blocks, highlightedBlock}) => (
+const ScriptBlocks = ({blocks, highlightedBlock, highlightedRef}) => (
     <div className={styles.scriptBlocks}>
         {blocks.map(block => (
             <div key={block.id}>
@@ -130,6 +130,7 @@ const ScriptBlocks = ({blocks, highlightedBlock}) => (
                     className={`${styles.block} ${styles[block.category]} ${
                         block.id === highlightedBlock ? styles.active : ''
                     }`}
+                    ref={block.id === highlightedBlock ? highlightedRef : null}
                 >
                     {formatOpcode(block.opcode)}
                 </div>
@@ -158,6 +159,7 @@ const ScriptBlocks = ({blocks, highlightedBlock}) => (
                         <ScriptBlocks
                             blocks={branch.blocks}
                             highlightedBlock={highlightedBlock}
+                            highlightedRef={highlightedRef}
                         />
                     </div>
                 ))}
@@ -176,7 +178,75 @@ ScriptBlocks.propTypes = {
             blocks: PropTypes.arrayOf(PropTypes.shape({})).isRequired
         })).isRequired
     })).isRequired,
-    highlightedBlock: PropTypes.string
+    highlightedBlock: PropTypes.string,
+    highlightedRef: PropTypes.shape({current: PropTypes.instanceOf(Element)}).isRequired
+};
+
+/**
+ * Keep each thread's highlighted block visible without scrolling the surrounding timeline.
+ * @param {object} props The thread, selected frame and panel size.
+ * @return {JSX.Element} The independently scrollable thread.
+ */
+const ActiveThread = ({thread, timeFrame, editingTarget, targetBlocks, panelSize}) => {
+    const threadRef = useRef(null);
+    const highlightedRef = useRef(null);
+
+    useLayoutEffect(() => {
+        const container = threadRef.current;
+        const keepHighlightedVisible = () => {
+            const block = highlightedRef.current;
+            if (!container || !block) return;
+
+            const containerRect = container.getBoundingClientRect();
+            const blockRect = block.getBoundingClientRect();
+            const top = containerRect.top + container.clientTop;
+            const left = containerRect.left + container.clientLeft;
+            const bottom = top + container.clientHeight;
+            const right = left + container.clientWidth;
+            if (blockRect.top < top) {
+                container.scrollTop += blockRect.top - top;
+            } else if (blockRect.bottom > bottom) {
+                container.scrollTop += blockRect.bottom - bottom;
+            }
+            if (blockRect.left < left) {
+                container.scrollLeft += blockRect.left - left;
+            } else if (blockRect.right > right) {
+                container.scrollLeft += blockRect.right - right;
+            }
+        };
+
+        keepHighlightedVisible();
+        if (typeof ResizeObserver !== 'undefined' && container) {
+            const observer = new ResizeObserver(keepHighlightedVisible);
+            observer.observe(container);
+            return () => observer.disconnect();
+        }
+        return () => {};
+    }, [thread.highlightedBlock, timeFrame, editingTarget, targetBlocks, panelSize]);
+
+    return (
+        <div
+            className={styles.thread}
+            ref={threadRef}
+        >
+            <ScriptBlocks
+                blocks={thread.blocks}
+                highlightedBlock={thread.highlightedBlock}
+                highlightedRef={highlightedRef}
+            />
+        </div>
+    );
+};
+
+ActiveThread.propTypes = {
+    thread: PropTypes.shape({
+        blocks: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+        highlightedBlock: PropTypes.string
+    }).isRequired,
+    timeFrame: PropTypes.number.isRequired,
+    editingTarget: PropTypes.string,
+    targetBlocks: PropTypes.shape({}).isRequired,
+    panelSize: PropTypes.number.isRequired
 };
 
 /**
@@ -189,27 +259,55 @@ ScriptBlocks.propTypes = {
  */
 const ActiveCodeBlocks = ({context, timeFrame, editingTarget, targetBlocks}) => {
     const threads = getActiveCodeThreads(context, timeFrame, editingTarget, targetBlocks);
+    const [panelSize, setPanelSize] = useState(40);
+
+    /**
+     * Set the panel height as a percentage of the timeline area.
+     * @param {Event} event The resize slider change event.
+     * @returns {void}
+     */
+    const handlePanelSizeChange = useCallback(event => {
+        setPanelSize(Number(event.target.value));
+    }, []);
 
     return (
         <section
             className={styles.panel}
             aria-label={'Active code blocks'}
+            style={{height: `${panelSize}%`}}
         >
-            <h2 className={styles.title}>{'Active code'}</h2>
+            <div className={styles.header}>
+                <h2 className={styles.title}>{'Active code'}</h2>
+                <label className={styles.resizeLabel}>
+                    <FormattedMessage
+                        defaultMessage="Panel size"
+                        description="Label for the active code panel size slider"
+                        id="gui.activeCode.panelSize"
+                    />
+                    <input
+                        className={styles.resizeInput}
+                        type="range"
+                        min="20"
+                        max="70"
+                        step="5"
+                        value={panelSize}
+                        onChange={handlePanelSizeChange}
+                    />
+                </label>
+            </div>
             {threads.length === 0 ? (
                 <p className={styles.empty}>{'No code is running at this frame.'}</p>
             ) : (
                 <div className={styles.threadList}>
                     {threads.map(thread => (
-                        <div
-                            className={styles.thread}
+                        <ActiveThread
                             key={thread.id}
-                        >
-                            <ScriptBlocks
-                                blocks={thread.blocks}
-                                highlightedBlock={thread.highlightedBlock}
-                            />
-                        </div>
+                            thread={thread}
+                            timeFrame={timeFrame}
+                            editingTarget={editingTarget}
+                            targetBlocks={targetBlocks}
+                            panelSize={panelSize}
+                        />
                     ))}
                 </div>
             )}

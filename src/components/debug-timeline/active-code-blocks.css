@@ -1,5 +1,9 @@
 .panel {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
     width: 100%;
+    min-height: 0;
     box-sizing: border-box;
     padding: 1rem;
     border: 1px solid #d9d9d9;
@@ -7,10 +11,30 @@
     background: #f8f8f8;
 }
 
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
 .title {
-    margin: 0 0 0.75rem;
+    margin: 0;
     font-size: 1rem;
     font-weight: 600;
+}
+
+.resizeLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.resizeInput {
+    width: 6rem;
 }
 
 .empty {
@@ -20,19 +44,23 @@
 
 .threadList {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 0.75rem;
+    align-items: stretch;
+    min-height: 0;
+    gap: 0.25rem;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .thread {
     display: flex;
+    flex: 0 0 auto;
     flex-direction: column;
+    max-width: 100%;
     gap: 0.25rem;
-    max-height: 12rem;
     overflow: auto;
-    padding: 0.5rem;
+    padding: 0.25rem;
 }
 
 .scriptBlocks {
