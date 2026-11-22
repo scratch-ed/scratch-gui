@@ -12,6 +12,7 @@ import EventsBarRow from './events-bar-row.jsx';
 import GridProvider from './grid-provider.jsx';
 import VM from "scratch-vm";
 import {getNonWaitActivityRanges, hasNonWaitActivity} from './timeline-utils.js';
+import {getKeyRecordingEnd} from './key-holds.js';
 
 const getActiveTargetName = (editingTarget, sprites, stage) => {
     if (editingTarget === stage.id) {
@@ -172,7 +173,8 @@ const DebugTimeline = ({
 
     const tickSize = Math.round(100 * zoomLevel);
 
-    const timestampEnd = Math.ceil(timestamps[timestamps.length - 1] / tickSize) * tickSize;
+    const recordingEnd = getKeyRecordingEnd(timestamps, events);
+    const timestampEnd = Math.max(tickSize, Math.ceil(recordingEnd / tickSize) * tickSize);
     const timeTicks = generateTimelineCuts(activeThreads, events, timestampEnd, tickSize);
 
     const timestampToIndex = timestamps.reduce((map, item, index) => {
@@ -249,6 +251,7 @@ const DebugTimeline = ({
                                             timeTicks={timeTicks}
                                             tickSize={tickSize}
                                             isGap={isGap}
+                                            timestampEnd={recordingEnd}
                                             onBroadcastClick={onBroadcastClick}
                                         />
                                     </Row>

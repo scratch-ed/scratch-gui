@@ -191,6 +191,36 @@
     /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
 }
 
+.key-hold {
+    position: absolute;
+    top: 50%;
+    z-index: 12;
+    height: 10px;
+    padding: 0;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 5px;
+    background: #5da95d;
+    cursor: help;
+}
+
+.key-hold:focus {
+    z-index: 16;
+    outline: 2px solid #1f5120;
+}
+
+.key-hold-label {
+    position: absolute;
+    left: 0;
+    bottom: 12px;
+    padding: 1px 3px;
+    border-radius: 3px;
+    background: #e2f3e2;
+    color: #174917;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
 .track-bar-container {
     position: absolute;
     z-index: 10;
