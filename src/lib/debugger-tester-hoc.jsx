@@ -285,6 +285,7 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         removeFuture () {
             if (this.props.numberOfFrames > 1) {
                 this.props.context.setLogSnapshotRange(0, this.props.timeFrame + 1);
+                this.trimKeyTransitions();
                 this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
             }
         }
@@ -295,8 +296,20 @@ const DebuggerAndTesterHOC = function (WrappedComponent) {
         removeFullHistory () {
             if (this.props.numberOfFrames > 1) {
                 this.props.context.setLogSnapshotRange(this.props.timeFrame, this.props.timeFrame + 2);
+                this.trimKeyTransitions();
                 this.props.setNumberOfFrames(this.props.context.log.snapshots.length);
             }
+        }
+
+        /**
+         * Keep key-hold records within the retained snapshot history.
+         * @returns {void}
+         */
+        trimKeyTransitions () {
+            const log = this.props.context.log;
+            const snapshots = log.snapshots;
+            log.trimKeyTransitions(snapshots[0].timestamp, snapshots[snapshots.length - 1].timestamp);
+            this.props.setEvents(log.events.filter(event => event.type !== 'block_execution').map(toTimelineEvent));
         }
 
         getOptions = (editingTarget, sprites, stage, id, topBlockName) => {
