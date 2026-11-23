@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {connect} from 'react-redux';
 import Ruler from './ruler.jsx';
 import Row from './row.jsx';
@@ -7,12 +7,13 @@ import {EVENT_INFO} from './constants.ts';
 import styles from './debug-timeline.css';
 import Category from './category.jsx';
 import PropTypes from 'prop-types';
-import {locateActiveBullet, setTimeFrame} from '../../reducers/time-slider';
+import {locateActiveBullet, setTimeFrame, setVisibleKeys} from '../../reducers/time-slider';
 import EventsBarRow from './events-bar-row.jsx';
 import GridProvider from './grid-provider.jsx';
 import VM from "scratch-vm";
 import {getNonWaitActivityRanges, hasNonWaitActivity} from './timeline-utils.js';
-import {getKeyRecordingEnd} from './key-holds.js';
+import {getKeyHolds, getKeyLanes, getKeyRecordingEnd, prepareKeyHoldDisplay} from './key-holds.js';
+import KeySelector from './key-selector.jsx';
 
 const getActiveTargetName = (editingTarget, sprites, stage) => {
     if (editingTarget === stage.id) {
@@ -164,11 +165,15 @@ const createBroadcastEventMap = (events, target) => {
 };
 
 const DebugTimeline = ({
-    vm, paused, activeThreads, zoomLevel, timeFrame, editingTarget, sprites, stage, timestamps, events, locateActive, setFrame, onLocateActiveBullet, onBroadcastClick
+    vm, paused, activeThreads, zoomLevel, timeFrame, editingTarget, sprites, stage, timestamps, events,
+    locateActive, setFrame, onLocateActiveBullet, onBroadcastClick, visibleKeys, onSetVisibleKeys
 }) => {
-    const categories = getCategories(activeThreads, events !== null && events.length > 0);
-
     const activeTargetName = getActiveTargetName(editingTarget, sprites, stage);
+    const categories = getCategories(activeThreads, events !== null && events.length > 0);
+    const [showRedHolds, setShowRedHolds] = useState(false);
+    const [showSeparate, setShowSeparate] = useState(false);
+    const handleShowRedHoldsChange = useCallback(event => setShowRedHolds(event.target.checked), []);
+    const handleShowSeparateChange = useCallback(event => setShowSeparate(event.target.checked), []);
     const broadcastEventMap = createBroadcastEventMap(events, activeTargetName);
 
     const tickSize = Math.round(100 * zoomLevel);
@@ -195,10 +200,16 @@ const DebugTimeline = ({
         }
     };
 
-    const isGap = (tick, nextTick) => {
-        return nextTick - tick > tickSize &&
-            !hasNonWaitActivity(activeThreads, tick, nextTick);
-    };
+    const isGap = useCallback((tick, nextTick) =>
+        nextTick - tick > tickSize && !hasNonWaitActivity(activeThreads, tick, nextTick),
+    [activeThreads, tickSize]);
+
+    const recorded = getKeyHolds(events, activeTargetName, visibleKeys);
+    const display = prepareKeyHoldDisplay(
+        recorded.holds, recorded.events, showRedHolds, timeTicks, tickSize, isGap, recordingEnd
+    );
+    const {lanes, generalEvents} = showSeparate ?
+        getKeyLanes(display.holds, display.events) : {lanes: [], generalEvents: display.events};
 
     const rulerIndicatorRef = useRef(null);
     useEffect(() => {
@@ -222,12 +233,28 @@ const DebugTimeline = ({
     }, [locateActive, timeFrame, onLocateActiveBullet]);
 
     return (
-        <div className={styles.flexRow} ref={rulerIndicatorRef}>
+        <div
+            className={styles.timelineContainer}
+            ref={rulerIndicatorRef}
+        >
+            <div className={styles.timelineControls}>
+                <KeySelector
+                    selectedKeys={visibleKeys}
+                    onChange={onSetVisibleKeys}
+                    showRedHolds={showRedHolds}
+                    onShowRedHoldsChange={handleShowRedHoldsChange}
+                    showSeparate={showSeparate}
+                    onShowSeparateChange={handleShowSeparateChange}
+                />
+            </div>
             <div className={styles.scrollDetails}>
                 <div className={styles.content}>
                     <div className={styles.debug}>
                         <div className={styles.categoryListContainer}>
-                            <Category categories={categories} />
+                            <Category
+                                categories={categories}
+                                eventKeys={lanes.map(lane => lane.key)}
+                            />
                         </div>
                         <div>
                             <Ruler
@@ -242,19 +269,38 @@ const DebugTimeline = ({
                                     tickSize={tickSize}
                                     isGap={isGap}
                                 >
-                                    <Row
-                                        id={'events'}
-                                    >
-                                        <EventsBarRow
-                                            activeTargetName={activeTargetName}
-                                            events={events || []}
-                                            timeTicks={timeTicks}
-                                            tickSize={tickSize}
-                                            isGap={isGap}
-                                            timestampEnd={recordingEnd}
-                                            onBroadcastClick={onBroadcastClick}
-                                        />
-                                    </Row>
+                                    <div className={styles.eventsGroup}>
+                                        <Row id={'events'}>
+                                            <EventsBarRow
+                                                activeTargetName={activeTargetName}
+                                                events={generalEvents}
+                                                holds={showSeparate ? [] : display.holds}
+                                                timeTicks={timeTicks}
+                                                tickSize={tickSize}
+                                                isGap={isGap}
+                                                timestampEnd={recordingEnd}
+                                                onBroadcastClick={onBroadcastClick}
+                                            />
+                                        </Row>
+                                        {lanes.map(lane => (
+                                            <Row
+                                                key={`key-${lane.key}`}
+                                                compact
+                                                id={`key-${lane.key}`}
+                                            >
+                                                <EventsBarRow
+                                                    activeTargetName={activeTargetName}
+                                                    events={lane.events}
+                                                    holds={lane.holds}
+                                                    timeTicks={timeTicks}
+                                                    tickSize={tickSize}
+                                                    isGap={isGap}
+                                                    timestampEnd={recordingEnd}
+                                                    onBroadcastClick={onBroadcastClick}
+                                                />
+                                            </Row>
+                                        ))}
+                                    </div>
                                     {Array.from(activeThreads.entries()).map(([threadId, {periods}]) => (
                                         <Row
                                             key={`row-${threadId}`}
@@ -298,7 +344,9 @@ DebugTimeline.propTypes = {
     zoomLevel: PropTypes.number,
     locateActive: PropTypes.bool,
     onLocateActiveBullet: PropTypes.func,
-    onBroadcastClick: PropTypes.func
+    onBroadcastClick: PropTypes.func,
+    visibleKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
+    onSetVisibleKeys: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({
@@ -312,11 +360,13 @@ const mapStateToProps = state => ({
     numberOfFrames: state.scratchGui.timeSlider.numberOfFrames,
     timestamps: state.scratchGui.timeSlider.timestamps,
     events: state.scratchGui.timeSlider.events,
+    visibleKeys: state.scratchGui.timeSlider.visibleKeys,
     zoomLevel: state.scratchGui.timeSlider.zoomLevel,
     locateActive: state.scratchGui.timeSlider.locateActiveBullet,
 });
 
 const mapDispatchToProps = dispatch => ({
+    onSetVisibleKeys: keys => dispatch(setVisibleKeys(keys)),
     setFrame: timeFrame => dispatch(setTimeFrame(timeFrame)),
     onLocateActiveBullet: locate => dispatch(locateActiveBullet(locate))
 });
