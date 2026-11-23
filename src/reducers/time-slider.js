@@ -7,6 +7,7 @@ const SET_NUMBER_OF_FRAMES = 'scratch-gui/time-slider/SET_NUMBER_OF_FRAMES';
 const SET_TIMESTAMPS = 'scratch-gui/time-slider/SET_TIMESTAMPS';
 const ADD_EVENT = 'scratch-gui/time-slider/ADD_EVENT';
 const SET_EVENTS = 'scratch-gui/time-slider/SET_EVENTS';
+const SET_VISIBLE_KEYS = 'scratch-gui/time-slider/SET_VISIBLE_KEYS';
 const SET_ACTIVE_THREADS = 'scratch-gui/time-slider/SET_ACTIVE_THREADS';
 const ADD_ACTIVE_THREAD = 'scratch-gui/time-slider/ADD_ACTIVE_THREAD';
 const END_ACTIVE_THREAD = 'scratch-gui/time-slider/END_ACTIVE_THREAD';
@@ -41,6 +42,7 @@ const initialState = {
     numberOfFrames: 0,
     timestamps: [],
     events: [],
+    visibleKeys: ['any'],
     activeThreads: new Map(),
     paused: false,
     changed: false,
@@ -96,6 +98,10 @@ const reducer = function (state, action) {
     case SET_EVENTS:
         return Object.assign({}, state, {
             events: action.events
+        });
+    case SET_VISIBLE_KEYS:
+        return Object.assign({}, state, {
+            visibleKeys: action.keys
         });
     case SET_ACTIVE_THREADS:
         return Object.assign({}, state, {
@@ -307,6 +313,18 @@ const setEvents = function (events) {
     };
 };
 
+/**
+ * Set the persistent debug-timeline key filter.
+ * @param {Array<string>} keys Selected Scratch key options.
+ * @returns {object} Redux action.
+ */
+const setVisibleKeys = function (keys) {
+    return {
+        type: SET_VISIBLE_KEYS,
+        keys: keys
+    };
+};
+
 const setActiveThreads = function (threads) {
     return {
         type: SET_ACTIVE_THREADS,
@@ -449,6 +467,7 @@ export {
     setTimestamps,
     addEvent,
     setEvents,
+    setVisibleKeys,
     setActiveThreads,
     addActiveThread,
     endActiveThread,
