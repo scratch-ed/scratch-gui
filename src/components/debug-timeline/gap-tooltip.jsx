@@ -19,7 +19,7 @@ const GapTooltip = ({gapGroup}) => {
             };
         }
 
-        acc[uniqueKey].count++;
+        acc[uniqueKey].count += event.gapCount || 1;
         return acc;
     }, {});
 
@@ -27,11 +27,12 @@ const GapTooltip = ({gapGroup}) => {
     const displayValues = allValues.slice(0, maxToShow);
     const hasMore = allValues.length > maxToShow;
     const remainingCount = allValues.length - maxToShow;
+    const eventCount = events.reduce((total, event) => total + (event.gapCount || 1), 0);
 
     return (
         <div>
             <div style={{fontWeight: 'bold', marginBottom: '8px'}}>
-                There are {events.length} events in this gap:
+                There are {eventCount} events in this gap:
             </div>
             {displayValues.map(({count, sampleEvent, key}) => (
                 <div key={`${key}`} className={styles.gapTooltip}>

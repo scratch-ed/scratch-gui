@@ -4,17 +4,18 @@ import {EVENT_TYPES, TRACK_HEIGHT} from './constants.ts';
 import PropTypes from 'prop-types';
 import Icon from './icon.jsx';
 
-const CategoryItem = ({category}) => {
+const CategoryItem = ({category, eventKeys}) => {
     const colorClass = styles[category.color];
 
     return (
-        <div
-            className={styles.categoryItem}
-            style={{
-                height: `${TRACK_HEIGHT}px`,
-                minHeight: `${TRACK_HEIGHT}px`
-            }}
-        >
+        <div className={styles.categoryGroup}>
+            <div
+                className={styles.categoryItem}
+                style={{
+                    height: `${TRACK_HEIGHT}px`,
+                    minHeight: `${TRACK_HEIGHT}px`
+                }}
+            >
             <div className={styles.categoryItemIcon}>
                 <Icon
                     category={category}
@@ -35,6 +36,12 @@ const CategoryItem = ({category}) => {
             <div
                 className={`${styles.categoryItemColor} ${colorClass}`}
             />
+            </div>
+            {category.id === EVENT_TYPES.EVENTS && eventKeys.map(key => (
+                <div key={key} className={styles.categorySubrow}>
+                    {key}
+                </div>
+            ))}
         </div>
     );
 };
@@ -47,15 +54,17 @@ CategoryItem.propTypes = {
         color: PropTypes.string.isRequired,
         // eslint-disable-next-line react/forbid-prop-types
         options: PropTypes.object.isRequired
-    }).isRequired
+    }).isRequired,
+    eventKeys: PropTypes.arrayOf(PropTypes.string).isRequired
 };
 
-const Category = ({categories}) => (
+const Category = ({categories, eventKeys = []}) => (
     <div className={styles.categoryList}>
         {categories.map((category, index) => (
             <CategoryItem
                 key={index}
                 category={category}
+                eventKeys={eventKeys}
             />
         ))}
     </div>
@@ -69,7 +78,8 @@ Category.propTypes = {
         color: PropTypes.string.isRequired,
         // eslint-disable-next-line react/forbid-prop-types
         options: PropTypes.object.isRequired
-    })).isRequired
+    })).isRequired,
+    eventKeys: PropTypes.arrayOf(PropTypes.string)
 };
 
 export default Category;

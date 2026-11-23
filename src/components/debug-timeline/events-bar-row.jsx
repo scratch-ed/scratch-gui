@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import PropTypes from 'prop-types';
 import {getCompressedGap, getCompressedGapPosition} from './gap-utils.js';
 import {BAR_WIDTH} from './constants.ts';
@@ -7,8 +7,9 @@ import ReactTooltip from 'react-tooltip';
 import styles from '../timeline/timeline.css';
 import GapTooltip from './gap-tooltip.jsx';
 import Event from './event.jsx';
-import {getKeyHolds} from './key-holds.js';
 import debugStyles from './debug-timeline.css';
+
+let nextRowId = 0;
 
 const groupEventsByGaps = (events, timeTicks, tickSize, isGap, holdReactions) => {
     const visibleEvents = [];
@@ -45,19 +46,21 @@ const groupEventsByGaps = (events, timeTicks, tickSize, isGap, holdReactions) =>
 const EventsBarRow = ({
     activeTargetName,
     events,
+    holds,
     timeTicks,
     tickSize,
     isGap,
     timestampEnd,
     onBroadcastClick
 }) => {
-    const {holds, events: displayEvents} = getKeyHolds(events, activeTargetName);
+    const rowId = useRef(null);
+    if (rowId.current === null) rowId.current = nextRowId++;
     // Determine which key input events are associated with reactions for the active target.
     const holdReactions = new Set(holds.flatMap(hold => hold.inputs.flatMap(input =>
         input.events.filter(event => event.sprites.includes(activeTargetName))
     )));
     const {visibleEvents, gapEvents} =
-        groupEventsByGaps(displayEvents, timeTicks, tickSize, isGap, holdReactions);
+        groupEventsByGaps(events, timeTicks, tickSize, isGap, holdReactions);
 
     return (
         <>
@@ -68,14 +71,17 @@ const EventsBarRow = ({
                 const width = Math.max(8, getCompressedPlotPosition(end, timeTicks, tickSize) - left);
                 const endDescription = hold.end === null ? `still held at ${end} ms` :
                     hold.truncated ? `history ends at ${end} ms` : `released at ${end} ms`;
-                const description = `${hold.key} was pressed from ${hold.start} ms until ${endDescription}; ` +
-                    `${Math.max(0, end - hold.start)} ms; ` + 
-                    `${hold.nonReactingRepeats} repeated keydown(s) did notthing`;
+                const status = hold.reacts ? `started a thread for ${activeTargetName}` :
+                    `did not start a thread for ${activeTargetName}`;
+                const description = `${hold.key}: pressed at ${hold.start} ms, until ${endDescription}; ` +
+                    `${Math.max(0, end - hold.start)} ms; ${status}; ` +
+                    `${hold.nonReactingRepeats} repeated keydown(s) did not start ${activeTargetName}`;
                 return (
                     <button
                         key={`hold-${index}`}
                         aria-label={description}
-                        className={debugStyles.keyHold}
+                        className={`${debugStyles.keyHold} ${hold.reacts ? debugStyles.keyHoldReacted :
+                            debugStyles.keyHoldUnreacted}`}
                         style={{left: `${left}px`, width: `${width}px`}}
                         title={description}
                         type="button"
@@ -108,14 +114,14 @@ const EventsBarRow = ({
                     <div>
                         <div
                             className={styles.tooltipDataGap}
-                            data-for={`gap-${index}`}
+                            data-for={`gap-${rowId.current}-${index}`}
                             data-tip=""
                             style={{
                                 left: `${gapGroup.left - 8}px`
                             }}
                         />
                         <ReactTooltip
-                            id={`gap-${index}`}
+                            id={`gap-${rowId.current}-${index}`}
                             className={styles.tooltip}
                             effect="solid"
                             place="left"
@@ -132,6 +138,7 @@ const EventsBarRow = ({
 EventsBarRow.propTypes = {
     activeTargetName: PropTypes.string,
     events: PropTypes.arrayOf(PropTypes.object),
+    holds: PropTypes.arrayOf(PropTypes.object).isRequired,
     timeTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
     tickSize: PropTypes.number.isRequired,
     isGap: PropTypes.func.isRequired,
