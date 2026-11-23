@@ -65,6 +65,7 @@
     flex-basis: calc(1024px - 408px - (($space + $stage-standard-border-width) * 2));
     flex-grow: 1;
     flex-shrink: 0;
+    min-width: 0;
     position: relative;
 
     display: flex;
